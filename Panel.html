@@ -406,28 +406,89 @@
                 const res = await fetch(`${N8N_URL}/webhook/master-cuentas`);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 let data = await res.json();
-                operadores = Array.isArray(data) ? data : (data ? [data] : []);
+                operadores = Array.isArray(data) ? data : [data];
 
                 const grid = document.getElementById('accounts-grid');
-                if (grid) {
-                    // FILTRO: Solo mostramos como Operadores a quienes son tipo gmail o tienen nombre_operador
-                    const soloOperadoresHumanos = operadores.filter(o => o.nombre_operador !== null && o.tipo_cuenta === 'gmail');
+                if (!grid) return;
+                
+                const role = document.getElementById('role-selector').value;
 
-                    grid.innerHTML = soloOperadoresHumanos.map(o => `
-                        <div class="card border-l-4 ${o.activo ? 'border-emerald-400' : 'border-slate-300'}">
-                            <p class="text-xs font-black text-slate-900">${o.nombre_operador}</p>
-                            <p class="text-[10px] text-slate-400">${o.email}</p>
-                            <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-[8px] font-black uppercase mt-2 inline-block">${o.nombre_grupo || 'Individual'}</span>
-                            <div class="mt-4 flex gap-2">
-                                <button onclick="toggleAccount('${o.email}', ${!o.activo})" class="flex-1 ${o.activo ? 'bg-slate-900' : 'bg-emerald-600'} text-white py-2 rounded-lg font-bold text-[9px] uppercase">
-                                    ${o.activo ? 'Desactivar' : 'Activar'}
-                                </button>
+                // 1. Filtrar solo operadores humanos
+                const soloOperadores = operadores.filter(o => o.nombre_operador !== null && o.tipo_cuenta === 'gmail');
+
+                // 2. Agrupar operadores por su etiqueta
+                const operadoresAgrupados = soloOperadores.reduce((acc, op) => {
+                    const grupoId = op.grupo_id || 'unassigned';
+                    if (!acc[grupoId]) {
+                        acc[grupoId] = [];
+                    }
+                    acc[grupoId].push(op);
+                    return acc;
+                }, {});
+
+                // 3. Renderizar las carpetas de grupos
+                // Primero, ajustamos el layout del grid principal para que sea de una sola columna.
+                grid.className = 'grid grid-cols-1 gap-4';
+                
+                grid.innerHTML = Object.keys(operadoresAgrupados).map(grupoId => {
+                    const opsInGroup = operadoresAgrupados[grupoId];
+                    const grupoInfo = grupos.find(g => g.id == grupoId) || { id: 'unassigned', nombre: 'Operadores Sin Etiqueta', color: '#94a3b8' };
+                    
+                    const operatorCards = opsInGroup.map(o => {
+                        // El HTML de la tarjeta de operador individual
+                        const adminButtons = (role === 'dev' || role === 'admin') ? `
+                            <div class="absolute top-3 right-3 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
+                                <button onclick="editarEtiquetaOperador(${o.id})" class="p-2 bg-white/60 hover:bg-white rounded-lg text-xs backdrop-blur-sm shadow-sm border border-white" title="Cambiar Etiqueta">🏷️</button>
+                                <button onclick="editarOperador(${o.id})" class="p-2 bg-white/60 hover:bg-white rounded-lg text-xs backdrop-blur-sm shadow-sm border border-white" title="Editar Operador">📝</button>
+                            </div>
+                        ` : '';
+
+                        return `
+                        <div class="card p-4 space-y-2 relative group/card border-l-4" style="border-left-color: ${grupoInfo.color}">
+                            <div>
+                                <p class="font-black text-sm text-slate-800 truncate">${o.nombre_operador}</p>
+                                <p class="text-xs text-slate-400 truncate">${o.email}</p>
+                            </div>
+                             ${adminButtons}
+                        </div>
+                        `;
+                    }).join('');
+
+                    // El HTML para el contenedor del grupo (la carpeta)
+                    return `
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 transition-all hover:border-slate-300">
+                        <div onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('svg').classList.toggle('rotate-90')" class="p-4 cursor-pointer flex justify-between items-center rounded-t-2xl">
+                             <div class="flex items-center gap-3">
+                                <div class="w-2 h-2 rounded-full" style="background-color: ${grupoInfo.color}"></div>
+                                <p class="font-black text-xs text-slate-700 uppercase tracking-wider">${grupoInfo.nombre}</p>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <span class="text-xs font-black text-white bg-slate-400 rounded-full px-2 py-0.5">${opsInGroup.length}</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
                             </div>
                         </div>
-                    `).join('');
-                }
-                log("Operadores filtrados.");
+                        <div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-t border-slate-100 hidden">
+                            ${operatorCards}
+                        </div>
+                    </div>
+                    `;
+
+                }).join('');
+
+                log("Operadores agrupados en carpetas visuales.");
             } catch (e) { log(`Error Operadores: ${e.message}`); throw e; }
+        }
+
+        function editarOperador(id) {
+            // Placeholder: Esta función debería abrir el modal para editar el operador.
+            log(`Función 'editarOperador' llamada para ID: ${id}. Aún no implementada.`);
+            alert(`Editar Operador (ID: ${id}) - Funcionalidad pendiente.`);
+        }
+
+        function editarEtiquetaOperador(id) {
+            // Placeholder: Esta función podría abrir un modal simple o un menú para cambiar la etiqueta.
+            log(`Función 'editarEtiquetaOperador' llamada para ID: ${id}. Aún no implementada.`);
+            alert(`Cambiar Etiqueta (ID: ${id}) - Funcionalidad pendiente.`);
         }
 
         async function cargarMensajes() {
