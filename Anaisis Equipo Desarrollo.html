@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asesorías IA - Agent Email: Business Case Técnico</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- 
+    PLAN DE CONTENIDO:
+    1. Batalla de Hardware: MacBook Air M4 vs Dell Inspiron i7.
+    2. Seguridad de Infraestructura: GCP Cloud vs Servidor Oficina (Riesgos).
+    3. Análisis de Productividad: Tiempos de desarrollo de 3 meses.
+    4. Conclusión: ROI de la inversión en Mac + Cloud.
+
+    COLORES: Vibrant (Indigo #4f46e5, Rose #f43f5e, Emerald #10b981).
+    RESTRICCIONES: Sin SVG, Sin Mermaid JS. Gráficas con Chart.js (Canvas).
+    -->
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; color: #0f172a; }
+        .card { background: white; border-radius: 1.5rem; border: 1px solid #e2e8f0; padding: 2rem; box-shadow: 0 4px 20px -5px rgba(0,0,0,0.05); }
+        .chart-container { position: relative; width: 100%; height: 320px; max-width: 650px; margin: 0 auto; }
+        .vs-badge { background: #0f172a; color: white; padding: 4px 12px; border-radius: 9999px; font-weight: 800; font-size: 12px; }
+        @media print { .no-print { display: none; } body { padding: 0; } .card { box-shadow: none; page-break-inside: avoid; } }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto space-y-10">
+        <!-- HEADER -->
+        <header class="bg-indigo-600 text-white p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden">
+            <div class="z-10 relative">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="bg-indigo-400/30 text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-widest">DevOps Strategy v3.0</span>
+                </div>
+                <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight">Asesorías IA - <span class="text-sky-300">Agent Email</span></h1>
+                <p class="text-indigo-100 mt-4 text-lg max-w-2xl font-medium">Análisis de viabilidad técnica, seguridad de datos @airis-ae.com.mx y retorno de inversión en hardware.</p>
+            </div>
+            <button onclick="window.print()" class="no-print absolute top-10 right-10 bg-white text-indigo-600 px-6 py-3 rounded-2xl font-bold shadow-xl hover:scale-105 transition-all">
+                Exportar para Reunión
+            </button>
+        </header>
+
+        <!-- SECCIÓN 1: BATALLA DE HARDWARE (DESARROLLO) -->
+        <section class="card border-t-8 border-t-indigo-600">
+            <div class="flex flex-col md:flex-row justify-between items-start mb-10 gap-4">
+                <div>
+                    <h2 class="text-3xl font-black text-slate-900">Desarrollo: Mac M4 vs Dell i7</h2>
+                    <p class="text-slate-500 mt-1">¿Por qué el equipo actual es el principal freno para el plazo de 3 meses?</p>
+                </div>
+                <div class="vs-badge">HARDWARE SHOWDOWN</div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- DELL INSPIRON -->
+                <div class="p-6 rounded-2xl border border-slate-200 bg-slate-50 opacity-80">
+                    <h3 class="text-xl font-bold text-slate-600 mb-4">Dell Inspiron (Actual)</h3>
+                    <ul class="text-xs space-y-4">
+                        <li class="flex items-start gap-3">
+                            <span class="text-rose-500 font-bold">✕</span>
+                            <div>
+                                <p class="font-bold">Intel i7-1255U (Serie U):</p>
+                                <p class="text-slate-500 italic">Diseñado para oficina básica. Se calienta y "throttles" (baja su velocidad) al procesar Docker y 50 cuentas simultáneas.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-rose-500 font-bold">✕</span>
+                            <div>
+                                <p class="font-bold">Capa WSL2 (Windows):</p>
+                                <p class="text-slate-500 italic">n8n corre en Linux. Windows debe emularlo, consumiendo el doble de recursos y causando latencia en los Webhooks.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- MACBOOK AIR M4 -->
+                <div class="p-6 rounded-2xl border-2 border-indigo-500 bg-indigo-50 shadow-inner">
+                    <h3 class="text-xl font-bold text-indigo-700 mb-4">MacBook Air M4 (Propuesta)</h3>
+                    <ul class="text-xs space-y-4">
+                        <li class="flex items-start gap-3">
+                            <span class="text-emerald-500 font-bold">✓</span>
+                            <div>
+                                <p class="font-bold text-indigo-900">Chip M4 + Neural Engine:</p>
+                                <p class="text-indigo-700 italic">Optimizado para tareas de IA (38 TOPS). Ejecución nativa de contenedores n8n sin sobrecalentamiento.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="text-emerald-500 font-bold">✓</span>
+                            <div>
+                                <p class="font-bold text-indigo-900">Memoria Unificada 16GB:</p>
+                                <p class="text-indigo-700 italic">Arquitectura ARM. Los 16GB en Mac rinden como 32GB en Windows para multitarea de alta densidad.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-10 h-[300px]">
+                <canvas id="devChart"></canvas>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: SEGURIDAD (CLOUD VS SERVER LOCAL) -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- RIESGOS SERVER LOCAL -->
+            <div class="card border-l-8 border-l-rose-500">
+                <h3 class="text-2xl font-black text-rose-600 mb-6">Riesgo: Servidor Local</h3>
+                <div class="space-y-6 text-sm text-slate-600">
+                    <div class="flex gap-4">
+                        <div class="text-2xl">🔌</div>
+                        <div>
+                            <p class="font-bold">Punto Único de Fallo</p>
+                            <p class="text-xs">Un apagón o falla de internet en la oficina detiene el negocio al 100%.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="text-2xl">🔓</div>
+                        <div>
+                            <p class="font-bold">Vulnerabilidad de Red</p>
+                            <p class="text-xs">Abrir puertos para recibir emails expone toda la red de Airis-AE a ataques externos.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="text-2xl">📉</div>
+                        <div>
+                            <p class="font-bold">Escalabilidad Nula</p>
+                            <p class="text-xs">Si el volumen de correos crece, el hardware local queda obsoleto y requiere reinversión total.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEGURIDAD GCP -->
+            <div class="card border-l-8 border-l-emerald-500 bg-emerald-50/20">
+                <h3 class="text-2xl font-black text-emerald-600 mb-6">Seguridad: Google Cloud</h3>
+                <div class="space-y-6 text-sm text-slate-600">
+                    <div class="flex gap-4">
+                        <div class="text-2xl">🛡️</div>
+                        <div>
+                            <p class="font-bold">IAM & VPC Security</p>
+                            <p class="text-xs">Firewalls avanzados de Google. Los datos de @airis-ae.com.mx nunca salen del ecosistema Google.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="text-2xl">♾️</div>
+                        <div>
+                            <p class="font-bold">Alta Disponibilidad (24/7)</p>
+                            <p class="text-xs">Funcionamiento constante. Los clientes VIP reciben respuesta aunque la oficina esté cerrada.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div class="text-2xl">☁️</div>
+                        <div>
+                            <p class="font-bold">Infraestructura Elástica</p>
+                            <p class="text-xs">Crecimiento inmediato de potencia sin comprar hardware nuevo.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 3: MÉTRICA DE PRODUCTIVIDAD -->
+        <section class="card">
+            <h2 class="text-2xl font-black mb-8 text-center">Impacto en el Roadmap de 3 Meses</h2>
+            <div class="h-[300px]">
+                <canvas id="productivityChart"></canvas>
+            </div>
+            <div class="mt-8 p-6 bg-slate-900 rounded-2xl text-white">
+                <h4 class="font-bold text-indigo-400 mb-2">Resumen Estratégico para Airis-AE:</h4>
+                <p class="text-sm leading-relaxed opacity-80 italic">
+                    "Para desarrollar el Panel de Administrador y gestionar las 50 cuentas sin latencia, la Mac M4 es la herramienta de producción necesaria. Usar Google Cloud (GCP) como servidor garantiza que el sistema sea profesional, seguro y nunca se detenga. Es el paso de una solución artesanal a una corporativa."
+                </p>
+            </div>
+        </section>
+
+        <footer class="text-center text-slate-400 text-[10px] uppercase tracking-widest pb-10">
+            © 2024 Asesorías IA - Agent Email • Auditoría de Viabilidad y Seguridad Corporativa
+        </footer>
+    </div>
+
+    <script>
+        const wrapLabel = (label, max = 16) => {
+            if (typeof label !== 'string' || label.length <= max) return label;
+            const words = label.split(' ');
+            const lines = [];
+            let current = '';
+            words.forEach(w => {
+                if ((current + w).length > max) {
+                    lines.push(current.trim());
+                    current = w + ' ';
+                } else {
+                    current += w + ' ';
+                }
+            });
+            lines.push(current.trim());
+            return lines;
+        };
+
+        const ttConfig = {
+            callbacks: {
+                title: function(items) {
+                    const item = items[0];
+                    let label = item.chart.data.labels[item.dataIndex];
+                    return Array.isArray(label) ? label.join(' ') : label;
+                }
+            }
+        };
+
+        // Gráfica de Hardware
+        const ctxDev = document.getElementById('devChart').getContext('2d');
+        new Chart(ctxDev, {
+            type: 'bar',
+            data: {
+                labels: ['Procesamiento IA Local (TOPS)', 'Compilación de Nodos n8n', 'Eficiencia Térmica (Stress)', 'Estabilidad Docker Unix'].map(l => wrapLabel(l)),
+                datasets: [
+                    {
+                        label: 'Dell i7-1255U (Actual)',
+                        data: [15, 40, 30, 45],
+                        backgroundColor: '#f43f5e',
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'MacBook Air M4 (Propuesta)',
+                        data: [38, 95, 98, 100],
+                        backgroundColor: '#4f46e5',
+                        borderRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', labels: { boxWidth: 12, font: { size: 10 } } },
+                    tooltip: ttConfig
+                },
+                scales: {
+                    y: { beginAtZero: true, max: 100, ticks: { display: false } },
+                    x: { ticks: { font: { size: 9 } } }
+                }
+            }
+        });
+
+        // Gráfica de Productividad
+        const ctxProd = document.getElementById('productivityChart').getContext('2d');
+        new Chart(ctxProd, {
+            type: 'line',
+            data: {
+                labels: ['Semana 1', 'Semana 4', 'Semana 8', 'Semana 12'],
+                datasets: [
+                    {
+                        label: 'Progreso con Dell i7 (Retraso Probable)',
+                        data: [10, 25, 45, 65],
+                        borderColor: '#f43f5e',
+                        borderDash: [5, 5],
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Progreso con Mac M4 (Meta 3 Meses)',
+                        data: [15, 45, 75, 100],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.05)',
+                        fill: true,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } },
+                    tooltip: ttConfig
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true, 
+                        max: 100, 
+                        ticks: { callback: v => v + '%' } 
+                    },
+                    x: { ticks: { font: { size: 10 } } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

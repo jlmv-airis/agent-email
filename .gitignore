@@ -1,0 +1,11 @@
+# n8n y Base de Datos local
+Code/n8n-local/n8n_data/
+Code/n8n-local/postgres_data/
+
+# Logs y archivos temporales
+*.log
+*.tmp
+.DS_Store
+
+# Variables de entorno (si existieran)
+.env

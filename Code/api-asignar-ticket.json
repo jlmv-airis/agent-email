@@ -1,0 +1,48 @@
+{
+  "name": "API - Asignar Ticket (Admin)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "asignar-ticket",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "id": "webhook-assign",
+      "name": "Webhook: Recibir Asignación"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE mensajes_entrantes \nSET operador_asignado_id = (SELECT id FROM cuentas_email WHERE nombre_operador = '{{ $json.body.operadorNombre }}'), \nestatus = 'asignado' \nWHERE id = {{ $json.body.ticketId }};"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [250, 0],
+      "id": "db-update-ticket",
+      "name": "Actualizar en Postgres",
+      "credentials": {
+        "postgres": {
+          "id": "NUEVA_CREDENCIAL_POSTGRES",
+          "name": "Postgres Local (Docker)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": { "responseCode": 200 }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [500, 0],
+      "id": "res-ok",
+      "name": "OK"
+    }
+  ],
+  "connections": {
+    "Webhook: Recibir Asignación": { "main": [[{ "node": "Actualizar en Postgres", "type": "main", "index": 0 }]] },
+    "Actualizar en Postgres": { "main": [[{ "node": "OK", "type": "main", "index": 0 }]] }
+  }
+}

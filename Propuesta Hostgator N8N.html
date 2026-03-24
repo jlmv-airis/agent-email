@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asesorías IA - Agent Email | Business Case</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- 
+    ESTRATEGIA VISUAL:
+    1. Comparativa Hosting: HostGator (Ease of Use) vs Google Cloud (Scale).
+    2. Justificación Hardware: MacBook Air M4 vs Dell Inspiron i7.
+    3. Roadmap: 4 meses (3 Desarrollo + 1 Contingencia).
+    4. UI Flow: Thunderbird vs New App (Paneles Admin/Operador).
+    
+    COLORES: Profesional & Vibrante (Indigo, Emerald, Amber, Rose).
+    RESTRICCIONES: No SVG, No Mermaid JS. Gráficas con Chart.js (Canvas).
+    -->
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        .card { background: white; border-radius: 1.5rem; border: 1px solid #e2e8f0; padding: 2rem; box-shadow: 0 4px 20px -5px rgba(0,0,0,0.05); }
+        .phase-step { border-left: 4px solid #e2e8f0; padding-left: 1.5rem; position: relative; padding-bottom: 2rem; }
+        .phase-step::before { content: ''; position: absolute; left: -10px; top: 0; width: 16px; height: 16px; border-radius: 50%; background: #4f46e5; border: 4px solid white; }
+        .chart-container { position: relative; width: 100%; height: 300px; max-width: 600px; margin: 0 auto; }
+        @media print { .no-print { display: none; } body { padding: 0; background: white; } }
+    </style>
+</head>
+<body class="p-4 md:p-10">
+
+    <div class="max-w-6xl mx-auto space-y-10">
+        <!-- HEADER EJECUTIVO -->
+        <header class="bg-slate-900 text-white p-10 rounded-[2.5rem] shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="text-center md:text-left">
+                <div class="flex items-center gap-2 mb-2 justify-center md:justify-start">
+                    <span class="bg-indigo-500 text-[10px] px-2 py-1 rounded-md font-black tracking-widest">TECH PROPOSAL 2024</span>
+                    <span class="text-slate-400 text-xs font-bold uppercase tracking-widest">Airis-AE</span>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight">Asesorías IA - <span class="text-indigo-400">Agent Email</span></h1>
+                <p class="text-slate-400 mt-2 text-lg">Modernización de gestión de 50+ buzones @airis-ae.com.mx</p>
+            </div>
+            <button onclick="window.print()" class="no-print bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-2xl font-bold transition-all shadow-lg flex items-center gap-2">
+                <span>🖨️</span> Exportar Propuesta PDF
+            </button>
+        </header>
+
+        <!-- SECCIÓN 1: COMPARATIVA DE HOSTING (FACILIDAD VS PODER) -->
+        <section class="card">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-black">Infraestructura: HostGator vs Google Cloud</h2>
+                <span class="bg-indigo-100 text-indigo-700 text-[10px] font-black px-3 py-1 rounded-full uppercase">Análisis de Despliegue</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="p-6 bg-emerald-50 rounded-2xl border border-emerald-100 relative">
+                    <div class="absolute top-4 right-4 bg-emerald-500 text-white text-[10px] px-3 py-1 rounded-full font-bold">MÁS FÁCIL</div>
+                    <h3 class="font-bold text-emerald-800 text-lg mb-4">HostGator (VPS n8n)</h3>
+                    <ul class="text-xs space-y-3 text-slate-600">
+                        <li class="flex items-start gap-2"><span>✓</span> <strong>Instalación 1-Click:</strong> Ya viene configurado con el entorno n8n. No requiere scripts complejos.</li>
+                        <li class="flex items-start gap-2"><span>✓</span> <strong>Administración:</strong> Panel simplificado. Ideal para despliegue rápido.</li>
+                        <li class="flex items-start gap-2"><span>✓</span> <strong>Costo:</strong> Plan fijo (aprox. $15-$25 USD). Económico para presupuestos ajustados.</li>
+                        <li class="flex items-start gap-2"><span>⚠</span> <strong>Limitación:</strong> Menos integrado con el ecosistema nativo de Google (latencia).</li>
+                    </ul>
+                </div>
+                <div class="p-6 bg-indigo-50 rounded-2xl border border-indigo-100 relative">
+                    <div class="absolute top-4 right-4 bg-indigo-500 text-white text-[10px] px-3 py-1 rounded-full font-bold">MÁS ROBUSTO</div>
+                    <h3 class="font-bold text-indigo-800 text-lg mb-4">Google Cloud (GCP)</h3>
+                    <ul class="text-xs space-y-3 text-slate-600">
+                        <li class="flex items-start gap-2"><span>✓</span> <strong>Seguridad Nativa:</strong> Los datos de @airis-ae.com.mx nunca salen de la red de Google.</li>
+                        <li class="flex items-start gap-2"><span>✓</span> <strong>Escalabilidad:</strong> Potencia ilimitada. n8n corre en Docker con alta disponibilidad.</li>
+                        <li class="flex items-start gap-2"><span>✕</span> <strong>Configuración:</strong> Requiere montaje manual (Instancia, Firewall, Docker, SSL).</li>
+                        <li class="flex items-start gap-2"><span>✕</span> <strong>Administración:</strong> Curva de aprendizaje técnica alta para el área de IT.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: HARDWARE (JUSTIFICACIÓN TÉCNICA) -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="card border-l-8 border-l-indigo-600">
+                <h3 class="text-xl font-bold mb-6">Desarrollo: Mac M4 vs Dell i7</h3>
+                <div class="chart-container">
+                    <canvas id="hardwareChart"></canvas>
+                </div>
+                <div class="mt-6 text-xs text-slate-500 leading-relaxed">
+                    <strong>Conclusión:</strong> El equipo Dell actual tiene un procesador de bajo consumo que se satura al emular 50 hilos de ejecución de IA. La <strong>MacBook Air M4 (16GB)</strong> es necesaria para desarrollar el panel interactivo y los flujos n8n sin bloqueos técnicos, asegurando el plazo de 4 meses.
+                </div>
+            </div>
+
+            <div class="card bg-slate-900 text-white border-none">
+                <h3 class="text-xl font-bold mb-8 text-indigo-400">Requisitos Exactos de Google</h3>
+                <div class="space-y-6">
+                    <div class="flex gap-4 items-start">
+                        <div class="text-2xl">🔑</div>
+                        <div>
+                            <p class="font-bold text-sm">Google Workspace Admin</p>
+                            <p class="text-[11px] text-slate-400">Habilitar "Domain-Wide Delegation" para que la app gestione los 50 buzones de forma centralizada.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 items-start">
+                        <div class="text-2xl">📡</div>
+                        <div>
+                            <p class="font-bold text-sm">Google Cloud Console</p>
+                            <p class="text-[11px] text-slate-400">Activar Gmail API, Drive API y Admin SDK. Crear Credenciales OAuth 2.0 (Client ID / Secret).</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 items-start">
+                        <div class="text-2xl">🌐</div>
+                        <div>
+                            <p class="font-bold text-sm">Subdominio Dedicado</p>
+                            <p class="text-[11px] text-slate-400">Ej: <i>agent.airis-ae.com.mx</i> para recibir Webhooks y alojar el Panel de Operadores.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 3: ROADMAP Y FASES (4 MESES) -->
+        <section class="card">
+            <h2 class="text-2xl font-black mb-10 text-center">Roadmap de Implementación: Asesorías IA</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="phase-step">
+                    <h4 class="font-bold text-indigo-600 text-sm">Mes 1: Cimientos</h4>
+                    <p class="text-[10px] text-slate-400 mt-2">Configuración de HostGator/GCP, permisos de Google y primer despliegue de n8n.</p>
+                </div>
+                <div class="phase-step">
+                    <h4 class="font-bold text-indigo-600 text-sm">Mes 2: Inteligencia IA</h4>
+                    <p class="text-[10px] text-slate-400 mt-2">Programación de Triage automático, extracción OCR de INE/RFC y lógica de Drive.</p>
+                </div>
+                <div class="phase-step">
+                    <h4 class="font-bold text-indigo-600 text-sm">Mes 3: Paneles Web</h4>
+                    <p class="text-[10px] text-slate-400 mt-2">Desarrollo del Dashboard Admin y la interfaz de respuesta unificada para Operadores.</p>
+                </div>
+                <div class="phase-step" style="border-left-color: transparent;">
+                    <h4 class="font-bold text-emerald-600 text-sm">Mes 4: QA & Launch</h4>
+                    <p class="text-[10px] text-slate-400 mt-2">Pruebas finales, capacitación de personal y margen para imprevistos técnicos.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 4: TABLA DE COSTOS Y COMPARATIVA UI -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-20">
+            <div class="card">
+                <h3 class="font-bold mb-6 text-slate-800">Costo Operativo Mensual (OpEx)</h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
+                        <span class="text-xs">Infraestructura (HostGator)</span>
+                        <span class="font-bold text-emerald-600">~$19 USD</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl">
+                        <span class="text-xs">Tokens de IA (GPT-4o)</span>
+                        <span class="font-bold text-indigo-600">~$30 USD</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 border-t-2 border-slate-100 pt-4">
+                        <span class="text-sm font-bold">Inversión CapEx (Mac Air M4)</span>
+                        <span class="font-bold text-slate-900">~$1,600 USD</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card flex flex-col justify-between">
+                <div>
+                    <h3 class="font-bold mb-4 text-slate-800">Evolución del Modelo de Trabajo</h3>
+                    <div class="space-y-3">
+                        <div class="p-4 border rounded-2xl relative">
+                            <span class="absolute -top-2 right-4 bg-rose-500 text-white text-[8px] px-2 py-0.5 rounded-md font-bold">ACTUAL</span>
+                            <h4 class="text-xs font-bold">Thunderbird + Llamadas</h4>
+                            <p class="text-[10px] text-slate-400">Admin avisa por WhatsApp. Operador entra a Gmail manualmente. Caos en archivos.</p>
+                        </div>
+                        <div class="p-4 border-2 border-indigo-500 bg-indigo-50/50 rounded-2xl relative">
+                            <span class="absolute -top-2 right-4 bg-indigo-600 text-white text-[8px] px-2 py-0.5 rounded-md font-bold">NUEVA APP</span>
+                            <h4 class="text-xs font-bold text-indigo-900">Admin Dashboard + Operator UI</h4>
+                            <p class="text-[10px] text-indigo-700">Delegación digital con un clic. Trazabilidad de resueltos. IA acomoda todo en Drive.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center text-slate-400 text-[10px] uppercase tracking-widest pb-10">
+            © 2024 Asesorías IA - Agent Email • Propuesta DevOps de Transformación Digital • Airis-AE
+        </footer>
+    </div>
+
+    <script>
+        const wrapLabel = (l, max = 16) => l.length > max ? [l.slice(0, 16), l.slice(16)] : l;
+        
+        const tooltipConfig = {
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        title: function(items) {
+                            const item = items[0];
+                            let label = item.chart.data.labels[item.dataIndex];
+                            return Array.isArray(label) ? label.join(' ') : label;
+                        }
+                    }
+                }
+            }
+        };
+
+        const ctxHard = document.getElementById('hardwareChart').getContext('2d');
+        new Chart(ctxHard, {
+            type: 'bar',
+            data: {
+                labels: ['Procesamiento IA Nativa', 'Estabilidad Docker Unix', 'Eficiencia Multitarea', 'Velocidad Desarrollo'].map(l => wrapLabel(l)),
+                datasets: [
+                    { label: 'Dell i7 (Actual)', data: [15, 40, 35, 30], backgroundColor: '#f43f5e', borderRadius: 6 },
+                    { label: 'MacBook M4 (Propuesta)', data: [40, 98, 95, 100], backgroundColor: '#4f46e5', borderRadius: 6 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', labels: { boxWidth: 10, font: { size: 10 } } },
+                    ...tooltipConfig.plugins
+                },
+                scales: {
+                    y: { beginAtZero: true, max: 100, display: false },
+                    x: { ticks: { font: { size: 9 } } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

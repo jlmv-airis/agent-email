@@ -1,0 +1,79 @@
+{
+  "name": "API - Listar Cuentas (Panel Admin)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "listar-cuentas",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "webhook-list-accounts",
+      "name": "Webhook: Consultar Cuentas"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, nombre_operador, email, rol, activo FROM cuentas_email ORDER BY id DESC;"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        250,
+        0
+      ],
+      "id": "db-select-accounts",
+      "name": "Leer Cuentas de Postgres",
+      "credentials": {
+        "postgres": {
+          "id": "NUEVA_CREDENCIAL_POSTGRES",
+          "name": "Postgres Local (Docker)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        500,
+        0
+      ],
+      "id": "response-accounts",
+      "name": "Enviar Lista de Cuentas"
+    }
+  ],
+  "connections": {
+    "Webhook: Consultar Cuentas": {
+      "main": [
+        [
+          {
+            "node": "Leer Cuentas de Postgres",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leer Cuentas de Postgres": {
+      "main": [
+        [
+          {
+            "node": "Enviar Lista de Cuentas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "name": "API - Desasignar Ticket (Admin)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "desasignar-ticket",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "id": "webhook-unassign",
+      "name": "Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE mensajes_entrantes SET operador_asignado_id = NULL, estatus = 'pendiente' WHERE id = {{ $json.body.ticketId }};"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [250, 0],
+      "id": "db-update-unassign",
+      "name": "Resetear Ticket en DB",
+      "credentials": {
+        "postgres": {
+          "id": "NUEVA_CREDENCIAL_POSTGRES",
+          "name": "Postgres Local (Docker)"
+        }
+      }
+    },
+    {
+      "parameters": { "options": { "responseCode": 200 } },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [500, 0],
+      "id": "res-ok",
+      "name": "OK"
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "db-update-unassign", "type": "main", "index": 0 }]] },
+    "db-update-unassign": { "main": [[{ "node": "res-ok", "type": "main", "index": 0 }]] }
+  }
+}

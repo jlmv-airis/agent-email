@@ -1,0 +1,79 @@
+{
+  "name": "Agente Maestro - Procesador Multi-cuenta",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [0, 0],
+      "id": "cron-trigger",
+      "name": "Cada 5 Minutos"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM cuentas_email WHERE activo = true;"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [200, 0],
+      "id": "get-accounts",
+      "name": "Obtener Cuentas Activas",
+      "credentials": {
+        "postgres": {
+          "id": "NUEVA_CREDENCIAL_POSTGRES",
+          "name": "Postgres Local (Docker)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Eres un asesor experto. Responde al siguiente correo de forma profesional."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [450, 0],
+      "id": "ai-agent-master",
+      "name": "Agente IA (Gemini)"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO trazabilidad_logs (cuenta_email, asunto, estatus, respuesta_ia) \nVALUES ('{{ $node[\"Obtener Cuentas Activas\"].json.email }}', 'Procesado Automático', 'RESUELTO', '{{ $json.output }}');"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [700, 0],
+      "id": "log-audit",
+      "name": "Registrar Auditoría",
+      "credentials": {
+        "postgres": {
+          "id": "NUEVA_CREDENCIAL_POSTGRES",
+          "name": "Postgres Local (Docker)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cada 5 Minutos": {
+      "main": [[{"node": "Obtener Cuentas Activas", "type": "main", "index": 0}]]
+    },
+    "Obtener Cuentas Activas": {
+      "main": [[{"node": "Agente IA (Gemini)", "type": "main", "index": 0}]]
+    },
+    "Agente IA (Gemini)": {
+      "main": [[{"node": "Registrar Auditoría", "type": "main", "index": 0}]]
+    }
+  }
+}

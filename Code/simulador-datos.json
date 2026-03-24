@@ -1,0 +1,35 @@
+{
+  "name": "Simulador - Generar Datos de Prueba",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "id": "trigger-manual",
+      "name": "Ejecutar Manual"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO trazabilidad_logs (cuenta_email, asunto, estatus) \nVALUES \n('ventas@empresa.com', 'Consulta sobre precios', 'RESUELTO'),\n('soporte@cliente.mx', 'Error en acceso', 'EN PROCESO'),\n('info@agencia.es', 'Solicitud de catálogo', 'RESUELTO'),\n('rh@corporativo.com', 'Envío de CV', 'RESUELTO'),\n('facturacion@tienda.io', 'Duda con factura #88', 'AUTO-RESPUESTA');"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [250, 0],
+      "id": "db-insert-mock",
+      "name": "Insertar Datos Ficticios",
+      "credentials": {
+        "postgres": {
+          "id": "NUEVA_CREDENCIAL_POSTGRES",
+          "name": "Postgres Local (Docker)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Ejecutar Manual": {
+      "main": [[{"node": "Insertar Datos Ficticios", "type": "main", "index": 0}]]
+    }
+  }
+}

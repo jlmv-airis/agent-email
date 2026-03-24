@@ -1,0 +1,81 @@
+{
+  "name": "Gestión Híbrida - Tickets y Operadores",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "responder-ticket",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "webhook-responder",
+      "name": "Webhook: Responder Ticket"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO trazabilidad_logs (operador_id, cuenta_email, asunto, estatus, respuesta_ia) \nVALUES ('{{ $json.body.operadorId }}', '{{ $json.body.desdeEmail }}', 'Respuesta de Operador', 'RESUELTO', '{{ $json.body.mensaje }}');"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        500,
+        0
+      ],
+      "id": "db-log-respuesta",
+      "name": "Loguear Respuesta en Auditoría",
+      "credentials": {
+        "postgres": {
+          "id": "NUEVA_CREDENCIAL_POSTGRES",
+          "name": "Postgres Local (Docker)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $json.body.desdeEmail }}",
+        "toEmail": "={{ $json.body.paraEmail }}",
+        "subject": "={{ $json.body.asunto }}",
+        "text": "={{ $json.body.mensaje }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        250,
+        0
+      ],
+      "id": "send-smtp-generic",
+      "name": "Enviar Respuesta (SMTP)"
+    }
+  ],
+  "connections": {
+    "Webhook: Responder Ticket": {
+      "main": [
+        [
+          {
+            "node": "Enviar Respuesta (SMTP)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Respuesta (SMTP)": {
+      "main": [
+        [
+          {
+            "node": "Loguear Respuesta en Auditoría",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

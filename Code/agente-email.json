@@ -1,0 +1,129 @@
+{
+  "name": "Asesorias_IA_Agente_Email",
+  "nodes": [
+    {
+      "parameters": {
+        "postImportAction": "all",
+        "format": "resolved",
+        "options": {}
+      },
+      "id": "1e9a7e60-150b-459f-963d-425b0f498177",
+      "name": "Leer Correo (IMAP)",
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2,
+      "position": [
+        460,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Eres un asistente de Asesorías IA. Responde profesionalmente."
+        }
+      },
+      "id": "2f2a8b9c-d4e5-4f6a-8b9c-d0e1f2a3b4c5",
+      "name": "Agente IA",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        720,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "options": {}
+      },
+      "id": "3a1b2c3d-e5f6-4a1b-2c3d-4e5f6a1b2c3d",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        600,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "tableName": "chat_history"
+      },
+      "id": "4b2c3d4e-f6a1-2b3c-4d5e-6f7a1b2c3d4e",
+      "name": "Memoria Postgres",
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        840,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "tu-correo@empresa.com",
+        "toEmail": "={{ $node[\"Leer Correo (IMAP)\"].json[\"from\"][\"address\"] }}",
+        "subject": "=Re: {{ $node[\"Leer Correo (IMAP)\"].json[\"subject\"] }}",
+        "text": "={{ $json.output }}",
+        "options": {}
+      },
+      "id": "5d1e2f3a-b5c6-4d7e-8f9a-0b1c2d3e4f5a",
+      "name": "Enviar Email (SMTP)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1000,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Leer Correo (IMAP)": {
+      "main": [
+        [
+          {
+            "node": "Agente IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente IA",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memoria Postgres": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agente IA",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente IA": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email (SMTP)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
