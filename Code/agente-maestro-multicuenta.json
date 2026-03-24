@@ -1,5 +1,5 @@
 {
-  "name": "Agente Maestro - Procesador Multi-cuenta",
+  "name": "Agente Maestro - Conexion Directa API (FIXED)",
   "nodes": [
     {
       "parameters": {
@@ -7,73 +7,76 @@
           "interval": [
             {
               "field": "minutes",
-              "minutesInterval": 5
+              "minutesInterval": 15
             }
           ]
         }
       },
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.1,
-      "position": [0, 0],
+      "position": [-200, 200],
       "id": "cron-trigger",
-      "name": "Cada 5 Minutos"
+      "name": "Cada 15 Minutos"
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT * FROM cuentas_email WHERE activo = true;"
+        "query": "SELECT * FROM cuentas_email WHERE activo = true LIMIT 1;"
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
-      "position": [200, 0],
+      "position": [50, 200],
       "id": "get-accounts",
       "name": "Obtener Cuentas Activas",
       "credentials": {
         "postgres": {
-          "id": "NUEVA_CREDENCIAL_POSTGRES",
+          "id": "CREDENCIAL_POSTGRES_DOCKER",
           "name": "Postgres Local (Docker)"
         }
       }
     },
     {
       "parameters": {
-        "options": {
-          "systemMessage": "Eres un asesor experto. Responde al siguiente correo de forma profesional."
-        }
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=TU_API_KEY_AQUI",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [{\n    \"parts\":[{\"text\": \"Eres un asesor experto. Responde profesionalmente a este caso: Necesito ayuda con mi pedido #1234 de la cuenta {{ $node['Obtener Cuentas Activas'].json.email }}\"}]\n  }]\n}",
+        "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 1.7,
-      "position": [450, 0],
-      "id": "ai-agent-master",
-      "name": "Agente IA (Gemini)"
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [350, 200],
+      "id": "gemini-api",
+      "name": "Llamada Directa a Gemini"
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "=INSERT INTO trazabilidad_logs (cuenta_email, asunto, estatus, respuesta_ia) \nVALUES ('{{ $node[\"Obtener Cuentas Activas\"].json.email }}', 'Procesado Automático', 'RESUELTO', '{{ $json.output }}');"
+        "query": "=INSERT INTO trazabilidad_logs (cuenta_email, asunto, estatus, respuesta_ia) \nVALUES ('{{ $node[\"Obtener Cuentas Activas\"].json.email }}', 'Procesado Automático', 'ANALIZADO', '{{ $json.candidates[0].content.parts[0].text }}');"
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
-      "position": [700, 0],
-      "id": "log-audit",
-      "name": "Registrar Auditoría",
+      "position": [650, 200],
+      "id": "save-log",
+      "name": "Registrar Resultado",
       "credentials": {
         "postgres": {
-          "id": "NUEVA_CREDENCIAL_POSTGRES",
+          "id": "CREDENCIAL_POSTGRES_DOCKER",
           "name": "Postgres Local (Docker)"
         }
       }
     }
   ],
   "connections": {
-    "Cada 5 Minutos": {
+    "Cada 15 Minutos": {
       "main": [[{"node": "Obtener Cuentas Activas", "type": "main", "index": 0}]]
     },
     "Obtener Cuentas Activas": {
-      "main": [[{"node": "Agente IA (Gemini)", "type": "main", "index": 0}]]
+      "main": [[{"node": "Llamada Directa a Gemini", "type": "main", "index": 0}]]
     },
-    "Agente IA (Gemini)": {
-      "main": [[{"node": "Registrar Auditoría", "type": "main", "index": 0}]]
+    "Llamada Directa a Gemini": {
+      "main": [[{"node": "Registrar Resultado", "type": "main", "index": 0}]]
     }
   }
 }

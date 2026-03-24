@@ -1,10 +1,11 @@
 {
-  "name": "API - Listar Mensajes (Robust Version)",
+  "name": "Herramienta - Listar Mensajes (FIX)",
   "nodes": [
     {
       "parameters": {
         "httpMethod": "GET",
         "path": "listar-mensajes",
+        "responseMode": "lastNode",
         "options": {}
       },
       "type": "n8n-nodes-base.webhook",
@@ -16,7 +17,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "=SELECT m.* FROM mensajes_entrantes m \nWHERE \n  '{{ $json.query.rol || \"devops\" }}' = 'devops' \n  OR \n  ('{{ $json.query.rol }}' = 'admin' AND m.estatus = 'pendiente')\n  OR \n  (m.estatus = 'asignado');"
+        "query": "SELECT * FROM mensajes_entrantes ORDER BY fecha DESC LIMIT 10;"
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
@@ -25,38 +26,15 @@
       "name": "Postgres",
       "credentials": {
         "postgres": {
-          "id": "NUEVA_CREDENCIAL_POSTGRES",
+          "id": "CREDENCIAL_POSTGRES_DOCKER",
           "name": "Postgres Local (Docker)"
         }
       }
-    },
-    {
-      "parameters": {
-        "operation": "aggregateAllItemData"
-      },
-      "type": "n8n-nodes-base.itemLists",
-      "typeVersion": 3.1,
-      "position": [500, 0],
-      "id": "agg-node",
-      "name": "Agrupar"
-    },
-    {
-      "parameters": {
-        "responseMode": "responseNode",
-        "options": {
-          "responseCode": 200
-        }
-      },
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.1,
-      "position": [750, 0],
-      "id": "res-node",
-      "name": "Responder"
     }
   ],
   "connections": {
-    "Webhook": { "main": [[{ "node": "Postgres", "type": "main", "index": 0 }]] },
-    "Postgres": { "main": [[{ "node": "agg-node", "type": "main", "index": 0 }]] },
-    "agg-node": { "main": [[{ "node": "res-node", "type": "main", "index": 0 }]] }
+    "Webhook": {
+      "main": [[{"node": "Postgres", "type": "main", "index": 0}]]
+    }
   }
 }

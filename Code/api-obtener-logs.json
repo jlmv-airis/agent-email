@@ -1,79 +1,40 @@
 {
-  "name": "API - Obtener Logs (Panel Admin)",
+  "name": "API - Obtener Logs de IA (Flexible)",
   "nodes": [
     {
       "parameters": {
         "httpMethod": "GET",
         "path": "obtener-logs",
+        "responseMode": "lastNode",
         "options": {}
       },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        0,
-        0
-      ],
-      "id": "webhook-get-logs",
-      "name": "Webhook: Consultar Logs"
+      "position": [0, 0],
+      "id": "webhook-logs",
+      "name": "Webhook Logs"
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT to_char(timestamp, 'HH24:MI:SS') as hora, cuenta_email, asunto, estatus FROM trazabilidad_logs ORDER BY id DESC LIMIT 10;"
+        "query": "SELECT * FROM trazabilidad_logs ORDER BY fecha DESC LIMIT 1;"
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
-      "position": [
-        250,
-        0
-      ],
-      "id": "db-select-logs",
-      "name": "Leer de Postgres",
+      "position": [250, 0],
+      "id": "db-query-logs",
+      "name": "Consultar Ultimo Log",
       "credentials": {
         "postgres": {
-          "id": "NUEVA_CREDENCIAL_POSTGRES",
+          "id": "CREDENCIAL_POSTGRES_DOCKER",
           "name": "Postgres Local (Docker)"
         }
       }
-    },
-    {
-      "parameters": {
-        "options": {
-          "responseCode": 200
-        }
-      },
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.1,
-      "position": [
-        500,
-        0
-      ],
-      "id": "response-logs",
-      "name": "Enviar Datos"
     }
   ],
   "connections": {
-    "Webhook: Consultar Logs": {
-      "main": [
-        [
-          {
-            "node": "Leer de Postgres",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Leer de Postgres": {
-      "main": [
-        [
-          {
-            "node": "Enviar Datos",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+    "Webhook Logs": {
+      "main": [[{"node": "Consultar Ultimo Log", "type": "main", "index": 0}]]
     }
   }
 }

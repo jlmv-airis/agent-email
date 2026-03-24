@@ -12,6 +12,8 @@
         .nav-active { background-color: #4f46e5 !important; color: white !important; font-weight: 800; }
         .hidden-section { display: none !important; }
         #debug-log { background: #0f172a; color: #4ade80; font-family: monospace; font-size: 10px; padding: 10px; border-radius: 8px; max-height: 150px; overflow-y: auto; border: 1px solid #334155; }
+        .cursor-pointer { cursor: pointer; }
+        .cursor-pointer:hover { background-color: #f1f5f9; }
     </style>
 </head>
 <body class="flex min-h-screen overflow-hidden text-sm">
@@ -25,13 +27,6 @@
         <div class="mt-auto">
             <p class="text-[9px] uppercase font-black text-slate-500 mb-2">Monitor de Conexión:</p>
             <div id="debug-log">Iniciando...</div>
-        </div>
-        <div class="mt-4 pt-4 border-t border-slate-800 text-center">
-            <p class="text-[10px] text-slate-500 mb-2 uppercase font-bold">Cambiar Usuario:</p>
-            <select id="role-selector" class="w-full bg-slate-800 text-white p-2 rounded-lg text-xs outline-none cursor-pointer">
-                <option value="Jorge Meneses" data-rol="devops">Jorge Meneses (DevOps)</option>
-                <option value="Alfredo Falcon" data-rol="admin">Alfredo Falcon (Admin)</option>
-            </select>
         </div>
     </aside>
 
@@ -52,7 +47,7 @@
         </div>
 
         <div id="view-inbox" class="view-content hidden-section space-y-6">
-            <div class="card overflow-hidden">
+            <div class="card overflow-hidden p-0">
                 <table class="w-full text-left text-sm">
                     <thead class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase border-b">
                         <tr><th class="px-4 py-3">Remitente</th><th class="px-4 py-3">Asunto</th><th class="px-4 py-3">Estado</th></tr>
@@ -65,22 +60,38 @@
         </div>
     </main>
 
+    <!-- Modal IA Response -->
+    <div id="modal-ia" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl w-full max-w-2xl p-8 space-y-6 shadow-2xl max-h-[80vh] overflow-y-auto">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-xl font-black text-slate-900">🤖 Sugerencia de la IA</h2>
+                    <p id="ia-asunto" class="text-xs text-slate-500 italic mt-1"></p>
+                </div>
+                <button onclick="document.getElementById('modal-ia').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 font-bold">X Cerrar</button>
+            </div>
+            <div id="ia-response-text" class="bg-slate-50 p-6 rounded-xl text-slate-700 whitespace-pre-wrap text-xs leading-relaxed border border-slate-100 italic">
+                Cargando respuesta...
+            </div>
+            <div class="flex gap-2">
+                <button class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-black shadow-lg hover:bg-emerald-700 transition">✅ Enviar Respuesta</button>
+                <button class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-black hover:bg-slate-200 transition">✏️ Editar Manualmente</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Config -->
     <div id="modal-config" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-2xl w-full max-w-md p-8 space-y-6 shadow-2xl">
             <h2 class="text-xl font-black text-slate-900">⚙️ Configurar n8n</h2>
-            <p class="text-xs text-slate-500">Pega tu URL de Ngrok o usa http://localhost:5678</p>
             <input type="text" id="config-url" placeholder="http://localhost:5678" class="w-full border p-3 rounded-xl outline-indigo-500 text-sm">
-            <div class="flex gap-2">
-                <button onclick="document.getElementById('modal-config').classList.add('hidden')" class="flex-1 py-3 font-bold text-slate-400">Cancelar</button>
-                <button onclick="saveConfig()" class="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-black shadow-lg">Guardar y Conectar</button>
-            </div>
+            <button onclick="saveConfig()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-black shadow-lg">Guardar y Conectar</button>
         </div>
     </div>
 
     <script>
         let N8N_URL = localStorage.getItem('n8n_url') || 'http://localhost:5678';
-        const log = (msg) => { const l = document.getElementById('debug-log'); l.innerHTML += `<br>> ${msg}`; l.scrollTop = l.scrollHeight; };
+        const log = (msg) => { console.log(msg); const l = document.getElementById('debug-log'); l.innerHTML += `<br>> ${msg}`; l.scrollTop = l.scrollHeight; };
 
         function saveConfig() {
             let url = document.getElementById('config-url').value.trim();
@@ -93,56 +104,41 @@
         }
 
         async function cargarDatosReal() {
-            if(!N8N_URL) { log('Error: Sin URL'); return; }
-            
-            const usuario = document.getElementById('role-selector').value;
-            const rol = document.getElementById('role-selector').options[document.getElementById('role-selector').selectedIndex].getAttribute('data-rol');
-            
-            log(`Intentando conectar a n8n...`);
+            log(`Iniciando carga de datos...`);
+            try {
+                const targetUrl = `${N8N_URL}/webhook/listar-mensajes`;
+                const res = await fetch(targetUrl, { mode: 'cors' });
+                if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
+                const data = await res.json();
+                let msgs = Array.isArray(data) ? data : [data];
+                document.getElementById('connection-status').innerText = `Sincronizado: ${msgs.length} mensajes encontrados.`;
+                const tbody = document.getElementById('inbox-tbody');
+                tbody.innerHTML = msgs.map(m => `
+                    <tr class="cursor-pointer" onclick="verRespuestaIA('${m.remitente}', '${m.asunto}')">
+                        <td class="px-4 py-4 font-bold text-slate-700">${m.remitente || 'N/A'}</td>
+                        <td class="px-4 py-4 italic text-slate-500">${m.asunto || 'Sin asunto'}</td>
+                        <td class="px-4 py-4"><span class="px-2 py-1 rounded-full bg-indigo-100 text-indigo-700 font-black text-[9px] uppercase">${m.estatus || 'PENDIENTE'}</span></td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                log(`ERROR: ${e.message}`);
+                document.getElementById('connection-status').innerText = `Error: No se pudo conectar a n8n.`;
+            }
+        }
+
+        async function verRespuestaIA(email, asunto) {
+            document.getElementById('modal-ia').classList.remove('hidden');
+            document.getElementById('ia-asunto').innerText = asunto;
+            document.getElementById('ia-response-text').innerText = "Cargando sugerencia de Gemini...";
             
             try {
-                const headers = { 'Content-Type': 'application/json' };
-                if (N8N_URL.includes('ngrok')) {
-                    headers['ngrok-skip-browser-warning'] = 'true';
-                }
-
-                // Intentar Producción (/webhook/)
-                let targetUrl = `${N8N_URL}/webhook/listar-mensajes?usuario=${encodeURIComponent(usuario)}&rol=${rol}`;
-                let res = await fetch(targetUrl, { headers });
-
-                // Si da 404, intentar Test (/webhook-test/)
-                if (res.status === 404) {
-                    log(`Modo Producción no activo (404). Probando modo Test...`);
-                    targetUrl = targetUrl.replace('/webhook/', '/webhook-test/');
-                    res = await fetch(targetUrl, { headers });
-                }
-
-                if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
-                
+                const res = await fetch(`${N8N_URL}/webhook/obtener-logs?email=${encodeURIComponent(email)}`);
+                if (!res.ok) throw new Error("No hay respuesta de la IA aun.");
                 const data = await res.json();
-                
-                // Normalizar datos (n8n a veces envía un objeto o un array)
-                let msgs = Array.isArray(data) ? data : (data.data || (typeof data === 'object' ? [data] : []));
-                
-                log(`¡CONECTADO! Recibidos ${msgs.length} registros.`);
-                document.getElementById('connection-status').innerText = `Sincronizado: ${msgs.length} mensajes encontrados.`;
-                
-                const tbody = document.getElementById('inbox-tbody');
-                if (msgs.length === 0 || (msgs.length === 1 && !msgs[0].remitente_cliente)) {
-                    tbody.innerHTML = '<tr><td colspan="3" class="p-10 text-center text-slate-400 italic">No hay mensajes que coincidan con tu rol.</td></tr>';
-                } else {
-                    tbody.innerHTML = msgs.map(m => `
-                        <tr>
-                            <td class="px-4 py-4 font-bold text-slate-700">${m.remitente_cliente || 'N/A'}</td>
-                            <td class="px-4 py-4 italic text-slate-500">${m.asunto || 'Sin asunto'}</td>
-                            <td class="px-4 py-4"><span class="px-2 py-1 rounded-full bg-indigo-100 text-indigo-700 font-black text-[9px] uppercase">${m.estatus || 'PENDIENTE'}</span></td>
-                        </tr>
-                    `).join('');
-                }
-
+                const logData = Array.isArray(data) ? data[0] : data;
+                document.getElementById('ia-response-text').innerText = logData.respuesta_ia || "La IA no ha procesado este mensaje todavia.";
             } catch (e) {
-                log(`FALLO CRÍTICO: ${e.message}`);
-                document.getElementById('connection-status').innerText = `Error: No se pudo conectar. Revisa el Log de Conexión.`;
+                document.getElementById('ia-response-text').innerText = "Aviso: No se encontro una respuesta procesada para esta cuenta.";
             }
         }
 
@@ -152,10 +148,9 @@
             document.getElementById(viewId).classList.remove('hidden-section');
             btn.classList.add('nav-active');
             document.getElementById('view-title').innerText = btn.innerText;
-            cargarDatosReal();
+            if(viewId === 'view-inbox') cargarDatosReal();
         }
 
-        document.getElementById('role-selector').onchange = () => cargarDatosReal();
         document.getElementById('config-url').value = N8N_URL;
         cargarDatosReal();
     </script>
