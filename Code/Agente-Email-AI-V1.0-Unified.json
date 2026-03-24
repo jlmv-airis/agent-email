@@ -6,6 +6,7 @@
         "httpMethod": "GET",
         "path": "master-api",
         "responseMode": "lastNode",
+        "responseData": "allEntries",
         "options": {}
       },
       "type": "n8n-nodes-base.webhook",
@@ -19,6 +20,7 @@
         "httpMethod": "GET",
         "path": "master-logs",
         "responseMode": "lastNode",
+        "responseData": "allEntries",
         "options": {}
       },
       "type": "n8n-nodes-base.webhook",
@@ -38,7 +40,7 @@
       "typeVersion": 2,
       "position": [0, 300],
       "id": "wh-asignar-ticket",
-      "name": "API: Asignar Ticket"
+      "name": "API: Asignar/Cancelar Ticket"
     },
     {
       "parameters": {
@@ -53,6 +55,46 @@
       "position": [0, 450],
       "id": "wh-listar-cuentas",
       "name": "API: Listar Cuentas"
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "master-grupos",
+        "responseMode": "lastNode",
+        "responseData": "allEntries",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 600],
+      "id": "wh-listar-grupos",
+      "name": "API: Listar Grupos"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "master-gestion",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 750],
+      "id": "wh-gestion",
+      "name": "API: Gestión (Cuentas/Grupos/Firmas)"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "master-responder",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 900],
+      "id": "wh-responder",
+      "name": "API: Enviar Respuesta Manual"
     },
     {
       "parameters": {
@@ -81,19 +123,19 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "=UPDATE mensajes_entrantes SET asignado_a = '{{ $json.body.operador }}', estatus = 'asignado' WHERE id = {{ $json.body.ticketId }} RETURNING *;"
+        "query": "=UPDATE mensajes_entrantes SET asignado_a = {{ $json.body.operador ? \"'\" + $json.body.operador + \"'\" : 'NULL' }}, estatus = {{ $json.body.operador ? \"'asignado'\" : \"'pendiente'\" }} WHERE id = {{ $json.body.ticketId }} RETURNING *;"
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [300, 300],
       "id": "q-assign",
-      "name": "Q: Asignar Ticket",
+      "name": "Q: Asignar/Cancelar",
       "credentials": { "postgres": { "id": "CREDENCIAL_POSTGRES_DOCKER", "name": "Postgres Local (Docker)" } }
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT * FROM cuentas_email ORDER BY email ASC;"
+        "query": "SELECT c.*, g.nombre as nombre_grupo FROM cuentas_email c LEFT JOIN grupos g ON c.grupo_id = g.id ORDER BY c.email ASC;"
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
@@ -101,12 +143,38 @@
       "id": "q-accounts",
       "name": "Q: Listar Cuentas",
       "credentials": { "postgres": { "id": "CREDENCIAL_POSTGRES_DOCKER", "name": "Postgres Local (Docker)" } }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM grupos ORDER BY nombre ASC;"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [300, 600],
+      "id": "q-grupos",
+      "name": "Q: Listar Grupos",
+      "credentials": { "postgres": { "id": "CREDENCIAL_POSTGRES_DOCKER", "name": "Postgres Local (Docker)" } }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE mensajes_entrantes SET respuesta_final = '{{ $json.body.respuesta }}', estatus = 'respondido', fecha_respuesta = CURRENT_TIMESTAMP WHERE id = {{ $json.body.ticketId }} RETURNING *;"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [300, 900],
+      "id": "q-save-reply",
+      "name": "Q: Guardar Respuesta",
+      "credentials": { "postgres": { "id": "CREDENCIAL_POSTGRES_DOCKER", "name": "Postgres Local (Docker)" } }
     }
   ],
   "connections": {
     "API: Listar Mensajes": { "main": [[{ "node": "Q: Listar Mensajes", "type": "main", "index": 0 }]] },
     "API: Obtener Logs IA": { "main": [[{ "node": "Q: Obtener Logs IA", "type": "main", "index": 0 }]] },
-    "API: Asignar Ticket": { "main": [[{ "node": "Q: Asignar Ticket", "type": "main", "index": 0 }]] },
-    "API: Listar Cuentas": { "main": [[{ "node": "Q: Listar Cuentas", "type": "main", "index": 0 }]] }
+    "API: Asignar/Cancelar Ticket": { "main": [[{ "node": "Q: Asignar/Cancelar", "type": "main", "index": 0 }]] },
+    "API: Listar Cuentas": { "main": [[{ "node": "Q: Listar Cuentas", "type": "main", "index": 0 }]] },
+    "API: Listar Grupos": { "main": [[{ "node": "Q: Listar Grupos", "type": "main", "index": 0 }]] },
+    "API: Enviar Respuesta Manual": { "main": [[{ "node": "Q: Guardar Respuesta", "type": "main", "index": 0 }]] }
   }
 }

@@ -82,8 +82,9 @@
         <nav class="flex flex-col gap-2">
             <button onclick="switchView('view-dash', this)" class="nav-btn w-full text-left px-4 py-3 nav-active rounded-xl transition">📊 Dashboard</button>
             <button onclick="switchView('view-inbox', this)" class="nav-btn w-full text-left px-4 py-3 rounded-xl transition">📥 Bandeja de Entrada</button>
-            <button id="nav-accounts" onclick="switchView('view-accounts', this)" class="nav-btn w-full text-left px-4 py-3 rounded-xl transition hidden-section">⚙️ Gestión Operadores</button>
-            <button id="nav-groups" onclick="switchView('view-groups', this)" class="nav-btn w-full text-left px-4 py-3 rounded-xl transition hidden-section">🏢 Empresas/Grupos</button>
+            <button id="nav-accounts" onclick="switchView('view-accounts', this)" class="nav-btn w-full text-left px-4 py-3 rounded-xl transition hidden-section">👤 Operadores</button>
+            <button id="nav-companies" onclick="switchView('view-companies', this)" class="nav-btn w-full text-left px-4 py-3 rounded-xl transition hidden-section">🏢 Empresas</button>
+            <button id="nav-groups" onclick="switchView('view-groups', this)" class="nav-btn w-full text-left px-4 py-3 rounded-xl transition hidden-section">🏷️ Etiquetas Maestras</button>
         </nav>
 
         <div class="mt-auto">
@@ -132,51 +133,126 @@
             </div>
         </div>
 
-        <!-- Accounts Management -->
+        <!-- Operadores -->
         <div id="view-accounts" class="view-content hidden-section space-y-6">
             <div class="flex justify-between items-center">
-                <h2 class="text-lg font-black text-slate-800">Operadores del Sistema</h2>
-                <button onclick="document.getElementById('modal-account').classList.remove('hidden')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-xs">➕ Nuevo Operador</button>
+                <h2 class="text-lg font-black text-slate-800">👤 Operadores Humanos</h2>
+                <button onclick="document.getElementById('modal-account').classList.remove('hidden')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-xs shadow-lg">➕ Nuevo Operador</button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="accounts-grid"></div>
         </div>
 
-        <!-- Groups Management -->
+        <!-- Empresas -->
+        <div id="view-companies" class="view-content hidden-section space-y-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-lg font-black text-slate-800">🏢 Cuentas de Empresas</h2>
+                <p class="text-xs text-slate-400">Monitoreo automático de webmails asociados a etiquetas.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="companies-grid"></div>
+        </div>
+
+        <!-- Etiquetas Maestras -->
         <div id="view-groups" class="view-content hidden-section space-y-6">
             <div class="flex justify-between items-center">
-                <h2 class="text-lg font-black text-slate-800">Gestión de Empresas/Grupos</h2>
-                <button onclick="document.getElementById('modal-group').classList.remove('hidden')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-xs">➕ Nueva Empresa</button>
+                <h2 class="text-lg font-black text-slate-800">🏷️ Gestión de Etiquetas</h2>
+                <button onclick="prepararNuevoGrupo()" class="bg-slate-900 text-white px-4 py-2 rounded-lg font-bold text-xs shadow-lg">➕ Nueva Etiqueta</button>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="groups-grid"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="groups-grid"></div>
         </div>
     </main>
 
     <!-- Modal Nuevo Operador -->
     <div id="modal-account" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-2xl w-full max-w-md p-8 space-y-4">
-            <h2 class="text-xl font-black text-slate-900">⚙️ Configurar Operador</h2>
+            <h2 class="text-xl font-black text-slate-900">👤 Configurar Operador</h2>
+            <input type="hidden" id="acc-id">
             <input type="text" id="acc-name" placeholder="Nombre Completo" class="w-full border p-3 rounded-xl text-sm">
             <input type="email" id="acc-email" placeholder="Correo Electrónico" class="w-full border p-3 rounded-xl text-sm">
             <select id="acc-group" class="w-full border p-3 rounded-xl text-sm">
-                <option value="">--- Seleccionar Empresa/Grupo ---</option>
+                <option value="">--- Vincular a Etiqueta ---</option>
             </select>
-            <select id="acc-type" class="w-full border p-3 rounded-xl text-sm">
-                <option value="gmail">Gmail API</option>
-                <option value="webmail">Webmail (IMAP)</option>
-            </select>
+            <div class="space-y-1">
+                <label class="text-[10px] font-black uppercase text-slate-400">Firma Profesional</label>
+                <textarea id="acc-signature" placeholder="Atentamente,\n[Nombre Operador]\nAiris AE" class="w-full border p-3 rounded-xl text-xs h-24 outline-none focus:border-indigo-500"></textarea>
+            </div>
             <button onclick="saveAccount()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-black shadow-lg">Guardar Operador</button>
             <button onclick="document.getElementById('modal-account').classList.add('hidden')" class="w-full text-slate-400 font-bold text-xs uppercase">Cancelar</button>
         </div>
     </div>
 
-    <!-- Modal Nueva Empresa -->
+    <!-- Modal Etiquetas (Nueva/Editar) -->
     <div id="modal-group" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl w-full max-w-md p-8 space-y-4">
-            <h2 class="text-xl font-black text-slate-900">🏢 Nueva Empresa/Grupo</h2>
-            <input type="text" id="group-name" placeholder="Nombre de la Empresa" class="w-full border p-3 rounded-xl text-sm">
-            <textarea id="group-desc" placeholder="Descripción opcional" class="w-full border p-3 rounded-xl text-sm"></textarea>
-            <button onclick="saveGroup()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-black shadow-lg">Registrar Empresa</button>
-            <button onclick="document.getElementById('modal-group').classList.add('hidden')" class="w-full text-slate-400 font-bold text-xs uppercase">Cancelar</button>
+        <div class="bg-white rounded-2xl w-full max-w-md p-8 space-y-4 shadow-2xl">
+            <h2 class="text-xl font-black text-slate-900" id="modal-group-title">🏷️ Nueva Etiqueta</h2>
+            <input type="hidden" id="group-id">
+            
+            <div class="space-y-1">
+                <label class="text-[10px] font-black uppercase text-slate-400">Nombre de la Etiqueta</label>
+                <input type="text" id="group-name" placeholder="Ej: VIP, Soporte, AIRIS..." class="w-full border-2 border-slate-100 p-3 rounded-xl text-sm focus:border-indigo-500 outline-none transition">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black uppercase text-slate-400">Tipo de Grupo</label>
+                    <select id="group-type" class="w-full border-2 border-slate-100 p-3 rounded-xl text-sm outline-none">
+                        <option value="empresa">🏢 Empresa</option>
+                        <option value="operador">👤 Operadores</option>
+                    </select>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black uppercase text-slate-400">Color Identificador</label>
+                    <input type="color" id="group-color" value="#4f46e5" class="w-full h-[46px] border-2 border-slate-100 p-1 rounded-xl cursor-pointer">
+                </div>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[10px] font-black uppercase text-slate-400">Descripción (Opcional)</label>
+                <textarea id="group-desc" placeholder="¿Para qué sirve esta etiqueta?" class="w-full border-2 border-slate-100 p-3 rounded-xl text-sm h-20 outline-none"></textarea>
+            </div>
+
+            <button onclick="saveGroup()" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black shadow-lg hover:bg-black transition-all">Guardar Etiqueta</button>
+            <button onclick="cerrarModalGrupo()" class="w-full text-slate-400 font-bold text-xs uppercase hover:text-slate-600 transition">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Panel Lateral de Lectura (MODIFICADO PARA RESPUESTA) -->
+    <div id="ticket-drawer" class="fixed top-0 right-0 h-full w-full max-w-xl bg-white shadow-2xl z-50 flex flex-col border-l">
+        <div class="p-6 border-b flex justify-between items-center bg-slate-50">
+            <div>
+                <h2 class="text-xl font-black text-slate-900" id="drawer-subject">Asunto</h2>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1" id="drawer-meta">Cargando...</p>
+            </div>
+            <button onclick="cerrarTicket()" class="p-2 hover:bg-slate-200 rounded-full transition text-slate-400 hover:text-slate-900">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-8 space-y-8">
+            <div class="space-y-4">
+                <h3 class="text-xs font-black text-indigo-600 uppercase tracking-wider">Mensaje Original</h3>
+                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-slate-700 leading-relaxed text-sm whitespace-pre-wrap max-h-48 overflow-y-auto" id="drawer-body">...</div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-black text-emerald-600 uppercase tracking-wider">Editor de Respuesta</h3>
+                    <div class="flex gap-2">
+                        <button onclick="cargarSugerenciaIA()" class="text-[9px] bg-emerald-100 text-emerald-700 px-2 py-1 rounded font-black uppercase hover:bg-emerald-200 transition">🪄 Cargar IA</button>
+                        <button onclick="insertarFirma()" class="text-[9px] bg-slate-100 text-slate-700 px-2 py-1 rounded font-black uppercase hover:bg-slate-200 transition">✒️ Firma</button>
+                    </div>
+                </div>
+                <div class="relative">
+                    <textarea id="reply-editor" class="w-full bg-slate-900 text-slate-100 p-6 rounded-2xl border-none text-sm leading-relaxed min-h-[300px] outline-none focus:ring-4 focus:ring-indigo-500/20 transition-all font-medium" placeholder="Escribe tu respuesta aquí..."></textarea>
+                    <div id="reply-status" class="hidden absolute inset-0 bg-slate-900/50 rounded-2xl flex items-center justify-center backdrop-blur-[2px]">
+                        <span class="bg-indigo-500 text-white text-[10px] font-black px-4 py-2 rounded-full uppercase animate-bounce">Enviando Correo...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 border-t bg-slate-50 flex gap-3">
+            <button id="btn-send-reply" onclick="enviarRespuesta()" class="flex-[2] bg-indigo-600 text-white py-4 rounded-xl font-black text-xs uppercase shadow-lg shadow-indigo-100 active:scale-95 transition-all">Enviar Respuesta Final</button>
+            <button onclick="cerrarTicket()" class="flex-1 bg-slate-200 text-slate-600 py-4 rounded-xl font-black text-xs uppercase active:scale-95 transition-all">Descartar</button>
         </div>
     </div>
 
@@ -219,10 +295,15 @@
         }
 
         async function apiCall(action, method = 'GET', body = null) {
-            const url = new URL(`${N8N_URL}/webhook/master-api`);
-            url.searchParams.append('action', action);
+            // Usamos master-gestion para POST (peticiones de cambio) y master-api para GET (lectura)
+            const endpoint = method === 'POST' ? 'master-gestion' : 'master-api';
+            const url = new URL(`${N8N_URL}/webhook/${endpoint}`);
+            
+            if (method === 'GET') url.searchParams.append('action', action);
+            
             const options = { method, headers: { 'Content-Type': 'application/json' } };
             if (body) options.body = JSON.stringify(body);
+            
             const res = await fetch(url.toString(), options);
             return await res.json();
         }
@@ -241,25 +322,83 @@
 
         async function cargarGrupos() {
             try {
-                const res = await fetch(`${N8N_URL}/webhook/master-cuentas`);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                grupos = await res.json();
+                // 1. Obtenemos los grupos (nombres de empresas)
+                const resG = await fetch(`${N8N_URL}/webhook/master-grupos`);
+                grupos = await resG.json();
                 if (!Array.isArray(grupos)) grupos = [];
-                
-                document.getElementById('stat-groups').innerText = grupos.length;
-                const select = document.getElementById('acc-group');
-                if (select) select.innerHTML = '<option value="">--- Seleccionar Empresa/Grupo ---</option>' + 
-                    grupos.map(g => `<option value="${g.id}">${g.nombre}</option>`).join('');
 
-                const grid = document.getElementById('groups-grid');
-                if (grid) grid.innerHTML = grupos.map(g => `
-                    <div class="card bg-slate-50 border-indigo-200">
-                        <p class="font-black text-slate-900 uppercase">${g.nombre}</p>
-                        <p class="text-[10px] text-slate-500 mt-1">${g.descripcion || 'Sin descripción'}</p>
+                // 2. Necesitamos las cuentas para sacar el correo vinculado a cada grupo
+                const resC = await fetch(`${N8N_URL}/webhook/master-cuentas`);
+                const cuentas = await resC.json();
+                const listaCuentas = Array.isArray(cuentas) ? cuentas : [cuentas];
+
+                document.getElementById('stat-groups').innerText = grupos.length;
+                
+                // Renderizar ETIQUETAS MAESTRAS
+                const gridLabels = document.getElementById('groups-grid');
+                if (gridLabels) gridLabels.innerHTML = grupos.map(g => `
+                    <div class="card border-t-4 group relative" style="border-top-color: ${g.color || '#cbd5e1'}">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[10px] font-black uppercase text-slate-400">${g.tipo === 'operador' ? '👤' : '🏢'}</span>
+                                    <p class="font-black text-slate-900 uppercase text-xs">${g.nombre}</p>
+                                </div>
+                                <p class="text-[9px] text-slate-400 mt-2 italic">${g.descripcion || 'Sin descripción'}</p>
+                            </div>
+                            <button onclick="prepararEdicionGrupo(${g.id})" class="text-indigo-600 hover:text-indigo-900 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                            </button>
+                        </div>
                     </div>
                 `).join('');
-                log("Grupos cargados.");
+
+                // Renderizar EMPRESAS (Solo grupos tipo empresa con sus correos)
+                const gridCompanies = document.getElementById('companies-grid');
+                if (gridCompanies) gridCompanies.innerHTML = grupos.filter(g => g.tipo === 'empresa').map(g => {
+                    const cuentaAsociada = listaCuentas.find(c => c.grupo_id === g.id);
+                    const emailEmpresa = cuentaAsociada ? cuentaAsociada.email : 'Sin correo vinculado';
+                    return `
+                    <div class="card border-l-4 border-slate-200">
+                        <p class="font-black text-slate-900 uppercase text-xs">${g.nombre}</p>
+                        <p class="text-[10px] text-indigo-600 font-bold mt-1">${emailEmpresa}</p>
+                        <div class="mt-4 flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full" style="background-color: ${g.color}"></div>
+                            <span class="text-[8px] font-black uppercase text-slate-400">Etiqueta Activa</span>
+                        </div>
+                    </div>
+                `}).join('');
+
+                // Actualizar select de modal operador
+                const select = document.getElementById('acc-group');
+                if (select) select.innerHTML = '<option value="">--- Vincular a Etiqueta ---</option>' + 
+                    grupos.map(g => `<option value="${g.id}">${g.nombre} (${g.tipo})</option>`).join('');
+
+                log("Vistas de grupos y empresas actualizadas.");
             } catch (e) { log(`Error Grupos: ${e.message}`); throw e; }
+        }
+
+        function prepararNuevoGrupo() {
+            document.getElementById('modal-group-title').innerText = "🏷️ Nueva Etiqueta";
+            document.getElementById('group-id').value = '';
+            document.getElementById('group-name').value = '';
+            document.getElementById('group-desc').value = '';
+            document.getElementById('group-type').value = 'empresa';
+            document.getElementById('group-color').value = '#4f46e5';
+            document.getElementById('modal-group').classList.remove('hidden');
+        }
+
+        function prepararEdicionGrupo(id) {
+            const g = grupos.find(group => group.id === id);
+            if (!g) return;
+            
+            document.getElementById('group-id').value = g.id;
+            document.getElementById('group-name').value = g.nombre;
+            document.getElementById('group-desc').value = g.descripcion || '';
+            document.getElementById('group-type').value = g.tipo || 'empresa';
+            document.getElementById('group-color').value = g.color || '#4f46e5';
+            document.getElementById('modal-group-title').innerText = "📝 Editar Etiqueta";
+            document.getElementById('modal-group').classList.remove('hidden');
         }
 
         async function cargarCuentas() {
@@ -267,26 +406,27 @@
                 const res = await fetch(`${N8N_URL}/webhook/master-cuentas`);
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 let data = await res.json();
-                
-                // Corrección: Asegurar que operadores sea siempre un array
                 operadores = Array.isArray(data) ? data : (data ? [data] : []);
 
                 const grid = document.getElementById('accounts-grid');
-                if (grid) grid.innerHTML = operadores.map(o => {
-                    const nombre = o.nombre_operador || o.email || 'Sin Nombre';
-                    return `
-                    <div class="card border-l-4 ${o.activo ? 'border-emerald-400' : 'border-slate-300'}">
-                        <p class="text-xs font-black text-slate-900">${nombre}</p>
-                        <p class="text-[10px] text-slate-400">${o.email}</p>
-                        <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-[8px] font-black uppercase mt-2 inline-block">${o.nombre_grupo || 'Sin Grupo'}</span>
-                        <div class="mt-4 flex gap-2">
-                            <button onclick="toggleAccount('${o.email}', ${!o.activo})" class="flex-1 ${o.activo ? 'bg-slate-900' : 'bg-emerald-600'} text-white py-2 rounded-lg font-bold text-[9px] uppercase">
-                                ${o.activo ? 'Desactivar' : 'Activar'}
-                            </button>
+                if (grid) {
+                    // FILTRO: Solo mostramos como Operadores a quienes son tipo gmail o tienen nombre_operador
+                    const soloOperadoresHumanos = operadores.filter(o => o.nombre_operador !== null && o.tipo_cuenta === 'gmail');
+
+                    grid.innerHTML = soloOperadoresHumanos.map(o => `
+                        <div class="card border-l-4 ${o.activo ? 'border-emerald-400' : 'border-slate-300'}">
+                            <p class="text-xs font-black text-slate-900">${o.nombre_operador}</p>
+                            <p class="text-[10px] text-slate-400">${o.email}</p>
+                            <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-[8px] font-black uppercase mt-2 inline-block">${o.nombre_grupo || 'Individual'}</span>
+                            <div class="mt-4 flex gap-2">
+                                <button onclick="toggleAccount('${o.email}', ${!o.activo})" class="flex-1 ${o.activo ? 'bg-slate-900' : 'bg-emerald-600'} text-white py-2 rounded-lg font-bold text-[9px] uppercase">
+                                    ${o.activo ? 'Desactivar' : 'Activar'}
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                `}).join('');
-                log("Operadores cargados: " + operadores.length);
+                    `).join('');
+                }
+                log("Operadores filtrados.");
             } catch (e) { log(`Error Operadores: ${e.message}`); throw e; }
         }
 
@@ -362,7 +502,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ ticketId, operador })
                 });
-                log(`Ticket ${ticketId} asignado a ${operador}`);
+                log(`Ticket ${ticketId} ${operador ? 'asignado a ' + operador : 'liberado'}`);
                 cargarMensajes();
             } catch (e) { log(`Error asignación: ${e.message}`); }
         }
@@ -370,17 +510,11 @@
         function abrirTicket(id) {
             const m = mensajes.find(msg => msg.id == id);
             if (!m) return;
-
-            // Llenar datos básicos
+            document.getElementById('acc-id').value = m.id; // Almacén temporal del ID del ticket
             document.getElementById('drawer-subject').innerText = m.asunto || '(Sin Asunto)';
-            document.getElementById('drawer-meta').innerText = `De: ${m.remitente} | Empresa: ${m.empresa_cliente || 'General'}`;
-            document.getElementById('drawer-body').innerText = m.mensaje || 'Este mensaje no tiene contenido de texto.';
-            
-            // Buscar sugerencia IA (Reutilizamos la lógica de verLogsIA pero inyectada en el drawer)
-            document.getElementById('drawer-ia').innerText = "Buscando sugerencia inteligente...";
-            obtenerSugerenciaDrawer(m.remitente);
-
-            // Mostrar Panel
+            document.getElementById('drawer-meta').innerText = `De: ${m.remitente}`;
+            document.getElementById('drawer-body').innerText = m.mensaje;
+            document.getElementById('reply-editor').value = m.respuesta_final || '';
             document.getElementById('ticket-drawer').classList.add('open');
             document.getElementById('drawer-backdrop').classList.add('open');
         }
@@ -437,13 +571,26 @@
         }
 
         async function saveGroup() {
+            const id = document.getElementById('group-id').value;
             const nombre = document.getElementById('group-name').value;
             const descripcion = document.getElementById('group-desc').value;
+            
+            const action = id ? 'editar_grupo' : 'crear_grupo';
+            
             try {
-                await apiCall('gestion_cuentas', 'POST', { action: 'crear_grupo', nombre, descripcion });
-                document.getElementById('modal-group').classList.add('hidden');
+                await apiCall('gestion_cuentas', 'POST', { action, id, nombre, descripcion });
+                cerrarModalGrupo();
                 cargarGrupos();
-            } catch (e) { log(`Error crear grupo: ${e.message}`); }
+                log(`Grupo ${id ? 'actualizado' : 'creado'}: ${nombre}`);
+            } catch (e) { log(`Error al guardar grupo: ${e.message}`); }
+        }
+
+        function cerrarModalGrupo() {
+            document.getElementById('modal-group').classList.add('hidden');
+            document.getElementById('group-id').value = '';
+            document.getElementById('group-name').value = '';
+            document.getElementById('group-desc').value = '';
+            document.getElementById('modal-group-title').innerText = "🏢 Nueva Empresa/Grupo";
         }
 
         async function saveAccount() {
