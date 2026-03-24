@@ -1,29 +1,29 @@
 {
-  "name": "API - Listar Cuentas",
+  "name": "API - Cambiar Estado de Cuenta",
   "nodes": [
     {
       "parameters": {
-        "httpMethod": "GET",
-        "path": "listar-cuentas",
+        "httpMethod": "POST",
+        "path": "estado-cuenta",
         "responseMode": "lastNode",
         "options": {}
       },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [0, 0],
-      "id": "webhook-listar",
-      "name": "Webhook Listar"
+      "id": "webhook-estado",
+      "name": "Webhook Estado"
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT c.*, g.nombre as nombre_grupo FROM cuentas_email c LEFT JOIN grupos g ON c.grupo_id = g.id ORDER BY nombre_operador ASC;"
+        "query": "=UPDATE cuentas_email SET activo = {{ $json.body.activo }} WHERE email = '{{ $json.body.email }}' RETURNING *;"
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
       "position": [250, 0],
-      "id": "db-query",
-      "name": "Consultar Cuentas",
+      "id": "db-update-status",
+      "name": "Actualizar Estado",
       "credentials": {
         "postgres": {
           "id": "CREDENCIAL_POSTGRES_DOCKER",
@@ -33,8 +33,8 @@
     }
   ],
   "connections": {
-    "Webhook Listar": {
-      "main": [[{"node": "Consultar Cuentas", "type": "main", "index": 0}]]
+    "Webhook Estado": {
+      "main": [[{"node": "Actualizar Estado", "type": "main", "index": 0}]]
     }
   }
 }

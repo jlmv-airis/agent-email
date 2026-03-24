@@ -1,79 +1,40 @@
 {
-  "name": "API - Registro de Cuentas (Panel Admin)",
+  "name": "API - Registro Cuentas",
   "nodes": [
     {
       "parameters": {
         "httpMethod": "POST",
         "path": "registro-cuenta",
+        "responseMode": "lastNode",
         "options": {}
       },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        0,
-        0
-      ],
-      "id": "webhook-reg",
-      "name": "Webhook: Recibir Datos"
+      "position": [0, 0],
+      "id": "webhook-registro",
+      "name": "Webhook Registro"
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "=INSERT INTO cuentas_email (nombre_operador, email, password_app, rol) \nVALUES ('{{ $json.body.nombre }}', '{{ $json.body.email }}', '{{ $json.body.password }}', '{{ $json.body.rol }}')\nRETURNING id;"
+        "query": "=INSERT INTO cuentas_email (email, nombre_operador, tipo_cuenta, grupo_id, activo) \nVALUES ('{{ $json.body.email }}', '{{ $json.body.nombre }}', '{{ $json.body.tipo }}', {{ $json.body.grupo_id || 'NULL' }}, true)\nON CONFLICT (email) \nDO UPDATE SET \n    nombre_operador = EXCLUDED.nombre_operador,\n    tipo_cuenta = EXCLUDED.tipo_cuenta,\n    grupo_id = EXCLUDED.grupo_id,\n    activo = true\nRETURNING *;"
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
-      "position": [
-        250,
-        0
-      ],
-      "id": "db-insert",
-      "name": "Guardar en Postgres",
+      "position": [300, 0],
+      "id": "db-upsert",
+      "name": "Upsert Cuenta",
       "credentials": {
         "postgres": {
-          "id": "NUEVA_CREDENCIAL_POSTGRES",
+          "id": "CREDENCIAL_POSTGRES_DOCKER",
           "name": "Postgres Local (Docker)"
         }
       }
-    },
-    {
-      "parameters": {
-        "options": {
-          "responseCode": 200
-        }
-      },
-      "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1.1,
-      "position": [
-        500,
-        0
-      ],
-      "id": "response-ok",
-      "name": "Responder OK"
     }
   ],
   "connections": {
-    "Webhook: Recibir Datos": {
-      "main": [
-        [
-          {
-            "node": "Guardar en Postgres",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Guardar en Postgres": {
-      "main": [
-        [
-          {
-            "node": "Responder OK",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+    "Webhook Registro": {
+      "main": [[{"node": "Upsert Cuenta", "type": "main", "index": 0}]]
     }
   }
 }

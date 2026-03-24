@@ -1,0 +1,73 @@
+{
+  "name": "API - Gestión de Grupos",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "listar-grupos",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "id": "webhook-list-grupos",
+      "name": "Webhook Listar Grupos"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "crear-grupo",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 200],
+      "id": "webhook-create-grupo",
+      "name": "Webhook Crear Grupo"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=INSERT INTO grupos (nombre, descripcion) VALUES ('{{ $json.body.nombre }}', '{{ $json.body.descripcion }}') RETURNING *;"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [300, 200],
+      "id": "db-create-grupo",
+      "name": "Insertar Grupo",
+      "credentials": {
+        "postgres": {
+          "id": "CREDENCIAL_POSTGRES_DOCKER",
+          "name": "Postgres Local (Docker)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM grupos ORDER BY nombre ASC;"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [300, 0],
+      "id": "db-list-grupos",
+      "name": "Consultar Grupos",
+      "credentials": {
+        "postgres": {
+          "id": "CREDENCIAL_POSTGRES_DOCKER",
+          "name": "Postgres Local (Docker)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Listar Grupos": {
+      "main": [[{"node": "Consultar Grupos", "type": "main", "index": 0}]]
+    },
+    "Webhook Crear Grupo": {
+      "main": [[{"node": "Insertar Grupo", "type": "main", "index": 0}]]
+    }
+  }
+}

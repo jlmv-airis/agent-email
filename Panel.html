@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asesorías IA - Panel de Control</title>
+    <title>Asesorías IA - Multi-Empresa</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -11,21 +11,82 @@
         .card { background: white; border-radius: 1rem; padding: 1.5rem; border: 1px solid #f1f5f9; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .nav-active { background-color: #4f46e5 !important; color: white !important; font-weight: 800; }
         .hidden-section { display: none !important; }
-        #debug-log { background: #0f172a; color: #4ade80; font-family: monospace; font-size: 10px; padding: 10px; border-radius: 8px; max-height: 150px; overflow-y: auto; border: 1px solid #334155; }
-        .cursor-pointer { cursor: pointer; }
-        .cursor-pointer:hover { background-color: #f1f5f9; }
+        .card-operator { background: white; border-radius: 1.5rem; padding: 1.5rem; border: 1px solid #e2e8f0; transition: all 0.2s; }
+        .card-operator:hover { border-color: #4f46e5; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        
+        /* Panel Lateral (Ticket Drawer) */
+        #ticket-drawer { transition: transform 0.3s ease-in-out; transform: translateX(100%); }
+        #ticket-drawer.open { transform: translateX(0); }
+        .drawer-backdrop { opacity: 0; transition: opacity 0.3s ease-in-out; pointer-events: none; }
+        .drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+
+        #debug-log { background: #0f172a; color: #4ade80; font-family: monospace; font-size: 10px; padding: 10px; border-radius: 8px; max-height: 80px; overflow-y: auto; }
     </style>
 </head>
-<body class="flex min-h-screen overflow-hidden text-sm">
+<body class="flex min-h-screen overflow-hidden text-sm relative">
+
+    <!-- Backdrop del Drawer -->
+    <div id="drawer-backdrop" onclick="cerrarTicket()" class="drawer-backdrop fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40"></div>
+
+    <!-- Panel Lateral de Lectura -->
+    <div id="ticket-drawer" class="fixed top-0 right-0 h-full w-full max-w-xl bg-white shadow-2xl z-50 flex flex-col border-l">
+        <div class="p-6 border-b flex justify-between items-center bg-slate-50">
+            <div>
+                <h2 class="text-xl font-black text-slate-900" id="drawer-subject">Asunto del Ticket</h2>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1" id="drawer-meta">De: cliente@ejemplo.com</p>
+            </div>
+            <button onclick="cerrarTicket()" class="p-2 hover:bg-slate-200 rounded-full transition text-slate-400 hover:text-slate-900">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-8 space-y-8">
+            <!-- Cuerpo del Mensaje -->
+            <div class="space-y-4">
+                <h3 class="text-xs font-black text-indigo-600 uppercase tracking-wider">Mensaje Original</h3>
+                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-slate-700 leading-relaxed text-sm whitespace-pre-wrap" id="drawer-body">
+                    Cargando mensaje...
+                </div>
+            </div>
+
+            <!-- Sugerencia IA -->
+            <div class="space-y-4">
+                <div class="flex items-center gap-2">
+                    <h3 class="text-xs font-black text-emerald-600 uppercase tracking-wider">Sugerencia de la IA</h3>
+                    <span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[8px] font-black uppercase">Gemini 2.0 Flash</span>
+                </div>
+                <div class="bg-emerald-50 p-6 rounded-2xl border border-emerald-100 text-emerald-800 leading-relaxed text-sm italic" id="drawer-ia">
+                    No hay sugerencia disponible para este ticket.
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 border-t bg-slate-50 flex gap-3">
+            <button class="flex-1 bg-indigo-600 text-white py-4 rounded-xl font-black text-xs uppercase shadow-lg shadow-indigo-100 active:scale-95 transition-all">Copiar Respuesta</button>
+            <button class="flex-1 bg-slate-900 text-white py-4 rounded-xl font-black text-xs uppercase shadow-lg shadow-slate-200 active:scale-95 transition-all">Marcar como Resuelto</button>
+        </div>
+    </div>
 
     <aside class="w-64 bg-slate-900 text-slate-300 p-6 flex flex-col gap-6 shrink-0">
         <h2 class="text-white font-black text-xl italic italic">Asesorías <span class="text-indigo-400">IA</span></h2>
+        
+        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-2xl ring-1 ring-white/5 shadow-xl">
+            <p class="text-[10px] uppercase font-black text-indigo-400 mb-2 tracking-[0.15em]">Perfil de Acceso</p>
+            <select id="role-selector" onchange="updateRoleUI()" class="w-full bg-slate-900 text-white font-black outline-none cursor-pointer text-sm py-1 rounded-lg focus:ring-2 focus:ring-indigo-500 transition-all border-none">
+                <option value="dev" class="bg-slate-900">🚀 DevOps (Súper)</option>
+                <option value="admin" class="bg-slate-900">👑 Administrador</option>
+                <option value="op" class="bg-slate-900">🎧 Operador</option>
+            </select>
+        </div>
+
         <nav class="flex flex-col gap-2">
             <button onclick="switchView('view-dash', this)" class="nav-btn w-full text-left px-4 py-3 nav-active rounded-xl transition">📊 Dashboard</button>
             <button onclick="switchView('view-inbox', this)" class="nav-btn w-full text-left px-4 py-3 rounded-xl transition">📥 Bandeja de Entrada</button>
+            <button id="nav-accounts" onclick="switchView('view-accounts', this)" class="nav-btn w-full text-left px-4 py-3 rounded-xl transition hidden-section">⚙️ Gestión Operadores</button>
+            <button id="nav-groups" onclick="switchView('view-groups', this)" class="nav-btn w-full text-left px-4 py-3 rounded-xl transition hidden-section">🏢 Empresas/Grupos</button>
         </nav>
+
         <div class="mt-auto">
-            <p class="text-[9px] uppercase font-black text-slate-500 mb-2">Monitor de Conexión:</p>
             <div id="debug-log">Iniciando...</div>
         </div>
     </aside>
@@ -34,112 +95,374 @@
         <div class="flex justify-between items-center">
             <h1 class="text-2xl font-black text-slate-900" id="view-title">Dashboard</h1>
             <div class="flex gap-2">
-                <button onclick="document.getElementById('modal-config').classList.remove('hidden')" class="bg-slate-800 text-white px-4 py-2 rounded-lg font-bold text-xs hover:bg-slate-700 transition">⚙️ Config URL</button>
-                <button onclick="cargarDatosReal()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-xs shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition">🔄 Forzar Recarga</button>
+                <button onclick="cargarTodo()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-xs shadow-lg shadow-indigo-200">🔄 Recargar</button>
             </div>
         </div>
 
+        <!-- Dashboard -->
         <div id="view-dash" class="view-content space-y-8">
-            <div class="card bg-slate-900 text-white border-none">
-                <p class="text-[10px] uppercase opacity-50 mb-2 font-bold tracking-widest text-emerald-400">Estado del Sistema</p>
-                <p id="connection-status" class="text-sm italic">Verificando conexión con n8n...</p>
+            <div class="grid grid-cols-3 gap-6">
+                <div class="card bg-indigo-600 text-white">
+                    <p class="opacity-70 text-xs font-bold uppercase tracking-wider">Tickets Totales</p>
+                    <p id="stat-total" class="text-3xl font-black mt-2">--</p>
+                </div>
+                <div class="card bg-slate-900 text-white">
+                    <p class="opacity-70 text-xs font-bold uppercase tracking-wider">Grupos Activos</p>
+                    <p id="stat-groups" class="text-3xl font-black mt-2">--</p>
+                </div>
+                <div class="card border-indigo-200 bg-indigo-50">
+                    <p class="text-indigo-600 text-xs font-bold uppercase tracking-wider">Rol Activo</p>
+                    <p id="display-role" class="text-indigo-900 text-xl font-black mt-2">DEVOPS</p>
+                </div>
             </div>
         </div>
 
+        <!-- Inbox -->
         <div id="view-inbox" class="view-content hidden-section space-y-6">
-            <div class="card overflow-hidden p-0">
+            <div id="inbox-table-container" class="card overflow-hidden p-0">
                 <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase border-b">
-                        <tr><th class="px-4 py-3">Remitente</th><th class="px-4 py-3">Asunto</th><th class="px-4 py-3">Estado</th></tr>
+                    <thead id="inbox-thead" class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase border-b">
+                        <!-- Se llena dinámicamente -->
                     </thead>
-                    <tbody id="inbox-tbody" class="divide-y divide-slate-100">
-                        <tr><td colspan="3" class="p-10 text-center text-slate-400 italic">Cargando mensajes...</td></tr>
-                    </tbody>
+                    <tbody id="inbox-tbody" class="divide-y divide-slate-100"></tbody>
                 </table>
             </div>
+            <div id="inbox-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden-section">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Accounts Management -->
+        <div id="view-accounts" class="view-content hidden-section space-y-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-lg font-black text-slate-800">Operadores del Sistema</h2>
+                <button onclick="document.getElementById('modal-account').classList.remove('hidden')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-xs">➕ Nuevo Operador</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="accounts-grid"></div>
+        </div>
+
+        <!-- Groups Management -->
+        <div id="view-groups" class="view-content hidden-section space-y-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-lg font-black text-slate-800">Gestión de Empresas/Grupos</h2>
+                <button onclick="document.getElementById('modal-group').classList.remove('hidden')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-xs">➕ Nueva Empresa</button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="groups-grid"></div>
         </div>
     </main>
 
-    <!-- Modal IA Response -->
-    <div id="modal-ia" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl w-full max-w-2xl p-8 space-y-6 shadow-2xl max-h-[80vh] overflow-y-auto">
-            <div class="flex justify-between items-start">
-                <div>
-                    <h2 class="text-xl font-black text-slate-900">🤖 Sugerencia de la IA</h2>
-                    <p id="ia-asunto" class="text-xs text-slate-500 italic mt-1"></p>
-                </div>
-                <button onclick="document.getElementById('modal-ia').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 font-bold">X Cerrar</button>
-            </div>
-            <div id="ia-response-text" class="bg-slate-50 p-6 rounded-xl text-slate-700 whitespace-pre-wrap text-xs leading-relaxed border border-slate-100 italic">
-                Cargando respuesta...
-            </div>
-            <div class="flex gap-2">
-                <button class="flex-1 bg-emerald-600 text-white py-3 rounded-xl font-black shadow-lg hover:bg-emerald-700 transition">✅ Enviar Respuesta</button>
-                <button class="flex-1 bg-slate-100 text-slate-600 py-3 rounded-xl font-black hover:bg-slate-200 transition">✏️ Editar Manualmente</button>
-            </div>
+    <!-- Modal Nuevo Operador -->
+    <div id="modal-account" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl w-full max-w-md p-8 space-y-4">
+            <h2 class="text-xl font-black text-slate-900">⚙️ Configurar Operador</h2>
+            <input type="text" id="acc-name" placeholder="Nombre Completo" class="w-full border p-3 rounded-xl text-sm">
+            <input type="email" id="acc-email" placeholder="Correo Electrónico" class="w-full border p-3 rounded-xl text-sm">
+            <select id="acc-group" class="w-full border p-3 rounded-xl text-sm">
+                <option value="">--- Seleccionar Empresa/Grupo ---</option>
+            </select>
+            <select id="acc-type" class="w-full border p-3 rounded-xl text-sm">
+                <option value="gmail">Gmail API</option>
+                <option value="webmail">Webmail (IMAP)</option>
+            </select>
+            <button onclick="saveAccount()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-black shadow-lg">Guardar Operador</button>
+            <button onclick="document.getElementById('modal-account').classList.add('hidden')" class="w-full text-slate-400 font-bold text-xs uppercase">Cancelar</button>
         </div>
     </div>
 
-    <!-- Modal Config -->
-    <div id="modal-config" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl w-full max-w-md p-8 space-y-6 shadow-2xl">
-            <h2 class="text-xl font-black text-slate-900">⚙️ Configurar n8n</h2>
-            <input type="text" id="config-url" placeholder="http://localhost:5678" class="w-full border p-3 rounded-xl outline-indigo-500 text-sm">
-            <button onclick="saveConfig()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-black shadow-lg">Guardar y Conectar</button>
+    <!-- Modal Nueva Empresa -->
+    <div id="modal-group" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl w-full max-w-md p-8 space-y-4">
+            <h2 class="text-xl font-black text-slate-900">🏢 Nueva Empresa/Grupo</h2>
+            <input type="text" id="group-name" placeholder="Nombre de la Empresa" class="w-full border p-3 rounded-xl text-sm">
+            <textarea id="group-desc" placeholder="Descripción opcional" class="w-full border p-3 rounded-xl text-sm"></textarea>
+            <button onclick="saveGroup()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-black shadow-lg">Registrar Empresa</button>
+            <button onclick="document.getElementById('modal-group').classList.add('hidden')" class="w-full text-slate-400 font-bold text-xs uppercase">Cancelar</button>
         </div>
     </div>
 
     <script>
         let N8N_URL = localStorage.getItem('n8n_url') || 'http://localhost:5678';
-        const log = (msg) => { console.log(msg); const l = document.getElementById('debug-log'); l.innerHTML += `<br>> ${msg}`; l.scrollTop = l.scrollHeight; };
+        let grupos = [];
+        let operadores = [];
+        let mensajes = [];
 
-        function saveConfig() {
-            let url = document.getElementById('config-url').value.trim();
-            if(url.endsWith('/')) url = url.slice(0, -1);
-            localStorage.setItem('n8n_url', url);
-            N8N_URL = url;
-            document.getElementById('modal-config').classList.add('hidden');
-            log(`Configurado: ${url}`);
-            cargarDatosReal();
+        const log = (msg) => { const l = document.getElementById('debug-log'); l.innerHTML += `<br>> ${msg}`; l.scrollTop = l.scrollHeight; };
+
+        function updateRoleUI() {
+            const role = document.getElementById('role-selector').value;
+            const thead = document.getElementById('inbox-thead');
+            const tableCont = document.getElementById('inbox-table-container');
+            const gridCont = document.getElementById('inbox-grid-container');
+
+            // 1. Configurar Visibilidad de Navegación
+            document.getElementById('nav-accounts').classList.toggle('hidden-section', role !== 'dev');
+            document.getElementById('nav-groups').classList.toggle('hidden-section', role !== 'dev');
+            document.getElementById('display-role').innerText = role.toUpperCase();
+
+            // 2. Configurar Layout de Inbox
+            if (role === 'op') {
+                tableCont.classList.add('hidden-section');
+                gridCont.classList.remove('hidden-section');
+            } else {
+                tableCont.classList.remove('hidden-section');
+                gridCont.classList.add('hidden-section');
+                
+                // Configurar Encabezados de Tabla
+                if (role === 'dev') {
+                    thead.innerHTML = `<tr><th class="px-4 py-3">ID</th><th class="px-4 py-3">Remitente</th><th class="px-4 py-3">Estatus</th><th class="px-4 py-3">Acción Técn.</th></tr>`;
+                } else if (role === 'admin') {
+                    thead.innerHTML = `<tr><th class="px-4 py-3">Remitente</th><th class="px-4 py-3">Asunto</th><th class="px-4 py-3">Asignado</th><th class="px-4 py-3">Acción</th></tr>`;
+                }
+            }
+
+            cargarTodo();
         }
 
-        async function cargarDatosReal() {
-            log(`Iniciando carga de datos...`);
+        async function apiCall(action, method = 'GET', body = null) {
+            const url = new URL(`${N8N_URL}/webhook/master-api`);
+            url.searchParams.append('action', action);
+            const options = { method, headers: { 'Content-Type': 'application/json' } };
+            if (body) options.body = JSON.stringify(body);
+            const res = await fetch(url.toString(), options);
+            return await res.json();
+        }
+
+        async function cargarTodo() {
+            log("Cargando datos del sistema...");
             try {
-                const targetUrl = `${N8N_URL}/webhook/listar-mensajes`;
-                const res = await fetch(targetUrl, { mode: 'cors' });
-                if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
-                const data = await res.json();
-                let msgs = Array.isArray(data) ? data : [data];
-                document.getElementById('connection-status').innerText = `Sincronizado: ${msgs.length} mensajes encontrados.`;
-                const tbody = document.getElementById('inbox-tbody');
-                tbody.innerHTML = msgs.map(m => `
-                    <tr class="cursor-pointer" onclick="verRespuestaIA('${m.remitente}', '${m.asunto}')">
-                        <td class="px-4 py-4 font-bold text-slate-700">${m.remitente || 'N/A'}</td>
-                        <td class="px-4 py-4 italic text-slate-500">${m.asunto || 'Sin asunto'}</td>
-                        <td class="px-4 py-4"><span class="px-2 py-1 rounded-full bg-indigo-100 text-indigo-700 font-black text-[9px] uppercase">${m.estatus || 'PENDIENTE'}</span></td>
-                    </tr>
+                await cargarGrupos();
+                await cargarCuentas();
+                await cargarMensajes();
+                log("Sistema listo.");
+            } catch (e) {
+                log(`ERROR CRÍTICO: ${e.message}`);
+            }
+        }
+
+        async function cargarGrupos() {
+            try {
+                const res = await fetch(`${N8N_URL}/webhook/master-cuentas`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                grupos = await res.json();
+                if (!Array.isArray(grupos)) grupos = [];
+                
+                document.getElementById('stat-groups').innerText = grupos.length;
+                const select = document.getElementById('acc-group');
+                if (select) select.innerHTML = '<option value="">--- Seleccionar Empresa/Grupo ---</option>' + 
+                    grupos.map(g => `<option value="${g.id}">${g.nombre}</option>`).join('');
+
+                const grid = document.getElementById('groups-grid');
+                if (grid) grid.innerHTML = grupos.map(g => `
+                    <div class="card bg-slate-50 border-indigo-200">
+                        <p class="font-black text-slate-900 uppercase">${g.nombre}</p>
+                        <p class="text-[10px] text-slate-500 mt-1">${g.descripcion || 'Sin descripción'}</p>
+                    </div>
                 `).join('');
-            } catch (e) {
-                log(`ERROR: ${e.message}`);
-                document.getElementById('connection-status').innerText = `Error: No se pudo conectar a n8n.`;
+                log("Grupos cargados.");
+            } catch (e) { log(`Error Grupos: ${e.message}`); throw e; }
+        }
+
+        async function cargarCuentas() {
+            try {
+                const res = await fetch(`${N8N_URL}/webhook/master-cuentas`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                let data = await res.json();
+                
+                // Corrección: Asegurar que operadores sea siempre un array
+                operadores = Array.isArray(data) ? data : (data ? [data] : []);
+
+                const grid = document.getElementById('accounts-grid');
+                if (grid) grid.innerHTML = operadores.map(o => {
+                    const nombre = o.nombre_operador || o.email || 'Sin Nombre';
+                    return `
+                    <div class="card border-l-4 ${o.activo ? 'border-emerald-400' : 'border-slate-300'}">
+                        <p class="text-xs font-black text-slate-900">${nombre}</p>
+                        <p class="text-[10px] text-slate-400">${o.email}</p>
+                        <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-[8px] font-black uppercase mt-2 inline-block">${o.nombre_grupo || 'Sin Grupo'}</span>
+                        <div class="mt-4 flex gap-2">
+                            <button onclick="toggleAccount('${o.email}', ${!o.activo})" class="flex-1 ${o.activo ? 'bg-slate-900' : 'bg-emerald-600'} text-white py-2 rounded-lg font-bold text-[9px] uppercase">
+                                ${o.activo ? 'Desactivar' : 'Activar'}
+                            </button>
+                        </div>
+                    </div>
+                `}).join('');
+                log("Operadores cargados: " + operadores.length);
+            } catch (e) { log(`Error Operadores: ${e.message}`); throw e; }
+        }
+
+        async function cargarMensajes() {
+            try {
+                const role = document.getElementById('role-selector').value;
+                const res = await fetch(`${N8N_URL}/webhook/master-api`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                let data = await res.json();
+                mensajes = Array.isArray(data) ? data : (data ? [data] : []);
+
+                document.getElementById('stat-total').innerText = mensajes.length;
+
+                if (role === 'op') {
+                    const grid = document.getElementById('inbox-grid-container');
+                    grid.innerHTML = mensajes.map(m => `
+                        <div onclick="abrirTicket(${m.id})" class="card-operator cursor-pointer border-l-4 ${m.asignado_a ? 'border-indigo-500' : 'border-amber-400 shadow-amber-50'}">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <p class="font-black text-slate-900 text-base">${m.remitente || 'Cliente'}</p>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${m.empresa_cliente || 'Empresa General'}</p>
+                                </div>
+                                <span class="px-2 py-1 rounded text-[9px] font-black uppercase ${m.estatus === 'pendiente' ? 'bg-amber-100 text-amber-700' : 'bg-indigo-100 text-indigo-700'}">${m.estatus}</span>
+                            </div>
+                            <p class="text-slate-600 font-medium line-clamp-2 mb-6 h-10 italic">"${m.asunto || 'Sin asunto'}"</p>
+                            <div class="flex gap-2" onclick="event.stopPropagation()">
+                                <button onclick="verLogsIA('${m.remitente}')" class="flex-1 bg-slate-900 text-white py-3 rounded-xl font-black text-[10px] uppercase shadow-lg shadow-slate-200 transition-all active:scale-95">🤖 Ver IA</button>
+                                <button onclick="asignarTicket(${m.id}, 'admin@tu-empresa.com')" class="px-4 bg-indigo-600 text-white py-3 rounded-xl font-black text-[10px] uppercase shadow-lg shadow-indigo-100 transition-all active:scale-95">📥 Tomar</button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    const tbody = document.getElementById('inbox-tbody');
+                    tbody.innerHTML = mensajes.map(m => {
+                        if (role === 'dev') {
+                            return `
+                                <tr onclick="abrirTicket(${m.id})" class="hover:bg-slate-50 border-l-4 border-slate-900 cursor-pointer">
+                                    <td class="px-4 py-4 font-mono text-[10px] text-slate-400">#${m.id}</td>
+                                    <td class="px-4 py-4 font-bold text-slate-700">${m.remitente}</td>
+                                    <td class="px-4 py-4"><span class="bg-slate-100 text-slate-600 px-2 py-1 rounded text-[10px] font-black uppercase">${m.estatus}</span></td>
+                                    <td class="px-4 py-4 flex gap-2" onclick="event.stopPropagation()">
+                                        <button onclick="console.log(${JSON.stringify(m)})" class="bg-slate-800 text-white px-3 py-1 rounded-lg font-bold text-[9px] uppercase">Debug</button>
+                                        <button class="bg-indigo-400 text-white px-3 py-1 rounded-lg font-bold text-[9px] uppercase">Logs</button>
+                                    </td>
+                                </tr>`;
+                        } else {
+                            return `
+                                <tr onclick="abrirTicket(${m.id})" class="hover:bg-slate-50 border-l-4 ${m.asignado_a ? 'border-indigo-400' : 'border-amber-400'} cursor-pointer">
+                                    <td class="px-4 py-4 font-bold text-slate-700">${m.remitente || 'Desconocido'}</td>
+                                    <td class="px-4 py-4 text-slate-500 italic">${m.asunto || '(Sin Asunto)'}</td>
+                                    <td class="px-4 py-4" onclick="event.stopPropagation()">
+                                        <select onchange="asignarTicket(${m.id}, this.value)" class="bg-slate-100 p-1 rounded text-[10px]">
+                                            <option value="">--- Sin Asignar ---</option>
+                                            ${operadores.filter(o => o.activo).map(o => {
+                                                const val = o.nombre_operador || o.email;
+                                                return `<option value="${val}" ${m.asignado_a === val ? 'selected' : ''}>${val}</option>`;
+                                            }).join('')}
+                                        </select>
+                                    </td>
+                                    <td class="px-4 py-4" onclick="event.stopPropagation()"><button onclick="verLogsIA('${m.remitente}')" class="bg-indigo-600 text-white px-3 py-1 rounded-lg font-bold text-[9px]">🤖 IA</button></td>
+                                </tr>`;
+                        }
+                    }).join('');
+                }
+                log("Mensajes cargados: " + mensajes.length);
+            } catch (e) { log(`Error Inbox: ${e.message}`); throw e; }
+        }
+
+        async function asignarTicket(ticketId, operador) {
+            try {
+                await fetch(`${N8N_URL}/webhook/master-asignar`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticketId, operador })
+                });
+                log(`Ticket ${ticketId} asignado a ${operador}`);
+                cargarMensajes();
+            } catch (e) { log(`Error asignación: ${e.message}`); }
+        }
+
+        function abrirTicket(id) {
+            const m = mensajes.find(msg => msg.id == id);
+            if (!m) return;
+
+            // Llenar datos básicos
+            document.getElementById('drawer-subject').innerText = m.asunto || '(Sin Asunto)';
+            document.getElementById('drawer-meta').innerText = `De: ${m.remitente} | Empresa: ${m.empresa_cliente || 'General'}`;
+            document.getElementById('drawer-body').innerText = m.mensaje || 'Este mensaje no tiene contenido de texto.';
+            
+            // Buscar sugerencia IA (Reutilizamos la lógica de verLogsIA pero inyectada en el drawer)
+            document.getElementById('drawer-ia').innerText = "Buscando sugerencia inteligente...";
+            obtenerSugerenciaDrawer(m.remitente);
+
+            // Mostrar Panel
+            document.getElementById('ticket-drawer').classList.add('open');
+            document.getElementById('drawer-backdrop').classList.add('open');
+        }
+
+        async function obtenerSugerenciaDrawer(email) {
+            try {
+                const cuentaAdmin = 'admin@tu-empresa.com';
+                const res = await fetch(`${N8N_URL}/webhook/master-logs?email=${cuentaAdmin}`);
+                const data = await res.json();
+                const logs = Array.isArray(data) ? data : (data && data.id ? [data] : []);
+                
+                if (logs.length > 0) {
+                    const item = logs[0];
+                    const respuesta = item.respuesta_ia || (item.json ? item.json.respuesta_ia : null);
+                    document.getElementById('drawer-ia').innerText = respuesta || "La IA procesó el mensaje pero la respuesta está vacía.";
+                } else {
+                    document.getElementById('drawer-ia').innerText = "No hay sugerencias procesadas aún para este ticket.";
+                }
+            } catch (e) { 
+                document.getElementById('drawer-ia').innerText = "Error al conectar con el servidor de IA.";
             }
         }
 
-        async function verRespuestaIA(email, asunto) {
-            document.getElementById('modal-ia').classList.remove('hidden');
-            document.getElementById('ia-asunto').innerText = asunto;
-            document.getElementById('ia-response-text').innerText = "Cargando sugerencia de Gemini...";
-            
+        function cerrarTicket() {
+            document.getElementById('ticket-drawer').classList.remove('open');
+            document.getElementById('drawer-backdrop').classList.remove('open');
+        }
+
+        async function verLogsIA(email) {
             try {
-                const res = await fetch(`${N8N_URL}/webhook/obtener-logs?email=${encodeURIComponent(email)}`);
-                if (!res.ok) throw new Error("No hay respuesta de la IA aun.");
+                log(`Buscando sugerencia de IA...`);
+                // En esta versión, forzamos la búsqueda por la cuenta que sabemos que tiene los logs
+                const cuentaAdmin = 'admin@tu-empresa.com';
+                const res = await fetch(`${N8N_URL}/webhook/master-logs?email=${cuentaAdmin}`);
                 const data = await res.json();
-                const logData = Array.isArray(data) ? data[0] : data;
-                document.getElementById('ia-response-text').innerText = logData.respuesta_ia || "La IA no ha procesado este mensaje todavia.";
-            } catch (e) {
-                document.getElementById('ia-response-text').innerText = "Aviso: No se encontro una respuesta procesada para esta cuenta.";
+                
+                const logs = Array.isArray(data) ? data : (data && data.id ? [data] : []);
+                
+                if (logs.length > 0) {
+                    const item = logs[0];
+                    const respuesta = item.respuesta_ia || (item.json ? item.json.respuesta_ia : null);
+                    if (respuesta) {
+                        alert("🤖 SUGERENCIA DE IA:\n\n" + respuesta);
+                    } else {
+                        alert("La IA procesó el mensaje pero la respuesta está vacía.");
+                    }
+                } else {
+                    alert("Aún no hay sugerencias procesadas para la cuenta " + cuentaAdmin);
+                }
+            } catch (e) { 
+                log(`Error: ${e.message}`);
+                alert("Error de conexión con n8n.");
             }
+        }
+
+        async function saveGroup() {
+            const nombre = document.getElementById('group-name').value;
+            const descripcion = document.getElementById('group-desc').value;
+            try {
+                await apiCall('gestion_cuentas', 'POST', { action: 'crear_grupo', nombre, descripcion });
+                document.getElementById('modal-group').classList.add('hidden');
+                cargarGrupos();
+            } catch (e) { log(`Error crear grupo: ${e.message}`); }
+        }
+
+        async function saveAccount() {
+            const nombre = document.getElementById('acc-name').value;
+            const email = document.getElementById('acc-email').value;
+            const grupo_id = document.getElementById('acc-group').value;
+            const tipo = document.getElementById('acc-type').value;
+            try {
+                await apiCall('gestion_cuentas', 'POST', { action: 'registro_cuenta', nombre, email, grupo_id, tipo });
+                document.getElementById('modal-account').classList.add('hidden');
+                cargarCuentas();
+            } catch (e) { log(`Error registro: ${e.message}`); }
+        }
+
+        async function toggleAccount(email, activo) {
+            try {
+                await apiCall('gestion_cuentas', 'POST', { action: 'estado_cuenta', email, activo });
+                cargarCuentas();
+            } catch (e) { log(`Error estado: ${e.message}`); }
         }
 
         function switchView(viewId, btn) {
@@ -148,11 +471,9 @@
             document.getElementById(viewId).classList.remove('hidden-section');
             btn.classList.add('nav-active');
             document.getElementById('view-title').innerText = btn.innerText;
-            if(viewId === 'view-inbox') cargarDatosReal();
         }
 
-        document.getElementById('config-url').value = N8N_URL;
-        cargarDatosReal();
+        updateRoleUI();
     </script>
 </body>
 </html>

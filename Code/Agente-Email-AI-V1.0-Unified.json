@@ -1,0 +1,112 @@
+{
+  "name": "Agente Email AI - V 1.0 (Unified)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "master-api",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "id": "wh-listar-msg",
+      "name": "API: Listar Mensajes"
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "master-logs",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 150],
+      "id": "wh-obtener-logs",
+      "name": "API: Obtener Logs IA"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "master-asignar",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "id": "wh-asignar-ticket",
+      "name": "API: Asignar Ticket"
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "master-cuentas",
+        "responseMode": "lastNode",
+        "responseData": "allEntries",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 450],
+      "id": "wh-listar-cuentas",
+      "name": "API: Listar Cuentas"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM mensajes_entrantes ORDER BY fecha DESC LIMIT 20;"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [300, 0],
+      "id": "q-list-msg",
+      "name": "Q: Listar Mensajes",
+      "credentials": { "postgres": { "id": "CREDENCIAL_POSTGRES_DOCKER", "name": "Postgres Local (Docker)" } }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT * FROM trazabilidad_logs WHERE cuenta_email = '{{ $json.query.email || $json.body.email }}' ORDER BY fecha DESC LIMIT 5;"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [300, 150],
+      "id": "q-logs",
+      "name": "Q: Obtener Logs IA",
+      "credentials": { "postgres": { "id": "CREDENCIAL_POSTGRES_DOCKER", "name": "Postgres Local (Docker)" } }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=UPDATE mensajes_entrantes SET asignado_a = '{{ $json.body.operador }}', estatus = 'asignado' WHERE id = {{ $json.body.ticketId }} RETURNING *;"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [300, 300],
+      "id": "q-assign",
+      "name": "Q: Asignar Ticket",
+      "credentials": { "postgres": { "id": "CREDENCIAL_POSTGRES_DOCKER", "name": "Postgres Local (Docker)" } }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM cuentas_email ORDER BY email ASC;"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [300, 450],
+      "id": "q-accounts",
+      "name": "Q: Listar Cuentas",
+      "credentials": { "postgres": { "id": "CREDENCIAL_POSTGRES_DOCKER", "name": "Postgres Local (Docker)" } }
+    }
+  ],
+  "connections": {
+    "API: Listar Mensajes": { "main": [[{ "node": "Q: Listar Mensajes", "type": "main", "index": 0 }]] },
+    "API: Obtener Logs IA": { "main": [[{ "node": "Q: Obtener Logs IA", "type": "main", "index": 0 }]] },
+    "API: Asignar Ticket": { "main": [[{ "node": "Q: Asignar Ticket", "type": "main", "index": 0 }]] },
+    "API: Listar Cuentas": { "main": [[{ "node": "Q: Listar Cuentas", "type": "main", "index": 0 }]] }
+  }
+}
