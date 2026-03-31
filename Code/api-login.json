@@ -1,0 +1,139 @@
+{
+  "name": "api-login",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "auth/login",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        100,
+        300
+      ],
+      "id": "c76f642a-605a-4315-8408-2c092c73369a"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM usuarios WHERE username = :username AND password_hash = :password",
+        "options": {
+          "queryParams": "username={{$json.body.username}},password={{$json.body.password}}"
+        }
+      },
+      "name": "PostgreSQL",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [
+        320,
+        300
+      ],
+      "id": "771e86a0-9c2f-48e0-ae89-8d4e5f2a8931",
+      "credentials": {
+        "postgres": {
+          "id": "1",
+          "name": "PostgreSQL Local"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$node[\"PostgreSQL\"].json.length > 0}}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "If Success",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        540,
+        300
+      ],
+      "id": "a87e68b3-3a7c-402a-963c-0e70a30b1c55"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200
+        },
+        "responseBody": "={\n  \"status\": \"success\",\n  \"token\": \"simulated-jwt-token-{{$node[\"PostgreSQL\"].json[0].username}}\",\n  \"user\": {\n    \"username\": \"{{$node[\"PostgreSQL\"].json[0].username}}\",\n    \"role\": \"{{$node[\"PostgreSQL\"].json[0].rol}}\"\n  }\n}"
+      },
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        760,
+        200
+      ],
+      "id": "f5e9d29b-8e14-469b-980b-8d5f479d2b86"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 401
+        },
+        "responseBody": "{\n  \"status\": \"error\",\n  \"message\": \"Credenciales inválidas\"\n}"
+      },
+      "name": "Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        760,
+        400
+      ],
+      "id": "d87a9e9a-7b3b-489e-b830-4e5f392c6114"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "PostgreSQL",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PostgreSQL": {
+      "main": [
+        [
+          {
+            "node": "If Success",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Success": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Response",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "id": "api-login"
+}

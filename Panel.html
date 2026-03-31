@@ -70,8 +70,19 @@
     <aside class="w-64 bg-slate-900 text-slate-300 p-6 flex flex-col gap-6 shrink-0">
         <h2 class="text-white font-black text-xl italic italic">Asesorías <span class="text-indigo-400">IA</span></h2>
         
+        <!-- Perfil de Usuario con Logout -->
         <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-2xl ring-1 ring-white/5 shadow-xl">
-            <p class="text-[10px] uppercase font-black text-indigo-400 mb-2 tracking-[0.15em]">Perfil de Acceso</p>
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-black text-xs" id="user-initial">A</div>
+                <div class="flex-1 overflow-hidden">
+                    <p class="text-xs font-black text-white truncate" id="user-display-name">Admin</p>
+                    <p class="text-[8px] font-bold text-slate-500 uppercase tracking-widest" id="user-display-role">Administrador</p>
+                </div>
+                <button onclick="logout()" class="p-2 hover:bg-red-500/10 rounded-lg text-red-400 transition-colors" title="Cerrar Sesión">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                </button>
+            </div>
+            <p class="text-[10px] uppercase font-black text-indigo-400 mb-2 tracking-[0.15em]">Vista de Acceso</p>
             <select id="role-selector" onchange="updateRoleUI()" class="w-full bg-slate-900 text-white font-black outline-none cursor-pointer text-sm py-1 rounded-lg focus:ring-2 focus:ring-indigo-500 transition-all border-none">
                 <option value="dev" class="bg-slate-900">🚀 DevOps (Súper)</option>
                 <option value="admin" class="bg-slate-900">👑 Administrador</option>
