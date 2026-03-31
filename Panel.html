@@ -84,8 +84,14 @@
             <button onclick="switchView('view-inbox', this)" class="nav-btn w-full text-left px-4 py-3 rounded-xl transition">📥 Bandeja de Entrada</button>
             <button id="nav-accounts" onclick="switchView('view-accounts', this)" class="nav-btn w-full text-left px-4 py-3 rounded-xl transition hidden-section">👤 Operadores</button>
             <button id="nav-companies" onclick="switchView('view-companies', this)" class="nav-btn w-full text-left px-4 py-3 rounded-xl transition hidden-section">🏢 Empresas</button>
-            <button id="nav-groups" onclick="switchView('view-groups', this)" class="nav-btn w-full text-left px-4 py-3 rounded-xl transition hidden-section">🏷️ Etiquetas Maestras</button>
         </nav>
+
+        <div class="mt-6 border-t border-slate-700/50 pt-4 space-y-2">
+            <h3 class="px-4 text-xs text-slate-400 font-bold uppercase tracking-wider">Empresas</h3>
+            <div id="sidebar-webmail-list" class="flex flex-col gap-1">
+                <p class="px-4 text-xs text-slate-500 italic">Cargando...</p>
+            </div>
+        </div>
 
         <div class="mt-auto">
             <div id="debug-log">Iniciando...</div>
@@ -151,14 +157,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="companies-grid"></div>
         </div>
 
-        <!-- Etiquetas Maestras -->
-        <div id="view-groups" class="view-content hidden-section space-y-6">
-            <div class="flex justify-between items-center">
-                <h2 class="text-lg font-black text-slate-800">🏷️ Gestión de Etiquetas</h2>
-                <button onclick="prepararNuevoGrupo()" class="bg-slate-900 text-white px-4 py-2 rounded-lg font-bold text-xs shadow-lg">➕ Nueva Etiqueta</button>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="groups-grid"></div>
-        </div>
+        <!-- Sección de Etiquetas Maestras eliminada -->
     </main>
 
     <!-- Modal Nuevo Operador -->
@@ -321,61 +320,59 @@
         }
 
         async function cargarGrupos() {
+            log("Iniciando carga de grupos...");
             try {
-                // 1. Obtenemos los grupos (nombres de empresas)
+                // 1. Obtenemos los grupos (etiquetas)
+                log("-> Fetching /master-grupos...");
                 const resG = await fetch(`${N8N_URL}/webhook/master-grupos`);
+                if (!resG.ok) throw new Error(`master-grupos responded with ${resG.status}`);
                 grupos = await resG.json();
                 if (!Array.isArray(grupos)) grupos = [];
+                log(`-> ${grupos.length} grupos cargados.`);
 
-                // 2. Necesitamos las cuentas para sacar el correo vinculado a cada grupo
+                // 2. Necesitamos las cuentas para sacar datos adicionales como el correo
+                log("-> Fetching /master-cuentas...");
                 const resC = await fetch(`${N8N_URL}/webhook/master-cuentas`);
+                if (!resC.ok) throw new Error(`master-cuentas responded with ${resC.status}`);
                 const cuentas = await resC.json();
                 const listaCuentas = Array.isArray(cuentas) ? cuentas : [cuentas];
+                log(`-> ${listaCuentas.length} cuentas cargadas.`);
 
                 document.getElementById('stat-groups').innerText = grupos.length;
                 
-                // Renderizar ETIQUETAS MAESTRAS
-                const gridLabels = document.getElementById('groups-grid');
-                if (gridLabels) gridLabels.innerHTML = grupos.map(g => `
-                    <div class="card border-t-4 group relative" style="border-top-color: ${g.color || '#cbd5e1'}">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <span class="text-[10px] font-black uppercase text-slate-400">${g.tipo === 'operador' ? '👤' : '🏢'}</span>
-                                    <p class="font-black text-slate-900 uppercase text-xs">${g.nombre}</p>
-                                </div>
-                                <p class="text-[9px] text-slate-400 mt-2 italic">${g.descripcion || 'Sin descripción'}</p>
-                            </div>
-                            <button onclick="prepararEdicionGrupo(${g.id})" class="text-indigo-600 hover:text-indigo-900 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-
-                // Renderizar EMPRESAS (Solo grupos tipo empresa con sus correos)
+                // Renderizar la vista de Empresas
                 const gridCompanies = document.getElementById('companies-grid');
-                if (gridCompanies) gridCompanies.innerHTML = grupos.filter(g => g.tipo === 'empresa').map(g => {
-                    const cuentaAsociada = listaCuentas.find(c => c.grupo_id === g.id);
-                    const emailEmpresa = cuentaAsociada ? cuentaAsociada.email : 'Sin correo vinculado';
-                    return `
-                    <div class="card border-l-4 border-slate-200">
-                        <p class="font-black text-slate-900 uppercase text-xs">${g.nombre}</p>
-                        <p class="text-[10px] text-indigo-600 font-bold mt-1">${emailEmpresa}</p>
-                        <div class="mt-4 flex items-center gap-2">
-                            <div class="w-2 h-2 rounded-full" style="background-color: ${g.color}"></div>
-                            <span class="text-[8px] font-black uppercase text-slate-400">Etiqueta Activa</span>
+                if (gridCompanies) {
+                    log("-> Renderizando vista de empresas...");
+                    gridCompanies.innerHTML = grupos.filter(g => g.tipo === 'empresa').map(g => {
+                        const cuentaAsociada = listaCuentas.find(c => c.grupo_id === g.id);
+                        const emailEmpresa = cuentaAsociada ? cuentaAsociada.email : 'No especificado';
+
+                        return `
+                        <div class="card flex flex-col justify-center items-center text-center p-6 transition-all hover:shadow-lg hover:-translate-y-1" style="border-top: 4px solid ${g.color || '#e2e8f0'}">
+                            <div class="w-16 h-16 mb-4 rounded-full bg-slate-100 flex items-center justify-center font-black text-2xl text-slate-400">
+                                ${g.nombre.charAt(0)}
+                            </div>
+                            <p class="font-black text-slate-800 text-sm truncate w-full">${g.nombre}</p>
+                            <p class="text-xs text-slate-400 font-medium truncate w-full">${emailEmpresa}</p>
                         </div>
-                    </div>
-                `}).join('');
+                        `;
+                    }).join('');
+                    log("-> Vista de empresas renderizada.");
+                }
 
-                // Actualizar select de modal operador
+                // Actualizar select del modal de operador con los grupos disponibles
                 const select = document.getElementById('acc-group');
-                if (select) select.innerHTML = '<option value="">--- Vincular a Etiqueta ---</option>' + 
-                    grupos.map(g => `<option value="${g.id}">${g.nombre} (${g.tipo})</option>`).join('');
+                if (select) {
+                    select.innerHTML = '<option value="">--- Vincular a Etiqueta ---</option>' + 
+                        grupos.map(g => `<option value="${g.id}">${g.nombre} (${g.tipo})</option>`).join('');
+                }
 
-                log("Vistas de grupos y empresas actualizadas.");
-            } catch (e) { log(`Error Grupos: ${e.message}`); throw e; }
+                log("Carga de grupos completada.");
+            } catch (e) { 
+                log(`!! ERROR en cargarGrupos: ${e.message}`); 
+                throw e; 
+            }
         }
 
         function prepararNuevoGrupo() {
@@ -476,6 +473,26 @@
                 }).join('');
 
                 log("Operadores agrupados en carpetas visuales.");
+
+                // 4. Renderizar lista de Webmails en el Sidebar
+                const webmailContainer = document.getElementById('sidebar-webmail-list');
+                if (webmailContainer) {
+                    const webmailCuentas = operadores.filter(o => o.tipo_cuenta === 'webmail');
+                    if (webmailCuentas.length > 0) {
+                        webmailContainer.innerHTML = webmailCuentas.map(w => {
+                            const grupo = grupos.find(g => g.id === w.grupo_id);
+                            return `
+                            <a href="#" class="px-4 py-2 flex items-center gap-3 rounded-lg hover:bg-slate-800 transition-colors">
+                                <div class="w-2 h-2 rounded-full" style="background-color: ${grupo ? grupo.color : '#cbd5e1'}"></div>
+                                <span class="text-sm font-semibold text-slate-300 truncate">${grupo ? grupo.nombre : 'Empresa Desconocida'}</span>
+                            </a>
+                            `;
+                        }).join('');
+                    } else {
+                        webmailContainer.innerHTML = '<p class="px-4 text-xs text-slate-500 italic">No hay webmails.</p>';
+                    }
+                }
+
             } catch (e) { log(`Error Operadores: ${e.message}`); throw e; }
         }
 

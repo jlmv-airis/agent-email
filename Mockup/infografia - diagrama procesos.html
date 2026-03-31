@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIRIS - Ruta de Acceso y Funciones</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        .step-card { background: white; border-radius: 1.5rem; border: 1px solid #e2e8f0; transition: all 0.3s ease; }
+        .step-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05); }
+        .line-path { position: absolute; left: 50%; top: 100%; width: 2px; height: 3rem; background: #e2e8f0; transform: translateX(-50%); z-index: 0; }
+        .role-badge { font-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full; }
+    </style>
+</head>
+<body class="p-4 md:p-12">
+
+    <div class="max-w-5xl mx-auto space-y-16">
+        <!-- CABECERA -->
+        <header class="text-center space-y-6">
+            <img src="gan-airis-firma.webp" alt="Logo AIRIS" class="h-20 mx-auto object-contain" onerror="this.src='https://via.placeholder.com/300x100/0f172a/ffffff?text=AIRIS';">
+            <div class="space-y-2">
+                <h1 class="text-4xl font-black text-slate-900 tracking-tight italic uppercase">Ruta de <span class="text-indigo-600">Gestión de Usuarios</span></h1>
+                <p class="text-slate-500 font-medium">Proceso de Acceso y Facultades Operativas V1.0</p>
+            </div>
+        </header>
+
+        <!-- FLUJO DE ACCESO -->
+        <div class="space-y-12">
+            
+            <!-- 1. PORTAL DE LOGIN -->
+            <div class="relative flex flex-col items-center">
+                <div class="step-card p-8 w-full max-w-2xl border-2 border-indigo-100 relative z-10">
+                    <div class="flex items-center gap-6">
+                        <div class="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-indigo-200">
+                            <i data-lucide="log-in" class="w-8 h-8"></i>
+                        </div>
+                        <div class="flex-1">
+                            <span class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Paso 01</span>
+                            <h3 class="text-2xl font-black text-slate-800 italic uppercase">Portal de Acceso Único</h3>
+                            <p class="text-sm text-slate-500 mt-1">El usuario ingresa sus credenciales corporativas. El sistema valida el rango mediante MFA.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="line-path"></div>
+            </div>
+
+            <!-- 2. IDENTIFICACIÓN DE ROL -->
+            <div class="relative flex flex-col items-center pt-12">
+                <div class="step-card p-8 w-full max-w-2xl border-2 border-slate-100 relative z-10">
+                    <div class="flex items-center gap-6">
+                        <div class="w-16 h-16 bg-slate-800 rounded-2xl flex items-center justify-center text-white">
+                            <i data-lucide="shield-check" class="w-8 h-8"></i>
+                        </div>
+                        <div class="flex-1">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Paso 02</span>
+                            <h3 class="text-2xl font-black text-slate-800 italic uppercase">Asignación de Facultades</h3>
+                            <p class="text-sm text-slate-500 mt-1">Dependiendo del perfil en la base de datos, el usuario es derivado a su consola específica.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="line-path"></div>
+            </div>
+
+            <!-- 3. DERIVACIÓN A CONSOLAS -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 pt-12 relative z-10">
+                
+                <!-- FUNCIONES DEVOPS -->
+                <div class="step-card p-6 border-t-4 border-t-cyan-500 flex flex-col">
+                    <div class="p-3 bg-cyan-100 text-cyan-600 rounded-xl w-fit mb-4">
+                        <i data-lucide="cpu" class="w-6 h-6"></i>
+                    </div>
+                    <h4 class="font-black text-slate-800 uppercase italic mb-2">DevOps Control</h4>
+                    <p class="text-[11px] text-slate-500 mb-6 leading-relaxed">Control total de la infraestructura técnica.</p>
+                    <ul class="space-y-3 flex-grow">
+                        <li class="flex items-center gap-2 text-[10px] font-bold text-slate-600 uppercase border-b border-slate-50 pb-2">
+                            <i data-lucide="server" class="w-3 h-3 text-cyan-500"></i> Estado de Servidores
+                        </li>
+                        <li class="flex items-center gap-2 text-[10px] font-bold text-slate-600 uppercase border-b border-slate-50 pb-2">
+                            <i data-lucide="database" class="w-3 h-3 text-cyan-500"></i> CRUD de Operadores
+                        </li>
+                        <li class="flex items-center gap-2 text-[10px] font-bold text-slate-600 uppercase border-b border-slate-50 pb-2">
+                            <i data-lucide="terminal" class="w-3 h-3 text-cyan-500"></i> Auditoría de Logs
+                        </li>
+                    </ul>
+                    <div class="mt-6 text-[9px] font-black text-cyan-600 bg-cyan-50 p-2 rounded text-center">TECNOLOGÍA & ESCALABILIDAD</div>
+                </div>
+
+                <!-- FUNCIONES ADMIN -->
+                <div class="step-card p-6 border-t-4 border-t-indigo-600 shadow-xl shadow-indigo-500/10 flex flex-col scale-105 bg-indigo-50/10">
+                    <div class="p-3 bg-indigo-100 text-indigo-600 rounded-xl w-fit mb-4">
+                        <i data-lucide="crown" class="w-6 h-6"></i>
+                    </div>
+                    <h4 class="font-black text-slate-800 uppercase italic mb-2">Admin Panel</h4>
+                    <p class="text-[11px] text-slate-500 mb-6 leading-relaxed">Control estratégico de la operación.</p>
+                    <ul class="space-y-3 flex-grow">
+                        <li class="flex items-center gap-2 text-[10px] font-bold text-slate-600 uppercase border-b border-indigo-100 pb-2">
+                            <i data-lucide="users" class="w-3 h-3 text-indigo-600"></i> Delegar a Areas 1 y 2
+                        </li>
+                        <li class="flex items-center gap-2 text-[10px] font-bold text-slate-600 uppercase border-b border-indigo-100 pb-2">
+                            <i data-lucide="eye" class="w-3 h-3 text-indigo-600"></i> Supervisar Calidad IA
+                        </li>
+                        <li class="flex items-center gap-2 text-[10px] font-bold text-slate-600 uppercase border-b border-indigo-100 pb-2">
+                            <i data-lucide="bar-chart" class="w-3 h-3 text-indigo-600"></i> Reportes de Eficiencia
+                        </li>
+                    </ul>
+                    <div class="mt-6 text-[9px] font-black text-indigo-600 bg-indigo-100 p-2 rounded text-center">NEGOCIO & PRODUCTIVIDAD</div>
+                </div>
+
+                <!-- FUNCIONES OPERADOR -->
+                <div class="step-card p-6 border-t-4 border-t-emerald-500 flex flex-col">
+                    <div class="p-3 bg-emerald-100 text-emerald-600 rounded-xl w-fit mb-4">
+                        <i data-lucide="headset" class="w-6 h-6"></i>
+                    </div>
+                    <h4 class="font-black text-slate-800 uppercase italic mb-2">Vista Operador</h4>
+                    <p class="text-[11px] text-slate-500 mb-6 leading-relaxed">Ejecución y atención directa.</p>
+                    <ul class="space-y-3 flex-grow">
+                        <li class="flex items-center gap-2 text-[10px] font-bold text-slate-600 uppercase border-b border-slate-50 pb-2">
+                            <i data-lucide="zap" class="w-3 h-3 text-emerald-500"></i> Responder con IA
+                        </li>
+                        <li class="flex items-center gap-2 text-[10px] font-bold text-slate-600 uppercase border-b border-slate-50 pb-2">
+                            <i data-lucide="folder" class="w-3 h-3 text-emerald-500"></i> Guardado en Drive/RFC
+                        </li>
+                        <li class="flex items-center gap-2 text-[10px] font-bold text-slate-600 uppercase border-b border-slate-50 pb-2">
+                            <i data-lucide="mail-check" class="w-3 h-3 text-emerald-500"></i> Cierre de Tickets
+                        </li>
+                    </ul>
+                    <div class="mt-6 text-[9px] font-black text-emerald-600 bg-emerald-50 p-2 rounded text-center">ATENCIÓN & RESOLUCIÓN</div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- FOOTER CORPORATIVO -->
+        <footer class="pt-12 border-t border-slate-200 text-center space-y-4">
+            <div class="flex justify-center gap-12 opacity-40">
+                <i data-lucide="shield" class="w-5 h-5"></i>
+                <i data-lucide="zap" class="w-5 h-5"></i>
+                <i data-lucide="database" class="w-5 h-5"></i>
+                <i data-lucide="globe" class="w-5 h-5"></i>
+            </div>
+            <p class="text-[10px] text-slate-400 font-black uppercase tracking-[0.4em]">Agent Email AI V1.0 • Airis Administración Empresarial • 2026</p>
+        </footer>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agente Email AI V1.0 - Panel del Administrador</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Iconos Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; color: #0f172a; }
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .status-pill { padding: 4px 10px; border-radius: 9999px; font-size: 10px; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; gap: 4px; }
+        .progress-bar { transition: width 1s ease-in-out; }
+        .node-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+        .inbox-row:hover { background-color: #f8fafc; cursor: pointer; }
+        .step-bubble { width: 24px; height: 24px; border-radius: 50%; background: #6366f1; color: white; display: flex; items-center; justify-content: center; font-size: 10px; font-weight: 800; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+        <!-- HEADER VISTA ADMIN -->
+        <header class="flex flex-col md:flex-row justify-between items-center bg-slate-900 text-white p-8 rounded-[2rem] shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-8 opacity-10">
+                <i data-lucide="shield-check" class="w-32 h-32"></i>
+            </div>
+            <div class="relative z-10">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="bg-indigo-500 text-[10px] px-2 py-1 rounded font-black tracking-widest flex items-center gap-1">
+                        <i data-lucide="lock" class="w-3 h-3"></i> ACCESO ADMIN
+                    </span>
+                    <span class="text-slate-400 text-xs font-bold uppercase tracking-widest">Vista de Administración V1.0</span>
+                </div>
+                <h1 class="text-4xl font-extrabold flex items-center gap-3">
+                    Agente Email AI <span class="text-indigo-400">V1.0</span>
+                </h1>
+                <p class="text-indigo-200/60 text-xs font-bold mt-1 uppercase tracking-tighter">Panel de Control y Supervisión Global</p>
+            </div>
+            <div class="flex gap-6 mt-6 md:mt-0 relative z-10">
+                <div class="text-center px-6 border-r border-slate-700">
+                    <i data-lucide="bar-chart-2" class="w-5 h-5 mx-auto mb-1 text-slate-400"></i>
+                    <p class="text-[10px] text-slate-400 uppercase font-black">Tickets Totales</p>
+                    <p class="text-3xl font-black">10</p>
+                </div>
+                <div class="text-center px-6">
+                    <i data-lucide="zap" class="w-5 h-5 mx-auto mb-1 text-indigo-400"></i>
+                    <p class="text-[10px] text-indigo-400 uppercase font-black">Eficiencia IA</p>
+                    <p class="text-3xl font-black text-indigo-400">100%</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- DASHBOARD CENTRAL DEL ADMINISTRADOR -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Monitor de Flujo Operativo -->
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+                    <div class="flex justify-between items-center mb-8">
+                        <h2 class="text-xl font-black flex items-center gap-2 text-slate-800">
+                            <i data-lucide="layout-dashboard" class="w-6 h-6 text-indigo-600"></i> Consola de Supervisión
+                        </h2>
+                        <div class="flex gap-2">
+                            <span class="status-pill bg-emerald-100 text-emerald-700">
+                                <i data-lucide="check-circle" class="w-3 h-3"></i> 6 Resueltos
+                            </span>
+                            <span class="status-pill bg-amber-100 text-amber-700">
+                                <i data-lucide="clock" class="w-3 h-3"></i> 4 Pendientes
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="text-[10px] text-slate-400 uppercase font-black border-b">
+                                    <th class="pb-4">Cliente / RFC</th>
+                                    <th class="pb-4">Tipo de Solicitud</th>
+                                    <th class="pb-4">Operador Asignado</th>
+                                    <th class="pb-4">Estatus Real</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <tr>
+                                    <td class="py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="node-icon bg-indigo-50 text-indigo-600"><i data-lucide="user"></i></div>
+                                            <div>
+                                                <p class="font-bold">Inversiones S.A.</p>
+                                                <p class="text-[9px] text-slate-400 font-mono">ISA123456789</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4">
+                                        <div class="flex items-center gap-2 text-slate-500">
+                                            <i data-lucide="file-text" class="w-3 h-3"></i> Comprobante Fiscal
+                                        </div>
+                                    </td>
+                                    <td class="py-4">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[8px] font-bold">A</div>
+                                            <span class="font-bold text-indigo-600">Operador A</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4"><span class="status-pill bg-emerald-50 text-emerald-600 border border-emerald-100">Finalizado</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="node-icon bg-indigo-50 text-indigo-600"><i data-lucide="building"></i></div>
+                                            <div>
+                                                <p class="font-bold">Constructora G.</p>
+                                                <p class="text-[9px] text-slate-400 font-mono">CGU987654321</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4">
+                                        <div class="flex items-center gap-2 text-slate-500">
+                                            <i data-lucide="receipt" class="w-3 h-3"></i> Factura Mensual
+                                        </div>
+                                    </td>
+                                    <td class="py-4">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-6 h-6 rounded-full bg-indigo-400 text-white flex items-center justify-center text-[8px] font-bold">B</div>
+                                            <span class="font-bold text-indigo-600">Operador B</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4"><span class="status-pill bg-emerald-50 text-emerald-600 border border-emerald-100">Finalizado</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="node-icon bg-indigo-50 text-indigo-600"><i data-lucide="truck"></i></div>
+                                            <div>
+                                                <p class="font-bold">Logística MX</p>
+                                                <p class="text-[9px] text-slate-400 font-mono">LMX554433221</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-4">
+                                        <div class="flex items-center gap-2 text-slate-500">
+                                            <i data-lucide="help-circle" class="w-3 h-3"></i> Duda en Pago #889
+                                        </div>
+                                    </td>
+                                    <td class="py-4">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-6 h-6 rounded-full bg-slate-400 text-white flex items-center justify-center text-[8px] font-bold">C</div>
+                                            <span class="font-bold text-indigo-600">Operador C</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4"><span class="status-pill bg-amber-50 text-amber-600 border border-amber-100 animate-pulse">En Proceso</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Control de Archivos Drive (Vista Admin) -->
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-lg font-bold flex items-center gap-2">
+                            <i data-lucide="folder-search" class="w-5 h-5 text-emerald-600"></i> Auditoría de Expedientes
+                        </h3>
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sincronización Cloud OK</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-4 hover:border-emerald-200 transition-colors">
+                            <div class="w-10 h-10 bg-white rounded-lg shadow-sm flex items-center justify-center text-emerald-500">
+                                <i data-lucide="folder"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-[9px] text-slate-400 font-black">EXP: ISA123456789</p>
+                                <p class="text-xs font-bold">Comprobante_Fiscal.pdf</p>
+                            </div>
+                            <i data-lucide="external-link" class="w-3 h-3 text-slate-300"></i>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-4 hover:border-emerald-200 transition-colors">
+                            <div class="w-10 h-10 bg-white rounded-lg shadow-sm flex items-center justify-center text-emerald-500">
+                                <i data-lucide="folder"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-[9px] text-slate-400 font-black">EXP: CGU987654321</p>
+                                <p class="text-xs font-bold">Factura_V2.pdf</p>
+                            </div>
+                            <i data-lucide="external-link" class="w-3 h-3 text-slate-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL LATERAL: MÉTRICAS DE EQUIPO -->
+            <aside class="space-y-6">
+                <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+                    <h2 class="text-xl font-black mb-8 flex items-center gap-2 text-slate-800">
+                        <i data-lucide="users" class="w-6 h-6 text-indigo-600"></i> Rendimiento de Equipo
+                    </h2>
+                    
+                    <div class="space-y-8">
+                        <!-- Operador A -->
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center text-[10px] font-bold">A</div>
+                                    <p class="font-bold text-sm text-slate-700">Op. Area 1</p>
+                                </div>
+                                <span class="text-xs font-black text-slate-500">3 / 4 Resueltos</span>
+                            </div>
+                            <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                                <div class="bg-emerald-500 h-full progress-bar" style="width: 75%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Operador B -->
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 bg-indigo-400 text-white rounded-full flex items-center justify-center text-[10px] font-bold">B</div>
+                                    <p class="font-bold text-sm text-slate-700">Op. Area 2</p>
+                                </div>
+                                <span class="text-xs font-black text-slate-500">2 / 3 Resueltos</span>
+                            </div>
+                            <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                                <div class="bg-emerald-500 h-full progress-bar" style="width: 66%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Operador C -->
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 bg-slate-400 text-white rounded-full flex items-center justify-center text-[10px] font-bold">C</div>
+                                    <p class="font-bold text-sm text-slate-700">Op. Soporte</p>
+                                </div>
+                                <span class="text-xs font-black text-slate-500">1 / 3 Resueltos</span>
+                            </div>
+                            <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                                <div class="bg-amber-400 h-full progress-bar" style="width: 33%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Centro de Decisiones Admin -->
+                <div class="bg-indigo-900 p-6 rounded-[2rem] text-white shadow-xl relative overflow-hidden border border-indigo-700">
+                    <div class="absolute -bottom-4 -right-4 opacity-10">
+                        <i data-lucide="settings-2" class="w-24 h-24"></i>
+                    </div>
+                    <h4 class="font-bold text-sm mb-4 flex items-center gap-2">
+                        <i data-lucide="eye" class="w-4 h-4 text-indigo-300"></i> Control Maestro
+                    </h4>
+                    <p class="text-[10px] opacity-70 leading-relaxed mb-6">
+                        Como Administrador, supervise la calidad de las respuestas generadas y ajuste las asignaciones dinámicamente.
+                    </p>
+                    <button class="w-full bg-indigo-500 hover:bg-indigo-400 text-white py-3 rounded-2xl font-black text-[10px] uppercase transition-all shadow-lg border border-indigo-400/30">
+                        Configurar Flujos
+                    </button>
+                </div>
+            </aside>
+        </section>
+
+        <!-- BANDEJA GLOBAL DE PENDIENTES (AHORA ARRIBA DEL PROTOCOLO) -->
+        <section class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-slate-50 px-6 py-4 border-b flex items-center justify-between">
+                <h3 class="font-black text-slate-800 flex items-center gap-2">
+                    <i data-lucide="inbox" class="w-5 h-5 text-indigo-600"></i> Cola de Pendientes Global (4)
+                </h3>
+                <div class="flex gap-4">
+                    <button class="text-[9px] font-black uppercase text-slate-400 hover:text-indigo-600 transition-colors">Re-asignar Todo</button>
+                    <i data-lucide="filter" class="w-4 h-4 text-slate-400 cursor-pointer"></i>
+                </div>
+            </div>
+            <div class="divide-y divide-slate-100">
+                <div class="inbox-row px-6 py-4 flex items-center gap-6">
+                    <div class="flex items-center gap-3 w-48 shrink-0">
+                        <i data-lucide="star" class="w-4 h-4 text-slate-300"></i>
+                        <span class="font-bold text-sm truncate">Juan Pérez (Logística)</span>
+                    </div>
+                    <div class="flex-1 truncate">
+                        <span class="font-bold text-sm text-slate-800">Urgente: Factura extraviada</span>
+                        <span class="text-slate-400 text-sm ml-2">- Hola, necesito que me reenvíen la factura...</span>
+                    </div>
+                    <div class="w-20 text-right text-xs font-bold text-slate-400 shrink-0">14:20 PM</div>
+                </div>
+                <div class="inbox-row px-6 py-4 flex items-center gap-6">
+                    <div class="flex items-center gap-3 w-48 shrink-0">
+                        <i data-lucide="star" class="w-4 h-4 text-amber-400 fill-amber-400"></i>
+                        <span class="font-bold text-sm truncate">María García (Finanzas)</span>
+                    </div>
+                    <div class="flex-1 truncate">
+                        <span class="font-bold text-sm text-slate-800">Revisión de RFC</span>
+                        <span class="text-slate-400 text-sm ml-2">- Adjunto el documento actualizado...</span>
+                    </div>
+                    <div class="w-20 text-right text-xs font-bold text-slate-400 shrink-0">13:45 PM</div>
+                </div>
+                <div class="inbox-row px-6 py-4 flex items-center gap-6">
+                    <div class="flex items-center gap-3 w-48 shrink-0">
+                        <i data-lucide="star" class="w-4 h-4 text-slate-300"></i>
+                        <span class="font-bold text-sm truncate">Carlos Ruiz (Soporte)</span>
+                    </div>
+                    <div class="flex-1 truncate">
+                        <span class="font-bold text-sm text-slate-800">Error en carga de archivos</span>
+                        <span class="text-slate-400 text-sm ml-2">- El cliente reporta que el portal no acepta el INE...</span>
+                    </div>
+                    <div class="w-20 text-right text-xs font-bold text-slate-400 shrink-0">12:10 PM</div>
+                </div>
+                <div class="inbox-row px-6 py-4 flex items-center gap-6">
+                    <div class="flex items-center gap-3 w-48 shrink-0">
+                        <i data-lucide="star" class="w-4 h-4 text-slate-300"></i>
+                        <span class="font-bold text-sm truncate">Ana Torres (Area 1)</span>
+                    </div>
+                    <div class="flex-1 truncate">
+                        <span class="font-bold text-sm text-slate-800">Solicitud cotización masiva</span>
+                        <span class="text-slate-400 text-sm ml-2">- Buen día, un cliente solicita precios para 500...</span>
+                    </div>
+                    <div class="w-20 text-right text-xs font-bold text-slate-400 shrink-0">11:30 AM</div>
+                </div>
+            </div>
+            <div class="bg-slate-50 px-6 py-3 text-center border-t">
+                <button class="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline transition-all">Ver Historial Completo de Administración</button>
+            </div>
+        </section>
+
+        <!-- PROTOCOLO DE DELEGACIÓN PASO A PASO (AHORA DEBAJO DE LA COLA) -->
+        <section class="bg-white rounded-[2.5rem] shadow-sm border border-slate-200 p-8 md:p-12 space-y-12">
+            <div class="text-center max-w-3xl mx-auto">
+                <h2 class="text-3xl font-black text-slate-900">Protocolo de Delegación y Control</h2>
+                <p class="text-slate-500 mt-2">Guía visual de cómo el administrador orquesta el equipo de trabajo.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 relative">
+                <!-- Paso 1 -->
+                <div class="space-y-4 relative z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="step-bubble">1</div>
+                        <h4 class="font-bold text-sm uppercase text-slate-400 tracking-widest">Identificar</h4>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-2xl border-2 border-dashed border-slate-200 min-h-[120px] flex flex-col justify-center text-center">
+                        <i data-lucide="search" class="w-6 h-6 mx-auto mb-2 text-indigo-600"></i>
+                        <p class="text-[10px] font-bold text-slate-600">Admin detecta ticket pendiente en cola global.</p>
+                    </div>
+                </div>
+
+                <!-- Paso 2 -->
+                <div class="space-y-4 relative z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="step-bubble">2</div>
+                        <h4 class="font-bold text-sm uppercase text-slate-400 tracking-widest">Asignar</h4>
+                    </div>
+                    <div class="bg-indigo-50 p-4 rounded-2xl border-2 border-indigo-100 min-h-[120px] flex flex-col justify-center">
+                        <div class="flex flex-col gap-2">
+                            <div class="flex items-center justify-between bg-white p-2 rounded-lg border border-indigo-100">
+                                <span class="text-[9px] font-bold">Seleccionar Operador</span>
+                                <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                            </div>
+                            <div class="bg-indigo-600 text-white p-2 rounded-lg text-[9px] font-black text-center uppercase">Delegar a Op. Area 1</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paso 3 -->
+                <div class="space-y-4 relative z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="step-bubble">3</div>
+                        <h4 class="font-bold text-sm uppercase text-slate-400 tracking-widest">Notificar</h4>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-2xl border-2 border-dashed border-slate-200 min-h-[120px] flex flex-col justify-center text-center">
+                        <i data-lucide="bell" class="w-6 h-6 mx-auto mb-2 text-emerald-500"></i>
+                        <p class="text-[10px] font-bold text-slate-600">El sistema avisa al operador en tiempo real.</p>
+                    </div>
+                </div>
+
+                <!-- Paso 4 -->
+                <div class="space-y-4 relative z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="step-bubble">4</div>
+                        <h4 class="font-bold text-sm uppercase text-slate-400 tracking-widest">Intervenir</h4>
+                    </div>
+                    <div class="bg-indigo-900 p-4 rounded-2xl shadow-xl min-h-[120px] flex flex-col justify-center text-center text-white">
+                        <i data-lucide="user-plus" class="w-6 h-6 mx-auto mb-2 text-indigo-300"></i>
+                        <p class="text-[10px] font-black uppercase">Admin Directo</p>
+                        <p class="text-[8px] opacity-60">Él también puede contestar y resolver al instante.</p>
+                    </div>
+                </div>
+
+                <!-- Línea conectora visual -->
+                <div class="hidden md:block absolute top-[70px] left-0 w-full h-0.5 bg-slate-100 z-0"></div>
+            </div>
+
+            <!-- SIMULACIÓN DEL PANEL DE ACCIÓN ADMIN -->
+            <div class="bg-slate-900 rounded-3xl overflow-hidden border border-white/5 shadow-2xl">
+                <div class="p-4 bg-indigo-600 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="mouse-pointer-2" class="w-4 h-4 text-white"></i>
+                        <span class="text-white text-[10px] font-black uppercase tracking-widest">Acción Administrativa sobre Ticket #8812</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <div class="w-2 h-2 rounded-full bg-white/30"></div>
+                        <div class="w-2 h-2 rounded-full bg-white/30"></div>
+                    </div>
+                </div>
+                <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <!-- Opción A: Delegar -->
+                    <div class="space-y-4">
+                        <h5 class="text-indigo-400 font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
+                            <i data-lucide="share-2" class="w-3 h-3"></i> Opción A: Delegación de Carga
+                        </h5>
+                        <div class="bg-white/5 p-6 rounded-2xl border border-white/10 space-y-6">
+                            <p class="text-slate-400 text-xs leading-relaxed">Transfiera la responsabilidad a un experto de área.</p>
+                            <div class="space-y-2">
+                                <div class="p-3 bg-indigo-500 text-white rounded-xl flex items-center justify-between hover:bg-indigo-400 transition-all cursor-pointer">
+                                    <div class="flex items-center gap-3">
+                                        <i data-lucide="headset" class="w-4 h-4"></i>
+                                        <span class="text-xs font-bold uppercase">Asignar a Area 1</span>
+                                    </div>
+                                    <i data-lucide="check" class="w-3 h-3"></i>
+                                </div>
+                                <div class="p-3 bg-white/5 text-slate-400 rounded-xl flex items-center justify-between hover:bg-white/10 transition-all cursor-pointer">
+                                    <div class="flex items-center gap-3">
+                                        <i data-lucide="receipt" class="w-4 h-4"></i>
+                                        <span class="text-xs font-bold uppercase">Asignar a Area 2</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Opción B: Intervenir -->
+                    <div class="space-y-4">
+                        <h5 class="text-emerald-400 font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
+                            <i data-lucide="zap" class="w-3 h-3"></i> Opción B: Intervención Directa
+                        </h5>
+                        <div class="bg-emerald-500/10 p-6 rounded-2xl border border-emerald-500/20 space-y-6">
+                            <p class="text-slate-300 text-xs leading-relaxed">El Administrador toma el teclado y resuelve sin intermediarios.</p>
+                            <button class="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-xl font-black text-xs uppercase flex items-center justify-center gap-3 shadow-lg shadow-emerald-900/40 transition-all">
+                                <i data-lucide="message-square" class="w-4 h-4"></i> Abrir Respuesta de Admin
+                            </button>
+                            <p class="text-[8px] text-center text-emerald-400/60 font-bold uppercase">Ideal para Clientes VIP o Casos Críticos</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FOOTER VISTA ADMIN -->
+        <footer class="text-center py-6">
+            <p class="text-[10px] text-slate-400 font-black uppercase tracking-[0.4em]">Panel Administrativo • Agente Email AI V1.0 • Airis-AE</p>
+        </footer>
+    </div>
+
+    <script>
+        // Inicializar iconos
+        lucide.createIcons();
+    </script>
+</body>
+</html>
