@@ -1,0 +1,35 @@
+{
+  "name": "Simulador - Hilos y Empresas Avanzado",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-manual",
+      "name": "Ejecutar Manual",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [100, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "TRUNCATE TABLE mensajes_entrantes; TRUNCATE TABLE grupos; \n\nINSERT INTO grupos (nombre, descripcion) VALUES \n('Tech Solutions', 'Soporte técnico avanzado'),\n('Global Logistics', 'Gestión de envíos internacionales'),\n('Eco Energy', 'Energías renovables');\n\nINSERT INTO mensajes_entrantes (thread_id, remitente, asunto, mensaje, fecha, cuenta_empresa, de_operador, carpeta) VALUES \n('thread_001', 'cliente@gmail.com', 'Problema con mi pedido', 'Hola, mi pedido no ha llegado todavía.', NOW() - INTERVAL '2 days', 'Global Logistics', false, 'inbox'),\n('thread_001', 'admin@airis.com', 'Re: Problema con mi pedido', 'Estamos revisando su envío con la transportista.', NOW() - INTERVAL '1 day', 'Global Logistics', true, 'inbox'),\n('thread_001', 'cliente@gmail.com', 'Re: Problema con mi pedido', 'Gracias, espero su respuesta.', NOW(), 'Global Logistics', false, 'inbox'),\n\n('thread_002', 'ingeniero@eco.com', 'Consulta técnica paneles', '¿Cuál es la eficiencia de los paneles V3?', NOW() - INTERVAL '10 days', 'Eco Energy', false, 'inbox'),\n\n('thread_003', 'user45@yahoo.com', 'Error en login', 'No puedo entrar a mi cuenta desde ayer.', NOW() - INTERVAL '12 hours', 'Tech Solutions', false, 'inbox');"
+      },
+      "id": "db-insert-threads",
+      "name": "Poblar Base de Datos",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [400, 300],
+      "credentials": {
+        "postgres": {
+          "id": "NUEVA_CREDENCIAL_POSTGRES",
+          "name": "Postgres Local (Docker)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Ejecutar Manual": {
+      "main": [[{"node": "db-insert-threads", "index": 0}]]
+    }
+  }
+}

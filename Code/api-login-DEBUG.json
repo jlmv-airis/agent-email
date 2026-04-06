@@ -1,0 +1,48 @@
+{
+  "name": "api-login-DEBUG",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "auth/v32/login",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*",
+          "allowedMethods": "GET,POST,PUT,DELETE,OPTIONS",
+          "allowedHeaders": "Content-Type,Authorization,ngrok-skip-browser-warning"
+        }
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [100, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = items[0].json.body;\n\n// MODO DEBUG: Acepta cualquier usuario 'admin' con cualquier pass\nif (body.username === 'admin') {\n  return [{\n    json: {\n      status: 'success',\n      token: 'debug-token-123',\n      user: {\n        username: 'admin',\n        role: 'dev'\n      }\n    }\n  }];\n} else {\n  return [{\n    json: {\n      status: 'error',\n      message: 'Usuario no reconocido por el sistema de DEBUG'\n    }\n  }];\n}"
+      },
+      "name": "Bypass Logic",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [400, 300]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": "={{$json.status === 'success' ? 200 : 401}}"
+        },
+        "responseBody": "={{$json}}"
+      },
+      "name": "Final Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [700, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "Bypass Logic", "index": 0 }]] },
+    "Bypass Logic": { "main": [[{ "node": "Final Response", "index": 0 }]] }
+  },
+  "active": true,
+  "settings": {}
+}

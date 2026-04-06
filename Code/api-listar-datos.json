@@ -1,0 +1,59 @@
+{
+  "name": "api-listar-datos",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "master-grupos",
+        "responseMode": "lastNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "name": "GET Grupos",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [100, 200]
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "master-cuentas",
+        "responseMode": "lastNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "name": "GET Cuentas",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [100, 400]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM grupos ORDER BY nombre ASC;",
+        "options": { "alwaysOutputData": true }
+      },
+      "name": "Q: Grupos",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [350, 200],
+      "credentials": { "postgres": { "id": "1", "name": "PostgreSQL Local" } }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM cuentas_email ORDER BY nombre_operador ASC;",
+        "options": { "alwaysOutputData": true }
+      },
+      "name": "Q: Cuentas",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [350, 400],
+      "credentials": { "postgres": { "id": "1", "name": "PostgreSQL Local" } }
+    }
+  ],
+  "connections": {
+    "GET Grupos": { "main": [[{ "node": "Q: Grupos", "index": 0 }]] },
+    "GET Cuentas": { "main": [[{ "node": "Q: Cuentas", "index": 0 }]] }
+  },
+  "active": true,
+  "settings": {}
+}

@@ -111,7 +111,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "=SELECT * FROM trazabilidad_logs WHERE cuenta_email = '{{ $json.query.email || $json.body.email }}' ORDER BY fecha DESC LIMIT 5;"
+        "query": "=SELECT * FROM trazabilidad_logs {{ ($json.query.email || $json.body.email) ? \"WHERE cuenta_email = '\" + ($json.query.email || $json.body.email) + \"'\" : \"\" }} ORDER BY fecha DESC LIMIT 10;"
       },
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.5,
@@ -167,6 +167,32 @@
       "id": "q-save-reply",
       "name": "Q: Guardar Respuesta",
       "credentials": { "postgres": { "id": "CREDENCIAL_POSTGRES_DOCKER", "name": "Postgres Local (Docker)" } }
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "master-usuarios",
+        "responseMode": "lastNode",
+        "responseData": "allEntries",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 1050],
+      "id": "wh-listar-usuarios",
+      "name": "API: Listar Usuarios"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, username, rol FROM usuarios ORDER BY username ASC;"
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [300, 1050],
+      "id": "q-usuarios",
+      "name": "Q: Listar Usuarios",
+      "credentials": { "postgres": { "id": "CREDENCIAL_POSTGRES_DOCKER", "name": "Postgres Local (Docker)" } }
     }
   ],
   "connections": {
@@ -175,6 +201,7 @@
     "API: Asignar/Cancelar Ticket": { "main": [[{ "node": "Q: Asignar/Cancelar", "type": "main", "index": 0 }]] },
     "API: Listar Cuentas": { "main": [[{ "node": "Q: Listar Cuentas", "type": "main", "index": 0 }]] },
     "API: Listar Grupos": { "main": [[{ "node": "Q: Listar Grupos", "type": "main", "index": 0 }]] },
-    "API: Enviar Respuesta Manual": { "main": [[{ "node": "Q: Guardar Respuesta", "type": "main", "index": 0 }]] }
+    "API: Enviar Respuesta Manual": { "main": [[{ "node": "Q: Guardar Respuesta", "type": "main", "index": 0 }]] },
+    "API: Listar Usuarios": { "main": [[{ "node": "Q: Listar Usuarios", "type": "main", "index": 0 }]] }
   }
 }

@@ -33,10 +33,10 @@
             </div>
 
             <div id="error-message" class="hidden text-red-500 text-xs font-bold text-center">
-                Credenciales incorrectas. Inténtalo de nuevo.
+                <!-- Se llena dinámicamente -->
             </div>
 
-            <button type="submit" 
+            <button type="submit" id="btn-login"
                 class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black py-4 rounded-2xl shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-1">
                 ENTRAR AL SISTEMA
             </button>
@@ -48,33 +48,68 @@
     </div>
 
     <script>
-        const N8N_URL = 'http://localhost:5678';
+        const N8N_URL_1 = 'http://127.0.0.1:5678';
+        const N8N_URL_2 = 'http://localhost:5678';
 
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const errorMsg = document.getElementById('error-message');
+            const btn = document.getElementById('btn-login');
 
-            try {
-                const response = await fetch(`${N8N_URL}/webhook/auth/login`, {
+            errorMsg.classList.add('hidden');
+            btn.disabled = true;
+            btn.innerText = 'VERIFICANDO...';
+
+            async function tryLogin(baseUrl) {
+                const url = `${baseUrl}/webhook/auth/v32/login`;
+                console.log('Intentando:', url);
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
 
-                const data = await response.json();
+                const text = await response.text();
+                console.log('Respuesta cruda de n8n:', text);
+
+                if (!text) {
+                    throw new Error("El servidor n8n devolvió una respuesta vacía. Verifica que el flujo esté activo y los nodos conectados.");
+                }
+
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    throw new Error("La respuesta de n8n no es un JSON válido: " + text.substring(0, 100));
+                }
+            }
+
+            try {
+                let data;
+                try {
+                    data = await tryLogin(N8N_URL_1);
+                } catch (e) {
+                    console.warn('Fallo localhost, reintentando con IP...');
+                    data = await tryLogin(N8N_URL_2);
+                }
 
                 if (data.status === 'success') {
                     localStorage.setItem('isLoggedIn', 'true');
                     localStorage.setItem('userData', JSON.stringify(data.user));
-                    window.location.href = 'Panel.html';
+                    console.log('Login exitoso, redirigiendo...');
+                    window.location.replace('Panel.html');
                 } else {
+                    errorMsg.innerText = data.message || 'Credenciales incorrectas';
                     errorMsg.classList.remove('hidden');
                 }
             } catch (error) {
-                console.error('Error:', error);
-                alert('No se pudo conectar con el servidor de autenticación (n8n).');
+                console.error('Error Login:', error);
+                errorMsg.innerText = 'Error de conexión con el servidor (n8n). Asegúrate de que n8n esté activo.';
+                errorMsg.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'ENTRAR AL SISTEMA';
             }
         });
     </script>

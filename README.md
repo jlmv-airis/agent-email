@@ -1,65 +1,72 @@
-# Agente de Email AI - Gestión Híbrida de Tickets
+# Agente de Email AI - Consola de Administración Global (V 1.2)
 
-Este proyecto es un sistema de automatización para la gestión de correos electrónicos utilizando **n8n**, diseñado para operar de forma híbrida (automática y manual) mediante un panel de control interactivo.
+Sistema de gestión híbrida masiva para correos electrónicos, diseñado para centralizar la operación de más de **150 empresas** en una interfaz profesional estilo Gmail, con asistencia de IA (Gemini) y lógica de hilos inteligentes.
 
-## 🚀 Guía de Inicio desde Cero
+## 🌟 Nuevas Funcionalidades (V 1.2)
+- **Interfaz Gmail-Pro:** Panel administrativo optimizado con buscador de empresas y vista densa de mensajes.
+- **Gestión de Hilos:** Agrupamiento automático de correos por `thread_id` para trazabilidad completa de conversaciones.
+- **Regla de Caducidad Individual:** Selector global para definir el cierre de hilos por inactividad (3, 7 o 15 días).
+- **Asignación Manual:** Capacidad para que el Administrador delegue hilos específicos a operadores.
+- **Banner de Gestión Maestra:** Distintivo visual para perfiles de alto nivel con privilegios totales.
 
-Sigue estos pasos para levantar el entorno completo en tu máquina local:
+---
+
+## 🚀 Guía de Despliegue Paso a Paso (Windows)
+
+Sigue estos pasos para poner el proyecto en marcha en un entorno Windows:
 
 ### 1. Requisitos Previos
-- **Docker Desktop** instalado y en ejecución.
-- **n8n** (incluido en el contenedor Docker del proyecto).
-- Una **API Key de Google Gemini** (Obtenla en [Google AI Studio](https://aistudio.google.com/)).
+- **Docker Desktop:** [Descárgalo aquí](https://www.docker.com/products/docker-desktop/) e instálalo. Asegúrate de que esté iniciado.
+- **Python 3.x:** Para servir el panel de control localmente.
+- **Git:** Para clonar y gestionar el repositorio.
 
-### 2. Configuración Inicial
-Ejecuta el script de PowerShell en la raíz del proyecto para crear las carpetas de persistencia de datos:
+### 2. Clonación y Configuración de Carpetas
+Abre una terminal de PowerShell como administrador y ejecuta:
 ```powershell
+# Clonar el proyecto (si no lo has hecho)
+git clone <url-del-repositorio>
+cd agent-email
+
+# Ejecutar script de preparación de volúmenes Docker
 .\Setup-AsesoriasIA.ps1
 ```
 
-### 3. Levantar Infraestructura (Docker)
-Navega a la carpeta de configuración y levanta los servicios de n8n y PostgreSQL:
+### 3. Levantar la Infraestructura (Docker)
+Levanta n8n y la base de datos PostgreSQL:
 ```powershell
 cd Code/n8n-local
 docker-compose up -d
 ```
-*Nota: n8n estará disponible en [http://localhost:5678](http://localhost:5678)*.
+*n8n estará activo en: http://localhost:5678*
 
-### 4. Configuración de Base de Datos
-Crea las tablas necesarias ejecutando el siguiente comando en tu terminal (esto inyectará el SQL directamente en el contenedor):
+### 4. Inicialización de la Base de Datos
+Ejecuta este comando para crear las tablas necesarias para la V 1.2:
 ```powershell
-docker exec -i n8n-local-postgres-1 psql -U n8n_user -d n8n_db -c "CREATE TABLE IF NOT EXISTS cuentas_email (id SERIAL PRIMARY KEY, email VARCHAR(255) UNIQUE NOT NULL, activo BOOLEAN DEFAULT TRUE); CREATE TABLE IF NOT EXISTS mensajes_entrantes (id SERIAL PRIMARY KEY, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP, remitente VARCHAR(255), asunto TEXT, mensaje TEXT, estatus VARCHAR(50) DEFAULT 'pendiente'); CREATE TABLE IF NOT EXISTS trazabilidad_logs (id SERIAL PRIMARY KEY, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP, cuenta_email VARCHAR(255), asunto TEXT, estatus VARCHAR(50), respuesta_ia TEXT);"
+docker exec -i n8n-local-postgres-1 psql -U n8n_user -d n8n_db -c "
+CREATE TABLE IF NOT EXISTS usuarios (id SERIAL PRIMARY KEY, username VARCHAR(50) UNIQUE, password_hash VARCHAR(255), rol VARCHAR(20));
+CREATE TABLE IF NOT EXISTS grupos (id SERIAL PRIMARY KEY, nombre VARCHAR(100), color VARCHAR(20), tipo VARCHAR(20));
+CREATE TABLE IF NOT EXISTS configuracion (clave VARCHAR(50) PRIMARY KEY, valor VARCHAR(255));
+CREATE TABLE IF NOT EXISTS mensajes_entrantes (id SERIAL PRIMARY KEY, fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP, remitente VARCHAR(255), asunto TEXT, mensaje TEXT, thread_id VARCHAR(100), cuenta_empresa VARCHAR(255), leido BOOLEAN DEFAULT FALSE, de_operador BOOLEAN DEFAULT FALSE, asignado_a VARCHAR(50));
+INSERT INTO usuarios (username, password_hash, rol) VALUES ('admin', 'admin', 'admin') ON CONFLICT DO NOTHING;
+INSERT INTO configuracion (clave, valor) VALUES ('caducidad_hilos_dias', '7') ON CONFLICT DO NOTHING;
+"
 ```
 
-### 5. Importación de Workflows en n8n
-Importa los archivos JSON de la carpeta `Code/` en n8n:
-1. **Agente Maestro (`agente-maestro-multicuenta.json`):** El motor principal que consulta la base de datos y llama a Gemini.
-2. **API Listar Mensajes (`api-listar-mensajes.json`):** Alimenta la bandeja de entrada del Panel HTML.
-3. **API Obtener Logs (`api-obtener-logs.json`):** Recupera las sugerencias de la IA para mostrarlas en el Panel.
+### 5. Ejecutar el Panel de Control
+Vuelve a la raíz del proyecto e inicia el servidor web:
+```powershell
+python server.py
+```
+**Acceso al Panel:** Abre tu navegador en [http://localhost:8000/Panel.html](http://localhost:8000/Panel.html).
 
 ---
 
-## 📂 Explicación de los Workflows
-
-### 🤖 Agente Maestro (IA Gemini)
-- **Función:** Se ejecuta periódicamente para procesar cuentas activas.
-- **Lógica:** Realiza una llamada directa (HTTP Request) a la API de **Gemini 2.0 Flash** enviando el contexto del ticket. 
-- **Resultado:** Guarda la respuesta profesional generada en la tabla `trazabilidad_logs`.
-
-### 📥 API Listar Mensajes
-- **Función:** Actúa como un puente entre la base de datos y la interfaz visual.
-- **Lógica:** Recibe una petición GET desde el Panel y devuelve los últimos 10 mensajes de la tabla `mensajes_entrantes`.
-
-### 📋 API Obtener Logs
-- **Función:** Proporciona la "inteligencia" al panel en tiempo real.
-- **Lógica:** Cuando el usuario hace clic en un mensaje, esta API busca la última sugerencia de la IA para ese caso y la devuelve en formato JSON.
+## 📂 Estructura del Proyecto
+- **/Code:** Contiene los flujos JSON de n8n y la configuración de Docker Compose.
+- **/Mockup:** Diseños e infografías del proceso de desarrollo.
+- **Panel.html:** Interfaz principal de administración (V 1.2 Forzada).
+- **server.py:** Servidor ligero para desarrollo local.
 
 ---
-
-## 🔧 Uso del Panel de Control
-1. Ejecuta `Abrir-Panel.bat` en la raíz del proyecto.
-2. Asegúrate de que la URL en el panel sea `http://localhost:5678`.
-3. Navega a **Bandeja de Entrada** para ver y gestionar los tickets asistidos por IA.
-
----
-**Versión actual:** V 0.0.1 (Rama de Desarrollo)
+**Desarrollado por:** AIRIS AI Team  
+**Estado:** Estable (Rama de Desarrollo)

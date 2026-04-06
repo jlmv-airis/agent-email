@@ -1,0 +1,57 @@
+{
+  "name": "agente-maestro-gemini_v1.0",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "master-ia",
+        "responseMode": "lastNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "name": "Webhook (IA)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [100, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "={{ \"SELECT * FROM mensajes_entrantes WHERE thread_id = '\" + $json.body.thread_id + \"' ORDER BY fecha ASC;\" }}",
+        "options": { "alwaysOutputData": true }
+      },
+      "name": "Get Thread Context",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [350, 300],
+      "credentials": { "postgres": { "id": "1", "name": "PostgreSQL Local" } }
+    },
+    {
+      "parameters": {
+        "model": "gemini-2.0-flash",
+        "prompt": "={{ \"Eres un asistente experto en atención al cliente. Analiza el siguiente hilo de correos y genera una respuesta sugerida profesional, amable y resolutiva. \\n\\nHISTORIAL:\\n\" + items.map(i => (i.json.de_operador ? 'EMPRESA: ' : 'CLIENTE: ') + i.json.mensaje).join('\\n\\n') + \"\\n\\nResponde en el mismo idioma que el cliente y asegúrate de sonar natural. No incluyas firmas genéricas, el operador la añadirá después.\" }}",
+        "options": {}
+      },
+      "name": "Gemini Engine",
+      "type": "n8n-nodes-base.googleGemini",
+      "typeVersion": 1,
+      "position": [600, 300],
+      "credentials": { "googleGemini": { "id": "1", "name": "Google Gemini Key" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    status: 'success',\n    sugerencia: items[0].json.text\n  }\n}];"
+      },
+      "name": "Format IA Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Webhook (IA)": { "main": [[{ "node": "Get Thread Context", "index": 0 }]] },
+    "Get Thread Context": { "main": [[{ "node": "Gemini Engine", "index": 0 }]] },
+    "Gemini Engine": { "main": [[{ "node": "Format IA Response", "index": 0 }]] }
+  },
+  "active": true,
+  "settings": {}
+}

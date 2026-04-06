@@ -1,72 +1,46 @@
 {
-  "name": "API Maestra - Gestión de Operadores y Grupos",
+  "name": "api-maestra-gestion_v2.2",
   "nodes": [
     {
-      "parameters": { "httpMethod": "GET", "path": "listar-cuentas", "responseMode": "lastNode" },
-      "type": "n8n-nodes-base.webhook", "typeVersion": 2, "position": [0, 0], "id": "wh-list-acc", "name": "GET Listar Cuentas"
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "master-gestion",
+        "responseMode": "lastNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "id": "webhook-master-gestion",
+      "name": "Webhook (Master Gestion)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [100, 300]
     },
     {
-      "parameters": { "httpMethod": "POST", "path": "registro-cuenta", "responseMode": "lastNode" },
-      "type": "n8n-nodes-base.webhook", "typeVersion": 2, "position": [0, 150], "id": "wh-reg-acc", "name": "POST Registro Cuenta"
-    },
-    {
-      "parameters": { "httpMethod": "POST", "path": "estado-cuenta", "responseMode": "lastNode" },
-      "type": "n8n-nodes-base.webhook", "typeVersion": 2, "position": [0, 300], "id": "wh-stat-acc", "name": "POST Estado Cuenta"
-    },
-    {
-      "parameters": { "httpMethod": "GET", "path": "listar-grupos", "responseMode": "lastNode" },
-      "type": "n8n-nodes-base.webhook", "typeVersion": 2, "position": [0, 450], "id": "wh-list-grp", "name": "GET Listar Grupos"
-    },
-    {
-      "parameters": { "httpMethod": "POST", "path": "crear-grupo", "responseMode": "lastNode" },
-      "type": "n8n-nodes-base.webhook", "typeVersion": 2, "position": [0, 600], "id": "wh-cre-grp", "name": "POST Crear Grupo"
+      "parameters": {
+        "jsCode": "const body = items[0].json.body || {};\nconst action = body.action;\nlet sql = '';\n\nswitch(action) {\n  case 'enviar_correo':\n    sql = `UPDATE mensajes_entrantes SET estado_ticket = 'RESUELTO' WHERE thread_id = '${body.thread_id}'; \\n           INSERT INTO mensajes_entrantes (remitente, asunto, mensaje, cuenta_empresa, carpeta, thread_id, leido, de_operador, estado_ticket) \\n           SELECT cuenta_empresa, 'Re: ' || asunto, '${body.mensaje}', cuenta_empresa, 'sent', thread_id, true, true, 'RESUELTO' \\n           FROM mensajes_entrantes WHERE thread_id = '${body.thread_id}' LIMIT 1 RETURNING *;`;\n    break;\n  case 'mover_papelera':\n    sql = `UPDATE mensajes_entrantes SET carpeta = 'trash' WHERE thread_id = '${body.thread_id}' RETURNING *;`;\n    break;\n  case 'marcar_leido':\n    sql = `UPDATE mensajes_entrantes SET leido = true WHERE thread_id = '${body.thread_id}' RETURNING *;`;\n    break;\n  case 'asignar_ticket':\n    sql = `UPDATE mensajes_entrantes SET asignado_a = ${body.operador ? \"'\" + body.operador + \"'\" : 'NULL'}, estado_ticket = ${body.operador ? \"'ASIGNADO'\" : \"'PENDIENTE'\"} WHERE thread_id = '${body.thread_id}' RETURNING *;`;\n    break;\n  case 'guardar_borrador':\n    sql = `INSERT INTO mensajes_entrantes (remitente, asunto, mensaje, cuenta_empresa, carpeta, thread_id, leido, de_operador) \n           SELECT cuenta_empresa, 'Re: ' || asunto, '${body.mensaje}', cuenta_empresa, 'drafts', thread_id, true, true \n           FROM mensajes_entrantes WHERE thread_id = '${body.thread_id}' LIMIT 1 RETURNING *;`;\n    break;\n  case 'crear_grupo':\n    sql = `INSERT INTO grupos (nombre, descripcion, tipo, color) VALUES ('${body.nombre}', '${body.descripcion || ''}', '${body.tipo || 'empresa'}', '${body.color || '#4f46e5'}') RETURNING *;`;\n    break;\n  default:\n    sql = 'SELECT 1;';\n}\n\nreturn [{ json: { sql, action } }];"
+      },
+      "name": "Router Logic",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [350, 300]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT c.*, g.nombre as nombre_grupo FROM cuentas_email c LEFT JOIN grupos g ON c.grupo_id = g.id ORDER BY nombre_operador ASC;"
+        "query": "={{$json.sql}}",
+        "options": { "alwaysOutputData": true }
       },
-      "type": "n8n-nodes-base.postgres", "typeVersion": 2.5, "position": [300, 0], "id": "q-list-acc", "name": "Q: Listar Cuentas",
-      "credentials": { "postgres": { "id": "CREDENCIAL_POSTGRES_DOCKER", "name": "Postgres Local (Docker)" } }
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "=INSERT INTO cuentas_email (email, nombre_operador, tipo_cuenta, grupo_id, activo) \nVALUES ('{{ $json.body.email }}', '{{ $json.body.nombre }}', '{{ $json.body.tipo }}', {{ $json.body.grupo_id || 'NULL' }}, true)\nON CONFLICT (email) DO UPDATE SET nombre_operador = EXCLUDED.nombre_operador, tipo_cuenta = EXCLUDED.tipo_cuenta, grupo_id = EXCLUDED.grupo_id RETURNING *;"
-      },
-      "type": "n8n-nodes-base.postgres", "typeVersion": 2.5, "position": [300, 150], "id": "q-reg-acc", "name": "Q: Registro Cuenta",
-      "credentials": { "postgres": { "id": "CREDENCIAL_POSTGRES_DOCKER", "name": "Postgres Local (Docker)" } }
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "=UPDATE cuentas_email SET activo = {{ $json.body.activo }} WHERE email = '{{ $json.body.email }}' RETURNING *;"
-      },
-      "type": "n8n-nodes-base.postgres", "typeVersion": 2.5, "position": [300, 300], "id": "q-stat-acc", "name": "Q: Estado Cuenta",
-      "credentials": { "postgres": { "id": "CREDENCIAL_POSTGRES_DOCKER", "name": "Postgres Local (Docker)" } }
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "SELECT * FROM grupos ORDER BY nombre ASC;"
-      },
-      "type": "n8n-nodes-base.postgres", "typeVersion": 2.5, "position": [300, 450], "id": "q-list-grp", "name": "Q: Listar Grupos",
-      "credentials": { "postgres": { "id": "CREDENCIAL_POSTGRES_DOCKER", "name": "Postgres Local (Docker)" } }
-    },
-    {
-      "parameters": {
-        "operation": "executeQuery",
-        "query": "=INSERT INTO grupos (nombre, descripcion) VALUES ('{{ $json.body.nombre }}', '{{ $json.body.descripcion }}') RETURNING *;"
-      },
-      "type": "n8n-nodes-base.postgres", "typeVersion": 2.5, "position": [300, 600], "id": "q-cre-grp", "name": "Q: Crear Grupo",
-      "credentials": { "postgres": { "id": "CREDENCIAL_POSTGRES_DOCKER", "name": "Postgres Local (Docker)" } }
+      "id": "postgres-exec-gestion",
+      "name": "PostgreSQL (Exec)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "position": [600, 300],
+      "credentials": { "postgres": { "id": "1", "name": "PostgreSQL Local" } }
     }
   ],
   "connections": {
-    "GET Listar Cuentas": { "main": [[{ "node": "Q: Listar Cuentas", "type": "main", "index": 0 }]] },
-    "POST Registro Cuenta": { "main": [[{ "node": "Q: Registro Cuenta", "type": "main", "index": 0 }]] },
-    "POST Estado Cuenta": { "main": [[{ "node": "Q: Estado Cuenta", "type": "main", "index": 0 }]] },
-    "GET Listar Grupos": { "main": [[{ "node": "Q: Listar Grupos", "type": "main", "index": 0 }]] },
-    "POST Crear Grupo": { "main": [[{ "node": "Q: Crear Grupo", "type": "main", "index": 0 }]] }
-  }
+    "Webhook (Master Gestion)": { "main": [[{ "node": "Router Logic", "index": 0 }]] },
+    "Router Logic": { "main": [[{ "node": "PostgreSQL (Exec)", "index": 0 }]] }
+  },
+  "active": true,
+  "settings": {}
 }

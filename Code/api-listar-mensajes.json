@@ -1,40 +1,76 @@
 {
-  "name": "Herramienta - Listar Mensajes (FIX)",
+  "name": "api-listar-mensajes-v3.0",
   "nodes": [
     {
       "parameters": {
         "httpMethod": "GET",
-        "path": "listar-mensajes",
+        "path": "master-api",
         "responseMode": "lastNode",
-        "options": {}
+        "options": {
+          "allowedOrigins": "*"
+        }
       },
+      "id": "webhook-master-api",
+      "name": "Webhook (Master API)",
       "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2,
-      "position": [0, 0],
-      "id": "webhook-in",
-      "name": "Webhook"
+      "typeVersion": 1,
+      "position": [100, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const folder = items[0].json.query.folder || 'inbox';\n// El query busca todos los mensajes del thread si estan en la carpeta actual\nreturn [{\n  json: {\n    sql: `SELECT * FROM mensajes_entrantes WHERE thread_id IN (SELECT thread_id FROM mensajes_entrantes WHERE carpeta = '${folder}') ORDER BY fecha ASC;`\n  }\n}];"
+      },
+      "id": "prep-sql-folders",
+      "name": "Prep SQL Folder",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [350, 300]
     },
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT * FROM mensajes_entrantes ORDER BY fecha DESC LIMIT 10;"
+        "query": "={{$json.sql}}",
+        "options": {
+          "alwaysOutputData": true
+        }
       },
+      "id": "postgres-query-folders",
+      "name": "PostgreSQL (Folders)",
       "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.5,
-      "position": [250, 0],
-      "id": "db-query",
-      "name": "Postgres",
+      "typeVersion": 1,
+      "position": [600, 300],
       "credentials": {
         "postgres": {
-          "id": "CREDENCIAL_POSTGRES_DOCKER",
-          "name": "Postgres Local (Docker)"
+          "id": "1",
+          "name": "PostgreSQL Local"
         }
-      }
+      },
+      "onError": "continueErrorOutput"
     }
   ],
   "connections": {
-    "Webhook": {
-      "main": [[{"node": "Postgres", "type": "main", "index": 0}]]
+    "Webhook (Master API)": {
+      "main": [
+        [
+          {
+            "node": "Prep SQL Folder",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prep SQL Folder": {
+      "main": [
+        [
+          {
+            "node": "PostgreSQL (Folders)",
+            "index": 0
+          }
+        ]
+      ]
     }
-  }
+  },
+  "active": true,
+  "settings": {},
+  "id": "api-listar-mensajes"
 }

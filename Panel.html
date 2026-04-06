@@ -3,713 +3,277 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asesorías IA - Multi-Empresa</title>
+    <title>Agent Email AIRIS - Control Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; color: #0f172a; }
-        .card { background: white; border-radius: 1rem; padding: 1.5rem; border: 1px solid #f1f5f9; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .nav-active { background-color: #4f46e5 !important; color: white !important; font-weight: 800; }
-        .hidden-section { display: none !important; }
-        .card-operator { background: white; border-radius: 1.5rem; padding: 1.5rem; border: 1px solid #e2e8f0; transition: all 0.2s; }
-        .card-operator:hover { border-color: #4f46e5; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        :root { 
+            --bg-neutral: #f4f7fa; 
+            --panel-white: #ffffff; 
+            --accent-blue: #5a78a6; 
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --border-soft: #e2e8f0;
+        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-neutral); color: var(--text-main); overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
         
-        /* Panel Lateral (Ticket Drawer) */
-        #ticket-drawer { transition: transform 0.3s ease-in-out; transform: translateX(100%); }
-        #ticket-drawer.open { transform: translateX(0); }
-        .drawer-backdrop { opacity: 0; transition: opacity 0.3s ease-in-out; pointer-events: none; }
-        .drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        /* New Inbox Interface */
+        .email-row { 
+            background: var(--panel-white); 
+            border: 1px solid var(--border-soft);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            margin-bottom: 8px;
+            display: grid;
+            grid-template-columns: 180px 1fr 80px 220px 120px;
+            align-items: center;
+            padding: 12px 24px;
+        }
+        .email-row:hover { 
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            transform: translateY(-1px);
+            cursor: pointer;
+        }
+        .email-row.unread { border-left: 4px solid var(--accent-blue); }
 
-        #debug-log { background: #0f172a; color: #4ade80; font-family: monospace; font-size: 10px; padding: 10px; border-radius: 8px; max-height: 80px; overflow-y: auto; }
+        /* Dashboard Refinement */
+        .dash-top { 
+            height: 160px; 
+            background: #ffffff; 
+            border-bottom: 1px solid var(--border-soft); 
+            padding: 0 48px;
+            display: flex;
+            align-items: center;
+            gap: 48px;
+        }
+        
+        /* Buttons & Chips */
+        .company-card { 
+            background: #f8fafc; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 16px; 
+            padding: 12px 20px; 
+            min-width: 160px; 
+            transition: all 0.2s;
+        }
+        .company-card:hover { border-color: var(--accent-blue); background: white; }
+        
+        .btn-delegate { 
+            background: #f1f5f9; 
+            color: var(--accent-blue); 
+            border: 1px solid #e2e8f0; 
+            padding: 8px 12px; 
+            border-radius: 8px; 
+            font-weight: 700; 
+            font-size: 11px; 
+            text-transform: uppercase;
+        }
+        .btn-delegate:hover { background: var(--accent-blue); color: white; }
+
+        .config-drawer { 
+            position: fixed; right: -360px; top: 0; bottom: 0; width: 360px; 
+            background: white; border-left: 1px solid var(--border-soft); 
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 150; padding: 32px; 
+        }
+        .config-drawer.open { right: 0; }
+
+        .mailbox-popup { 
+            display: none; position: absolute; z-index: 100; width: 220px; 
+            background: white; border-radius: 12px; border: 1px solid var(--border-soft); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden;
+        }
     </style>
 </head>
-<body class="flex min-h-screen overflow-hidden text-sm relative">
+<body>
 
-    <!-- Backdrop del Drawer -->
-    <div id="drawer-backdrop" onclick="cerrarTicket()" class="drawer-backdrop fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40"></div>
+    <!-- TOP HEADER -->
+    <header class="dash-top shadow-sm shrink-0">
+        <div class="shrink-0">
+            <h1 class="text-2xl font-bold tracking-tight text-slate-800">Agent Email <span style="color:var(--accent-blue)">AIRIS</span></h1>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-1">Centro de Mando</p>
+        </div>
 
-    <!-- Panel Lateral de Lectura -->
-    <div id="ticket-drawer" class="fixed top-0 right-0 h-full w-full max-w-xl bg-white shadow-2xl z-50 flex flex-col border-l">
-        <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-            <div>
-                <h2 class="text-xl font-black text-slate-900" id="drawer-subject">Asunto del Ticket</h2>
-                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1" id="drawer-meta">De: cliente@ejemplo.com</p>
+        <div id="company-stats" class="flex-1 flex gap-4 overflow-x-auto custom-scrollbar py-2">
+            <!-- Chips Empresas -->
+        </div>
+
+        <div class="flex items-center gap-8">
+            <div class="text-right">
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Volumen Total</p>
+                <p id="stat-total" class="text-3xl font-bold text-slate-700 leading-none">0</p>
             </div>
-            <button onclick="cerrarTicket()" class="p-2 hover:bg-slate-200 rounded-full transition text-slate-400 hover:text-slate-900">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            <button onclick="toggleConfig()" class="w-12 h-12 bg-white border border-slate-200 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
             </button>
         </div>
-        
-        <div class="flex-1 overflow-y-auto p-8 space-y-8">
-            <!-- Cuerpo del Mensaje -->
-            <div class="space-y-4">
-                <h3 class="text-xs font-black text-indigo-600 uppercase tracking-wider">Mensaje Original</h3>
-                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-slate-700 leading-relaxed text-sm whitespace-pre-wrap" id="drawer-body">
-                    Cargando mensaje...
-                </div>
-            </div>
+    </header>
 
-            <!-- Sugerencia IA -->
-            <div class="space-y-4">
-                <div class="flex items-center gap-2">
-                    <h3 class="text-xs font-black text-emerald-600 uppercase tracking-wider">Sugerencia de la IA</h3>
-                    <span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded text-[8px] font-black uppercase">Gemini 2.0 Flash</span>
-                </div>
-                <div class="bg-emerald-50 p-6 rounded-2xl border border-emerald-100 text-emerald-800 leading-relaxed text-sm italic" id="drawer-ia">
-                    No hay sugerencia disponible para este ticket.
-                </div>
+    <!-- INBOX SECTION -->
+    <main class="flex-1 overflow-hidden flex flex-col p-8">
+        <div class="mb-6 flex justify-between items-center">
+            <h2 class="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center gap-3">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+                Bandeja General
+            </h2>
+            <div class="relative">
+                <input type="text" placeholder="Buscar..." class="bg-white border border-slate-200 rounded-xl px-10 py-2.5 text-sm text-slate-600 outline-none w-80 shadow-sm focus:ring-2 focus:ring-blue-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-4 top-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </div>
         </div>
 
-        <div class="p-6 border-t bg-slate-50 flex gap-3">
-            <button class="flex-1 bg-indigo-600 text-white py-4 rounded-xl font-black text-xs uppercase shadow-lg shadow-indigo-100 active:scale-95 transition-all">Copiar Respuesta</button>
-            <button class="flex-1 bg-slate-900 text-white py-4 rounded-xl font-black text-xs uppercase shadow-lg shadow-slate-200 active:scale-95 transition-all">Marcar como Resuelto</button>
+        <!-- NEW ROW-BASED LIST -->
+        <div id="thread-list" class="flex-1 overflow-y-auto custom-scrollbar pr-2">
+            <!-- Email rows dynamic -->
         </div>
-    </div>
-
-    <aside class="w-64 bg-slate-900 text-slate-300 p-6 flex flex-col gap-6 shrink-0">
-        <h2 class="text-white font-black text-xl italic italic">Asesorías <span class="text-indigo-400">IA</span></h2>
-        
-        <!-- Perfil de Usuario con Logout -->
-        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-2xl ring-1 ring-white/5 shadow-xl">
-            <div class="flex items-center gap-3 mb-3">
-                <div class="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white font-black text-xs" id="user-initial">A</div>
-                <div class="flex-1 overflow-hidden">
-                    <p class="text-xs font-black text-white truncate" id="user-display-name">Admin</p>
-                    <p class="text-[8px] font-bold text-slate-500 uppercase tracking-widest" id="user-display-role">Administrador</p>
-                </div>
-                <button onclick="logout()" class="p-2 hover:bg-red-500/10 rounded-lg text-red-400 transition-colors" title="Cerrar Sesión">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-                </button>
-            </div>
-            <p class="text-[10px] uppercase font-black text-indigo-400 mb-2 tracking-[0.15em]">Vista de Acceso</p>
-            <select id="role-selector" onchange="updateRoleUI()" class="w-full bg-slate-900 text-white font-black outline-none cursor-pointer text-sm py-1 rounded-lg focus:ring-2 focus:ring-indigo-500 transition-all border-none">
-                <option value="dev" class="bg-slate-900">🚀 DevOps (Súper)</option>
-                <option value="admin" class="bg-slate-900">👑 Administrador</option>
-                <option value="op" class="bg-slate-900">🎧 Operador</option>
-            </select>
-        </div>
-
-        <nav class="flex flex-col gap-2">
-            <button onclick="switchView('view-dash', this)" class="nav-btn w-full text-left px-4 py-3 nav-active rounded-xl transition">📊 Dashboard</button>
-            <button onclick="switchView('view-inbox', this)" class="nav-btn w-full text-left px-4 py-3 rounded-xl transition">📥 Bandeja de Entrada</button>
-            <button id="nav-accounts" onclick="switchView('view-accounts', this)" class="nav-btn w-full text-left px-4 py-3 rounded-xl transition hidden-section">👤 Operadores</button>
-            <button id="nav-companies" onclick="switchView('view-companies', this)" class="nav-btn w-full text-left px-4 py-3 rounded-xl transition hidden-section">🏢 Empresas</button>
-        </nav>
-
-        <div class="mt-6 border-t border-slate-700/50 pt-4 space-y-2">
-            <h3 class="px-4 text-xs text-slate-400 font-bold uppercase tracking-wider">Empresas</h3>
-            <div id="sidebar-webmail-list" class="flex flex-col gap-1">
-                <p class="px-4 text-xs text-slate-500 italic">Cargando...</p>
-            </div>
-        </div>
-
-        <div class="mt-auto">
-            <div id="debug-log">Iniciando...</div>
-        </div>
-    </aside>
-
-    <main class="flex-1 p-8 space-y-8 overflow-y-auto bg-[#f8fafc]">
-        <div class="flex justify-between items-center">
-            <h1 class="text-2xl font-black text-slate-900" id="view-title">Dashboard</h1>
-            <div class="flex gap-2">
-                <button onclick="cargarTodo()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-xs shadow-lg shadow-indigo-200">🔄 Recargar</button>
-            </div>
-        </div>
-
-        <!-- Dashboard -->
-        <div id="view-dash" class="view-content space-y-8">
-            <div class="grid grid-cols-3 gap-6">
-                <div class="card bg-indigo-600 text-white">
-                    <p class="opacity-70 text-xs font-bold uppercase tracking-wider">Tickets Totales</p>
-                    <p id="stat-total" class="text-3xl font-black mt-2">--</p>
-                </div>
-                <div class="card bg-slate-900 text-white">
-                    <p class="opacity-70 text-xs font-bold uppercase tracking-wider">Grupos Activos</p>
-                    <p id="stat-groups" class="text-3xl font-black mt-2">--</p>
-                </div>
-                <div class="card border-indigo-200 bg-indigo-50">
-                    <p class="text-indigo-600 text-xs font-bold uppercase tracking-wider">Rol Activo</p>
-                    <p id="display-role" class="text-indigo-900 text-xl font-black mt-2">DEVOPS</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Inbox -->
-        <div id="view-inbox" class="view-content hidden-section space-y-6">
-            <div id="inbox-table-container" class="card overflow-hidden p-0">
-                <table class="w-full text-left text-sm">
-                    <thead id="inbox-thead" class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase border-b">
-                        <!-- Se llena dinámicamente -->
-                    </thead>
-                    <tbody id="inbox-tbody" class="divide-y divide-slate-100"></tbody>
-                </table>
-            </div>
-            <div id="inbox-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden-section">
-                <!-- Se llena dinámicamente -->
-            </div>
-        </div>
-
-        <!-- Operadores -->
-        <div id="view-accounts" class="view-content hidden-section space-y-6">
-            <div class="flex justify-between items-center">
-                <h2 class="text-lg font-black text-slate-800">👤 Operadores Humanos</h2>
-                <button onclick="document.getElementById('modal-account').classList.remove('hidden')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold text-xs shadow-lg">➕ Nuevo Operador</button>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="accounts-grid"></div>
-        </div>
-
-        <!-- Empresas -->
-        <div id="view-companies" class="view-content hidden-section space-y-6">
-            <div class="flex justify-between items-center">
-                <h2 class="text-lg font-black text-slate-800">🏢 Cuentas de Empresas</h2>
-                <p class="text-xs text-slate-400">Monitoreo automático de webmails asociados a etiquetas.</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="companies-grid"></div>
-        </div>
-
-        <!-- Sección de Etiquetas Maestras eliminada -->
     </main>
 
-    <!-- Modal Nuevo Operador -->
-    <div id="modal-account" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl w-full max-w-md p-8 space-y-4">
-            <h2 class="text-xl font-black text-slate-900">👤 Configurar Operador</h2>
-            <input type="hidden" id="acc-id">
-            <input type="text" id="acc-name" placeholder="Nombre Completo" class="w-full border p-3 rounded-xl text-sm">
-            <input type="email" id="acc-email" placeholder="Correo Electrónico" class="w-full border p-3 rounded-xl text-sm">
-            <select id="acc-group" class="w-full border p-3 rounded-xl text-sm">
-                <option value="">--- Vincular a Etiqueta ---</option>
-            </select>
-            <div class="space-y-1">
-                <label class="text-[10px] font-black uppercase text-slate-400">Firma Profesional</label>
-                <textarea id="acc-signature" placeholder="Atentamente,\n[Nombre Operador]\nAiris AE" class="w-full border p-3 rounded-xl text-xs h-24 outline-none focus:border-indigo-500"></textarea>
-            </div>
-            <button onclick="saveAccount()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-black shadow-lg">Guardar Operador</button>
-            <button onclick="document.getElementById('modal-account').classList.add('hidden')" class="w-full text-slate-400 font-bold text-xs uppercase">Cancelar</button>
+    <!-- POPUP MENU -->
+    <div id="mailbox-popup" class="mailbox-popup">
+        <div class="p-4 bg-slate-50 border-b border-slate-100">
+            <p id="popup-company-name" class="text-xs font-bold text-slate-800 uppercase"></p>
+            <p class="text-[10px] text-slate-400 font-medium mt-0.5">Gestión de Buzón</p>
+        </div>
+        <div class="p-1">
+            <button class="w-full text-left px-4 py-2.5 hover:bg-blue-50 hover:text-blue-700 rounded-lg flex items-center gap-3 text-xs font-semibold transition-colors"><span>📥</span> Bandeja Entrada</button>
+            <button class="w-full text-left px-4 py-2.5 hover:bg-blue-50 hover:text-blue-700 rounded-lg flex items-center gap-3 text-xs font-semibold transition-colors"><span>📤</span> Bandeja Salida</button>
+            <button class="w-full text-left px-4 py-2.5 hover:bg-blue-50 hover:text-blue-700 rounded-lg flex items-center gap-3 text-xs font-semibold transition-colors"><span>📝</span> Borradores</button>
+            <button class="w-full text-left px-4 py-2.5 hover:bg-rose-50 hover:text-rose-700 rounded-lg flex items-center gap-3 text-xs font-semibold transition-colors text-rose-500"><span>🗑️</span> Papelera</button>
         </div>
     </div>
 
-    <!-- Modal Etiquetas (Nueva/Editar) -->
-    <div id="modal-group" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl w-full max-w-md p-8 space-y-4 shadow-2xl">
-            <h2 class="text-xl font-black text-slate-900" id="modal-group-title">🏷️ Nueva Etiqueta</h2>
-            <input type="hidden" id="group-id">
-            
-            <div class="space-y-1">
-                <label class="text-[10px] font-black uppercase text-slate-400">Nombre de la Etiqueta</label>
-                <input type="text" id="group-name" placeholder="Ej: VIP, Soporte, AIRIS..." class="w-full border-2 border-slate-100 p-3 rounded-xl text-sm focus:border-indigo-500 outline-none transition">
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <div class="space-y-1">
-                    <label class="text-[10px] font-black uppercase text-slate-400">Tipo de Grupo</label>
-                    <select id="group-type" class="w-full border-2 border-slate-100 p-3 rounded-xl text-sm outline-none">
-                        <option value="empresa">🏢 Empresa</option>
-                        <option value="operador">👤 Operadores</option>
-                    </select>
-                </div>
-                <div class="space-y-1">
-                    <label class="text-[10px] font-black uppercase text-slate-400">Color Identificador</label>
-                    <input type="color" id="group-color" value="#4f46e5" class="w-full h-[46px] border-2 border-slate-100 p-1 rounded-xl cursor-pointer">
-                </div>
-            </div>
-
-            <div class="space-y-1">
-                <label class="text-[10px] font-black uppercase text-slate-400">Descripción (Opcional)</label>
-                <textarea id="group-desc" placeholder="¿Para qué sirve esta etiqueta?" class="w-full border-2 border-slate-100 p-3 rounded-xl text-sm h-20 outline-none"></textarea>
-            </div>
-
-            <button onclick="saveGroup()" class="w-full bg-slate-900 text-white py-4 rounded-xl font-black shadow-lg hover:bg-black transition-all">Guardar Etiqueta</button>
-            <button onclick="cerrarModalGrupo()" class="w-full text-slate-400 font-bold text-xs uppercase hover:text-slate-600 transition">Cerrar</button>
+    <!-- CONFIG DRAWER -->
+    <div id="config-drawer" class="config-drawer">
+        <div class="flex justify-between items-center mb-12 border-b border-slate-100 pb-6">
+            <h2 class="text-lg font-bold text-slate-800 uppercase tracking-tight">Configuración</h2>
+            <button onclick="toggleConfig()" class="text-slate-400 hover:text-slate-600">✕</button>
         </div>
-    </div>
-
-    <!-- Panel Lateral de Lectura (MODIFICADO PARA RESPUESTA) -->
-    <div id="ticket-drawer" class="fixed top-0 right-0 h-full w-full max-w-xl bg-white shadow-2xl z-50 flex flex-col border-l">
-        <div class="p-6 border-b flex justify-between items-center bg-slate-50">
-            <div>
-                <h2 class="text-xl font-black text-slate-900" id="drawer-subject">Asunto</h2>
-                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1" id="drawer-meta">Cargando...</p>
-            </div>
-            <button onclick="cerrarTicket()" class="p-2 hover:bg-slate-200 rounded-full transition text-slate-400 hover:text-slate-900">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        <div class="space-y-4">
+            <button onclick="openForm('operadores')" class="w-full text-left border border-slate-200 p-6 rounded-2xl hover:border-blue-400 hover:bg-blue-50/30 transition-all flex items-center gap-5">
+                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 font-bold text-xl">U</div>
+                <div>
+                    <p class="text-sm font-bold text-slate-800 uppercase tracking-tight">Gestión Operadores</p>
+                    <p class="text-[11px] text-slate-400 font-medium">Altas y bajas de usuarios</p>
+                </div>
             </button>
-        </div>
-        
-        <div class="flex-1 overflow-y-auto p-8 space-y-8">
-            <div class="space-y-4">
-                <h3 class="text-xs font-black text-indigo-600 uppercase tracking-wider">Mensaje Original</h3>
-                <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-slate-700 leading-relaxed text-sm whitespace-pre-wrap max-h-48 overflow-y-auto" id="drawer-body">...</div>
-            </div>
-
-            <div class="space-y-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-xs font-black text-emerald-600 uppercase tracking-wider">Editor de Respuesta</h3>
-                    <div class="flex gap-2">
-                        <button onclick="cargarSugerenciaIA()" class="text-[9px] bg-emerald-100 text-emerald-700 px-2 py-1 rounded font-black uppercase hover:bg-emerald-200 transition">🪄 Cargar IA</button>
-                        <button onclick="insertarFirma()" class="text-[9px] bg-slate-100 text-slate-700 px-2 py-1 rounded font-black uppercase hover:bg-slate-200 transition">✒️ Firma</button>
-                    </div>
+            <button onclick="openForm('empresas')" class="w-full text-left border border-slate-200 p-6 rounded-2xl hover:border-blue-400 hover:bg-blue-50/30 transition-all flex items-center gap-5">
+                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 font-bold text-xl">E</div>
+                <div>
+                    <p class="text-sm font-bold text-slate-800 uppercase tracking-tight">Gestión Empresas</p>
+                    <p class="text-[11px] text-slate-400 font-medium">Configuración de buzones corporativos</p>
                 </div>
-                <div class="relative">
-                    <textarea id="reply-editor" class="w-full bg-slate-900 text-slate-100 p-6 rounded-2xl border-none text-sm leading-relaxed min-h-[300px] outline-none focus:ring-4 focus:ring-indigo-500/20 transition-all font-medium" placeholder="Escribe tu respuesta aquí..."></textarea>
-                    <div id="reply-status" class="hidden absolute inset-0 bg-slate-900/50 rounded-2xl flex items-center justify-center backdrop-blur-[2px]">
-                        <span class="bg-indigo-500 text-white text-[10px] font-black px-4 py-2 rounded-full uppercase animate-bounce">Enviando Correo...</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="p-6 border-t bg-slate-50 flex gap-3">
-            <button id="btn-send-reply" onclick="enviarRespuesta()" class="flex-[2] bg-indigo-600 text-white py-4 rounded-xl font-black text-xs uppercase shadow-lg shadow-indigo-100 active:scale-95 transition-all">Enviar Respuesta Final</button>
-            <button onclick="cerrarTicket()" class="flex-1 bg-slate-200 text-slate-600 py-4 rounded-xl font-black text-xs uppercase active:scale-95 transition-all">Descartar</button>
+            </button>
         </div>
     </div>
 
     <script>
-        let N8N_URL = localStorage.getItem('n8n_url') || 'http://localhost:5678';
-        let grupos = [];
-        let operadores = [];
-        let mensajes = [];
+        const N8N_URL = 'http://localhost:5678';
+        let hilos = [];
+        let operators = ['admin', 'operador_1', 'operador_2'];
 
-        const log = (msg) => { const l = document.getElementById('debug-log'); l.innerHTML += `<br>> ${msg}`; l.scrollTop = l.scrollHeight; };
+        window.onload = async () => {
+            await loadData();
+            await loadOperators();
+        };
 
-        function updateRoleUI() {
-            const role = document.getElementById('role-selector').value;
-            const thead = document.getElementById('inbox-thead');
-            const tableCont = document.getElementById('inbox-table-container');
-            const gridCont = document.getElementById('inbox-grid-container');
-
-            // 1. Configurar Visibilidad de Navegación
-            document.getElementById('nav-accounts').classList.toggle('hidden-section', role !== 'dev');
-            document.getElementById('nav-groups').classList.toggle('hidden-section', role !== 'dev');
-            document.getElementById('display-role').innerText = role.toUpperCase();
-
-            // 2. Configurar Layout de Inbox
-            if (role === 'op') {
-                tableCont.classList.add('hidden-section');
-                gridCont.classList.remove('hidden-section');
-            } else {
-                tableCont.classList.remove('hidden-section');
-                gridCont.classList.add('hidden-section');
-                
-                // Configurar Encabezados de Tabla
-                if (role === 'dev') {
-                    thead.innerHTML = `<tr><th class="px-4 py-3">ID</th><th class="px-4 py-3">Remitente</th><th class="px-4 py-3">Estatus</th><th class="px-4 py-3">Acción Técn.</th></tr>`;
-                } else if (role === 'admin') {
-                    thead.innerHTML = `<tr><th class="px-4 py-3">Remitente</th><th class="px-4 py-3">Asunto</th><th class="px-4 py-3">Asignado</th><th class="px-4 py-3">Acción</th></tr>`;
-                }
-            }
-
-            cargarTodo();
-        }
-
-        async function apiCall(action, method = 'GET', body = null) {
-            // Usamos master-gestion para POST (peticiones de cambio) y master-api para GET (lectura)
-            const endpoint = method === 'POST' ? 'master-gestion' : 'master-api';
-            const url = new URL(`${N8N_URL}/webhook/${endpoint}`);
-            
-            if (method === 'GET') url.searchParams.append('action', action);
-            
-            const options = { method, headers: { 'Content-Type': 'application/json' } };
-            if (body) options.body = JSON.stringify(body);
-            
-            const res = await fetch(url.toString(), options);
-            return await res.json();
-        }
-
-        async function cargarTodo() {
-            log("Cargando datos del sistema...");
+        async function loadData() {
             try {
-                await cargarGrupos();
-                await cargarCuentas();
-                await cargarMensajes();
-                log("Sistema listo.");
+                const res = await fetch(`${N8N_URL}/webhook/master-api?folder=inbox&role=admin`);
+                const data = await res.json();
+                hilos = Array.isArray(data) ? data : [data];
             } catch (e) {
-                log(`ERROR CRÍTICO: ${e.message}`);
+                hilos = [
+                    { id:1, thread_id:'th_1', remitente:'contacto@servicios.com', asunto:'Solicitud de Soporte Técnico Urgente', mensaje:'Hola, el sistema no responde desde hace 2 horas...', cuenta_empresa:'Industrial MX', fecha: new Date().toISOString(), adjuntos: true },
+                    { id:2, thread_id:'th_2', remitente:'info@airis.ai', asunto:'Actualización de Servidores de IA', mensaje:'Se ha completado la migración a la v2.0...', cuenta_empresa:'AIRIS CORE', fecha: new Date().toISOString(), adjuntos: false }
+                ];
             }
+            renderThreads();
+            updateStats();
         }
 
-        async function cargarGrupos() {
-            log("Iniciando carga de grupos...");
-            try {
-                // 1. Obtenemos los grupos (etiquetas)
-                log("-> Fetching /master-grupos...");
-                const resG = await fetch(`${N8N_URL}/webhook/master-grupos`);
-                if (!resG.ok) throw new Error(`master-grupos responded with ${resG.status}`);
-                grupos = await resG.json();
-                if (!Array.isArray(grupos)) grupos = [];
-                log(`-> ${grupos.length} grupos cargados.`);
-
-                // 2. Necesitamos las cuentas para sacar datos adicionales como el correo
-                log("-> Fetching /master-cuentas...");
-                const resC = await fetch(`${N8N_URL}/webhook/master-cuentas`);
-                if (!resC.ok) throw new Error(`master-cuentas responded with ${resC.status}`);
-                const cuentas = await resC.json();
-                const listaCuentas = Array.isArray(cuentas) ? cuentas : [cuentas];
-                log(`-> ${listaCuentas.length} cuentas cargadas.`);
-
-                document.getElementById('stat-groups').innerText = grupos.length;
-                
-                // Renderizar la vista de Empresas
-                const gridCompanies = document.getElementById('companies-grid');
-                if (gridCompanies) {
-                    log("-> Renderizando vista de empresas...");
-                    gridCompanies.innerHTML = grupos.filter(g => g.tipo === 'empresa').map(g => {
-                        const cuentaAsociada = listaCuentas.find(c => c.grupo_id === g.id);
-                        const emailEmpresa = cuentaAsociada ? cuentaAsociada.email : 'No especificado';
-
-                        return `
-                        <div class="card flex flex-col justify-center items-center text-center p-6 transition-all hover:shadow-lg hover:-translate-y-1" style="border-top: 4px solid ${g.color || '#e2e8f0'}">
-                            <div class="w-16 h-16 mb-4 rounded-full bg-slate-100 flex items-center justify-center font-black text-2xl text-slate-400">
-                                ${g.nombre.charAt(0)}
-                            </div>
-                            <p class="font-black text-slate-800 text-sm truncate w-full">${g.nombre}</p>
-                            <p class="text-xs text-slate-400 font-medium truncate w-full">${emailEmpresa}</p>
-                        </div>
-                        `;
-                    }).join('');
-                    log("-> Vista de empresas renderizada.");
-                }
-
-                // Actualizar select del modal de operador con los grupos disponibles
-                const select = document.getElementById('acc-group');
-                if (select) {
-                    select.innerHTML = '<option value="">--- Vincular a Etiqueta ---</option>' + 
-                        grupos.map(g => `<option value="${g.id}">${g.nombre} (${g.tipo})</option>`).join('');
-                }
-
-                log("Carga de grupos completada.");
-            } catch (e) { 
-                log(`!! ERROR en cargarGrupos: ${e.message}`); 
-                throw e; 
-            }
+        function updateStats() {
+            document.getElementById('stat-total').innerText = hilos.length;
+            renderCompanyStats();
         }
 
-        function prepararNuevoGrupo() {
-            document.getElementById('modal-group-title').innerText = "🏷️ Nueva Etiqueta";
-            document.getElementById('group-id').value = '';
-            document.getElementById('group-name').value = '';
-            document.getElementById('group-desc').value = '';
-            document.getElementById('group-type').value = 'empresa';
-            document.getElementById('group-color').value = '#4f46e5';
-            document.getElementById('modal-group').classList.remove('hidden');
-        }
-
-        function prepararEdicionGrupo(id) {
-            const g = grupos.find(group => group.id === id);
-            if (!g) return;
+        function renderCompanyStats() {
+            const container = document.getElementById('company-stats');
+            const counts = hilos.reduce((acc, m) => {
+                acc[m.cuenta_empresa] = (acc[m.cuenta_empresa] || 0) + 1;
+                return acc;
+            }, {});
             
-            document.getElementById('group-id').value = g.id;
-            document.getElementById('group-name').value = g.nombre;
-            document.getElementById('group-desc').value = g.descripcion || '';
-            document.getElementById('group-type').value = g.tipo || 'empresa';
-            document.getElementById('group-color').value = g.color || '#4f46e5';
-            document.getElementById('modal-group-title').innerText = "📝 Editar Etiqueta";
-            document.getElementById('modal-group').classList.remove('hidden');
-        }
-
-        async function cargarCuentas() {
-            try {
-                const res = await fetch(`${N8N_URL}/webhook/master-cuentas`);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                let data = await res.json();
-                operadores = Array.isArray(data) ? data : [data];
-
-                const grid = document.getElementById('accounts-grid');
-                if (!grid) return;
-                
-                const role = document.getElementById('role-selector').value;
-
-                // 1. Filtrar solo operadores humanos
-                const soloOperadores = operadores.filter(o => o.nombre_operador !== null && o.tipo_cuenta === 'gmail');
-
-                // 2. Agrupar operadores por su etiqueta
-                const operadoresAgrupados = soloOperadores.reduce((acc, op) => {
-                    const grupoId = op.grupo_id || 'unassigned';
-                    if (!acc[grupoId]) {
-                        acc[grupoId] = [];
-                    }
-                    acc[grupoId].push(op);
-                    return acc;
-                }, {});
-
-                // 3. Renderizar las carpetas de grupos
-                // Primero, ajustamos el layout del grid principal para que sea de una sola columna.
-                grid.className = 'grid grid-cols-1 gap-4';
-                
-                grid.innerHTML = Object.keys(operadoresAgrupados).map(grupoId => {
-                    const opsInGroup = operadoresAgrupados[grupoId];
-                    const grupoInfo = grupos.find(g => g.id == grupoId) || { id: 'unassigned', nombre: 'Operadores Sin Etiqueta', color: '#94a3b8' };
-                    
-                    const operatorCards = opsInGroup.map(o => {
-                        // El HTML de la tarjeta de operador individual
-                        const adminButtons = (role === 'dev' || role === 'admin') ? `
-                            <div class="absolute top-3 right-3 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
-                                <button onclick="editarEtiquetaOperador(${o.id})" class="p-2 bg-white/60 hover:bg-white rounded-lg text-xs backdrop-blur-sm shadow-sm border border-white" title="Cambiar Etiqueta">🏷️</button>
-                                <button onclick="editarOperador(${o.id})" class="p-2 bg-white/60 hover:bg-white rounded-lg text-xs backdrop-blur-sm shadow-sm border border-white" title="Editar Operador">📝</button>
-                            </div>
-                        ` : '';
-
-                        return `
-                        <div class="card p-4 space-y-2 relative group/card border-l-4" style="border-left-color: ${grupoInfo.color}">
-                            <div>
-                                <p class="font-black text-sm text-slate-800 truncate">${o.nombre_operador}</p>
-                                <p class="text-xs text-slate-400 truncate">${o.email}</p>
-                            </div>
-                             ${adminButtons}
-                        </div>
-                        `;
-                    }).join('');
-
-                    // El HTML para el contenedor del grupo (la carpeta)
-                    return `
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 transition-all hover:border-slate-300">
-                        <div onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('svg').classList.toggle('rotate-90')" class="p-4 cursor-pointer flex justify-between items-center rounded-t-2xl">
-                             <div class="flex items-center gap-3">
-                                <div class="w-2 h-2 rounded-full" style="background-color: ${grupoInfo.color}"></div>
-                                <p class="font-black text-xs text-slate-700 uppercase tracking-wider">${grupoInfo.nombre}</p>
-                            </div>
-                            <div class="flex items-center gap-4">
-                                <span class="text-xs font-black text-white bg-slate-400 rounded-full px-2 py-0.5">${opsInGroup.length}</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
-                            </div>
-                        </div>
-                        <div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-t border-slate-100 hidden">
-                            ${operatorCards}
-                        </div>
+            container.innerHTML = Object.entries(counts).map(([name, count]) => `
+                <div onclick="showMailboxMenu(event, '${name}')" class="company-card group">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase truncate mb-1">${name}</p>
+                    <div class="flex items-center justify-between">
+                        <p class="text-lg font-bold text-slate-700 leading-none">${count}</p>
+                        <div class="w-2 h-2 rounded-full bg-blue-400"></div>
                     </div>
-                    `;
-
-                }).join('');
-
-                log("Operadores agrupados en carpetas visuales.");
-
-                // 4. Renderizar lista de Webmails en el Sidebar
-                const webmailContainer = document.getElementById('sidebar-webmail-list');
-                if (webmailContainer) {
-                    const webmailCuentas = operadores.filter(o => o.tipo_cuenta === 'webmail');
-                    if (webmailCuentas.length > 0) {
-                        webmailContainer.innerHTML = webmailCuentas.map(w => {
-                            const grupo = grupos.find(g => g.id === w.grupo_id);
-                            return `
-                            <a href="#" class="px-4 py-2 flex items-center gap-3 rounded-lg hover:bg-slate-800 transition-colors">
-                                <div class="w-2 h-2 rounded-full" style="background-color: ${grupo ? grupo.color : '#cbd5e1'}"></div>
-                                <span class="text-sm font-semibold text-slate-300 truncate">${grupo ? grupo.nombre : 'Empresa Desconocida'}</span>
-                            </a>
-                            `;
-                        }).join('');
-                    } else {
-                        webmailContainer.innerHTML = '<p class="px-4 text-xs text-slate-500 italic">No hay webmails.</p>';
-                    }
-                }
-
-            } catch (e) { log(`Error Operadores: ${e.message}`); throw e; }
+                </div>
+            `).join('');
         }
 
-        function editarOperador(id) {
-            // Placeholder: Esta función debería abrir el modal para editar el operador.
-            log(`Función 'editarOperador' llamada para ID: ${id}. Aún no implementada.`);
-            alert(`Editar Operador (ID: ${id}) - Funcionalidad pendiente.`);
+        function renderThreads() {
+            const container = document.getElementById('thread-list');
+            container.innerHTML = hilos.map(m => `
+                <div ondblclick="inspect('${m.thread_id}')" class="email-row">
+                    <div class="pr-4 border-r border-slate-100">
+                        <p class="text-[10px] font-bold text-blue-600 uppercase tracking-tighter">${m.cuenta_empresa}</p>
+                        <p class="text-sm font-semibold text-slate-800 truncate">${m.remitente.split('@')[0]}</p>
+                    </div>
+                    <div class="px-6">
+                        <p class="text-sm font-bold text-slate-800 leading-tight mb-1 truncate">${m.asunto}</p>
+                        <p class="text-xs font-medium text-slate-400 truncate">${m.mensaje.replace(/<[^>]*>?/gm, '')}</p>
+                    </div>
+                    <div class="text-center">
+                        ${m.adjuntos ? '<span class="text-slate-300 text-lg">📎</span>' : '<span class="text-slate-100">-</span>'}
+                    </div>
+                    <div class="flex items-center gap-3 px-4">
+                        <select onchange="delegate('${m.thread_id}', this.value)" onclick="event.stopPropagation()" class="btn-delegate flex-1 outline-none text-[10px]">
+                            <option value="">Delegar...</option>
+                            ${operators.map(op => `<option value="${op}" ${m.asignado_a === op ? 'selected' : ''}>${op.toUpperCase()}</option>`).join('')}
+                        </select>
+                        <button class="p-2 text-amber-500 hover:bg-amber-50 rounded-lg transition-all" onclick="event.stopPropagation(); unlockReply('${m.thread_id}')">🔓</button>
+                    </div>
+                    <div class="text-right pl-4">
+                        <p class="text-xs font-bold text-slate-700">${new Date(m.fecha).toLocaleDateString([], {day:'2-digit', month:'short'})}</p>
+                        <p class="text-[10px] font-semibold text-slate-400 mt-0.5">${new Date(m.fecha).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</p>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        function editarEtiquetaOperador(id) {
-            // Placeholder: Esta función podría abrir un modal simple o un menú para cambiar la etiqueta.
-            log(`Función 'editarEtiquetaOperador' llamada para ID: ${id}. Aún no implementada.`);
-            alert(`Cambiar Etiqueta (ID: ${id}) - Funcionalidad pendiente.`);
+        function showMailboxMenu(e, company) {
+            e.stopPropagation();
+            const popup = document.getElementById('mailbox-popup');
+            document.getElementById('popup-company-name').innerText = company;
+            popup.style.display = 'block';
+            popup.style.left = `${e.clientX}px`;
+            popup.style.top = `${e.clientY + 20}px`;
         }
 
-        async function cargarMensajes() {
+        function toggleConfig() { document.getElementById('config-drawer').classList.toggle('open'); }
+        function inspect(tid) { alert(`Inspeccionando Ticket: ${tid}`); }
+        function delegate(tid, op) { alert(`Delegado a ${op.toUpperCase()}`); }
+        function unlockReply(tid) { alert(`Desbloqueo de emergencia activado para: ${tid}`); }
+        function openForm(type) { alert(`Abriendo: ALTA DE ${type.toUpperCase()}`); }
+
+        document.onclick = () => { document.getElementById('mailbox-popup').style.display = 'none'; };
+        document.onkeydown = (e) => { if (e.key === "Escape" && document.getElementById('config-drawer').classList.contains('open')) toggleConfig(); };
+
+        async function loadOperators() {
             try {
-                const role = document.getElementById('role-selector').value;
-                const res = await fetch(`${N8N_URL}/webhook/master-api`);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                let data = await res.json();
-                mensajes = Array.isArray(data) ? data : (data ? [data] : []);
-
-                document.getElementById('stat-total').innerText = mensajes.length;
-
-                if (role === 'op') {
-                    const grid = document.getElementById('inbox-grid-container');
-                    grid.innerHTML = mensajes.map(m => `
-                        <div onclick="abrirTicket(${m.id})" class="card-operator cursor-pointer border-l-4 ${m.asignado_a ? 'border-indigo-500' : 'border-amber-400 shadow-amber-50'}">
-                            <div class="flex justify-between items-start mb-4">
-                                <div>
-                                    <p class="font-black text-slate-900 text-base">${m.remitente || 'Cliente'}</p>
-                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${m.empresa_cliente || 'Empresa General'}</p>
-                                </div>
-                                <span class="px-2 py-1 rounded text-[9px] font-black uppercase ${m.estatus === 'pendiente' ? 'bg-amber-100 text-amber-700' : 'bg-indigo-100 text-indigo-700'}">${m.estatus}</span>
-                            </div>
-                            <p class="text-slate-600 font-medium line-clamp-2 mb-6 h-10 italic">"${m.asunto || 'Sin asunto'}"</p>
-                            <div class="flex gap-2" onclick="event.stopPropagation()">
-                                <button onclick="verLogsIA('${m.remitente}')" class="flex-1 bg-slate-900 text-white py-3 rounded-xl font-black text-[10px] uppercase shadow-lg shadow-slate-200 transition-all active:scale-95">🤖 Ver IA</button>
-                                <button onclick="asignarTicket(${m.id}, 'admin@tu-empresa.com')" class="px-4 bg-indigo-600 text-white py-3 rounded-xl font-black text-[10px] uppercase shadow-lg shadow-indigo-100 transition-all active:scale-95">📥 Tomar</button>
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    const tbody = document.getElementById('inbox-tbody');
-                    tbody.innerHTML = mensajes.map(m => {
-                        if (role === 'dev') {
-                            return `
-                                <tr onclick="abrirTicket(${m.id})" class="hover:bg-slate-50 border-l-4 border-slate-900 cursor-pointer">
-                                    <td class="px-4 py-4 font-mono text-[10px] text-slate-400">#${m.id}</td>
-                                    <td class="px-4 py-4 font-bold text-slate-700">${m.remitente}</td>
-                                    <td class="px-4 py-4"><span class="bg-slate-100 text-slate-600 px-2 py-1 rounded text-[10px] font-black uppercase">${m.estatus}</span></td>
-                                    <td class="px-4 py-4 flex gap-2" onclick="event.stopPropagation()">
-                                        <button onclick="console.log(${JSON.stringify(m)})" class="bg-slate-800 text-white px-3 py-1 rounded-lg font-bold text-[9px] uppercase">Debug</button>
-                                        <button class="bg-indigo-400 text-white px-3 py-1 rounded-lg font-bold text-[9px] uppercase">Logs</button>
-                                    </td>
-                                </tr>`;
-                        } else {
-                            return `
-                                <tr onclick="abrirTicket(${m.id})" class="hover:bg-slate-50 border-l-4 ${m.asignado_a ? 'border-indigo-400' : 'border-amber-400'} cursor-pointer">
-                                    <td class="px-4 py-4 font-bold text-slate-700">${m.remitente || 'Desconocido'}</td>
-                                    <td class="px-4 py-4 text-slate-500 italic">${m.asunto || '(Sin Asunto)'}</td>
-                                    <td class="px-4 py-4" onclick="event.stopPropagation()">
-                                        <select onchange="asignarTicket(${m.id}, this.value)" class="bg-slate-100 p-1 rounded text-[10px]">
-                                            <option value="">--- Sin Asignar ---</option>
-                                            ${operadores.filter(o => o.activo).map(o => {
-                                                const val = o.nombre_operador || o.email;
-                                                return `<option value="${val}" ${m.asignado_a === val ? 'selected' : ''}>${val}</option>`;
-                                            }).join('')}
-                                        </select>
-                                    </td>
-                                    <td class="px-4 py-4" onclick="event.stopPropagation()"><button onclick="verLogsIA('${m.remitente}')" class="bg-indigo-600 text-white px-3 py-1 rounded-lg font-bold text-[9px]">🤖 IA</button></td>
-                                </tr>`;
-                        }
-                    }).join('');
-                }
-                log("Mensajes cargados: " + mensajes.length);
-            } catch (e) { log(`Error Inbox: ${e.message}`); throw e; }
-        }
-
-        async function asignarTicket(ticketId, operador) {
-            try {
-                await fetch(`${N8N_URL}/webhook/master-asignar`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ ticketId, operador })
-                });
-                log(`Ticket ${ticketId} ${operador ? 'asignado a ' + operador : 'liberado'}`);
-                cargarMensajes();
-            } catch (e) { log(`Error asignación: ${e.message}`); }
-        }
-
-        function abrirTicket(id) {
-            const m = mensajes.find(msg => msg.id == id);
-            if (!m) return;
-            document.getElementById('acc-id').value = m.id; // Almacén temporal del ID del ticket
-            document.getElementById('drawer-subject').innerText = m.asunto || '(Sin Asunto)';
-            document.getElementById('drawer-meta').innerText = `De: ${m.remitente}`;
-            document.getElementById('drawer-body').innerText = m.mensaje;
-            document.getElementById('reply-editor').value = m.respuesta_final || '';
-            document.getElementById('ticket-drawer').classList.add('open');
-            document.getElementById('drawer-backdrop').classList.add('open');
-        }
-
-        async function obtenerSugerenciaDrawer(email) {
-            try {
-                const cuentaAdmin = 'admin@tu-empresa.com';
-                const res = await fetch(`${N8N_URL}/webhook/master-logs?email=${cuentaAdmin}`);
+                const res = await fetch(`${N8N_URL}/webhook/master-api?folder=users`);
                 const data = await res.json();
-                const logs = Array.isArray(data) ? data : (data && data.id ? [data] : []);
-                
-                if (logs.length > 0) {
-                    const item = logs[0];
-                    const respuesta = item.respuesta_ia || (item.json ? item.json.respuesta_ia : null);
-                    document.getElementById('drawer-ia').innerText = respuesta || "La IA procesó el mensaje pero la respuesta está vacía.";
-                } else {
-                    document.getElementById('drawer-ia').innerText = "No hay sugerencias procesadas aún para este ticket.";
-                }
-            } catch (e) { 
-                document.getElementById('drawer-ia').innerText = "Error al conectar con el servidor de IA.";
-            }
+                operators = Array.isArray(data) ? data.map(u => u.username) : ['admin'];
+                renderThreads();
+            } catch (e) { operators = ['admin', 'operador_1', 'operador_2']; }
         }
-
-        function cerrarTicket() {
-            document.getElementById('ticket-drawer').classList.remove('open');
-            document.getElementById('drawer-backdrop').classList.remove('open');
-        }
-
-        async function verLogsIA(email) {
-            try {
-                log(`Buscando sugerencia de IA...`);
-                // En esta versión, forzamos la búsqueda por la cuenta que sabemos que tiene los logs
-                const cuentaAdmin = 'admin@tu-empresa.com';
-                const res = await fetch(`${N8N_URL}/webhook/master-logs?email=${cuentaAdmin}`);
-                const data = await res.json();
-                
-                const logs = Array.isArray(data) ? data : (data && data.id ? [data] : []);
-                
-                if (logs.length > 0) {
-                    const item = logs[0];
-                    const respuesta = item.respuesta_ia || (item.json ? item.json.respuesta_ia : null);
-                    if (respuesta) {
-                        alert("🤖 SUGERENCIA DE IA:\n\n" + respuesta);
-                    } else {
-                        alert("La IA procesó el mensaje pero la respuesta está vacía.");
-                    }
-                } else {
-                    alert("Aún no hay sugerencias procesadas para la cuenta " + cuentaAdmin);
-                }
-            } catch (e) { 
-                log(`Error: ${e.message}`);
-                alert("Error de conexión con n8n.");
-            }
-        }
-
-        async function saveGroup() {
-            const id = document.getElementById('group-id').value;
-            const nombre = document.getElementById('group-name').value;
-            const descripcion = document.getElementById('group-desc').value;
-            
-            const action = id ? 'editar_grupo' : 'crear_grupo';
-            
-            try {
-                await apiCall('gestion_cuentas', 'POST', { action, id, nombre, descripcion });
-                cerrarModalGrupo();
-                cargarGrupos();
-                log(`Grupo ${id ? 'actualizado' : 'creado'}: ${nombre}`);
-            } catch (e) { log(`Error al guardar grupo: ${e.message}`); }
-        }
-
-        function cerrarModalGrupo() {
-            document.getElementById('modal-group').classList.add('hidden');
-            document.getElementById('group-id').value = '';
-            document.getElementById('group-name').value = '';
-            document.getElementById('group-desc').value = '';
-            document.getElementById('modal-group-title').innerText = "🏢 Nueva Empresa/Grupo";
-        }
-
-        async function saveAccount() {
-            const nombre = document.getElementById('acc-name').value;
-            const email = document.getElementById('acc-email').value;
-            const grupo_id = document.getElementById('acc-group').value;
-            const tipo = document.getElementById('acc-type').value;
-            try {
-                await apiCall('gestion_cuentas', 'POST', { action: 'registro_cuenta', nombre, email, grupo_id, tipo });
-                document.getElementById('modal-account').classList.add('hidden');
-                cargarCuentas();
-            } catch (e) { log(`Error registro: ${e.message}`); }
-        }
-
-        async function toggleAccount(email, activo) {
-            try {
-                await apiCall('gestion_cuentas', 'POST', { action: 'estado_cuenta', email, activo });
-                cargarCuentas();
-            } catch (e) { log(`Error estado: ${e.message}`); }
-        }
-
-        function switchView(viewId, btn) {
-            document.querySelectorAll('.view-content').forEach(el => el.classList.add('hidden-section'));
-            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('nav-active'));
-            document.getElementById(viewId).classList.remove('hidden-section');
-            btn.classList.add('nav-active');
-            document.getElementById('view-title').innerText = btn.innerText;
-        }
-
-        updateRoleUI();
     </script>
 </body>
 </html>
