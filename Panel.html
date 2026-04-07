@@ -66,12 +66,60 @@
             display: flex; align-items: center; justify-content: space-between;
         }
 
+        /* EMAIL CARDS OPTIMIZADAS (MÁS REDUCIDAS) */
         .email-card { 
-            background: var(--apple-white); border-radius: 20px; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            margin-bottom: 12px; display: grid; grid-template-columns: 160px 1fr 60px 200px 110px;
-            align-items: center; padding: 20px 30px; border: 1px solid transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.01);
+            background: var(--apple-white); border-radius: 20px; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-bottom: 10px; display: grid; grid-template-columns: 60px 180px 1fr 180px 100px;
+            align-items: center; padding: 16px 24px; border: 1px solid transparent; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            position: relative;
         }
-        .email-card:hover { transform: translateY(-2px); box-shadow: 0 15px 35px rgba(0,0,0,0.06); border-color: rgba(0, 122, 255, 0.1); cursor: pointer; }
+        .email-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(0,0,0,0.06); border-color: rgba(0, 122, 255, 0.15); cursor: pointer; }
+        
+        /* ESTADO LEÍDO */
+        .email-card.read { background: rgba(248, 249, 252, 0.8); opacity: 0.85; border-color: transparent; }
+        .email-card.read .subject-text { color: #64748b; font-weight: 600; }
+        .email-card.read .sender-text { color: #94a3b8; }
+
+        .unread-dot {
+            width: 8px; height: 8px; background: var(--apple-blue); border-radius: 50%;
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            box-shadow: 0 0 10px rgba(0, 122, 255, 0.5);
+        }
+
+        .avatar-circle {
+            width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 14px; color: white; text-transform: uppercase;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .meta-label { font-size: 8px; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 4px; }
+
+        .attachment-pill {
+            @apply flex items-center gap-1.5 px-2 py-0.5 bg-slate-100 rounded-md text-[9px] font-bold text-slate-500 border border-slate-200 mt-2 w-max;
+        }
+
+        /* DASHBOARD CARDS */
+        .dash-card {
+            background: var(--apple-white);
+            border: 1px solid var(--apple-border);
+            border-radius: 28px;
+            padding: 24px;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+        }
+        .dash-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            border-color: var(--apple-blue);
+        }
+        .dash-icon {
+            width: 44px; height: 44px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px; margin-bottom: 4px;
+        }
 
         .config-drawer { 
             position: fixed; right: -400px; top: 0; bottom: 0; width: 400px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(40px);
@@ -89,23 +137,39 @@
             display: flex; flex-direction: column; overflow: hidden; animation: applePremiumEntry 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
         @keyframes applePremiumEntry { from { opacity: 0; transform: scale(0.92) translateY(40px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-        .bubble-apple { max-width: 80%; padding: 16px 22px; border-radius: 22px; font-size: 14px; line-height: 1.6; margin-bottom: 10px; }
-        .bubble-in { background: #f2f2f7; color: var(--apple-text); border-bottom-left-radius: 4px; }
+        .bubble-apple { max-width: 85%; padding: 18px 24px; border-radius: 24px; font-size: 14px; line-height: 1.6; margin-bottom: 12px; position: relative; transition: all 0.2s; }
+        .bubble-in { background: white; color: var(--apple-text); border-bottom-left-radius: 4px; border: 1px solid var(--apple-border); box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
         .bubble-out { background: var(--apple-blue); color: white; border-bottom-right-radius: 4px; margin-left: auto; box-shadow: 0 10px 25px rgba(0, 122, 255, 0.2); }
-        .btn-apple-delegate { background: #f2f2f7; color: var(--apple-blue); padding: 8px 16px; border-radius: 12px; font-weight: 800; font-size: 10px; text-transform: uppercase; }
+        
+        .ins-meta-grid { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; align-items: center; }
+        .ins-meta-label { font-size: 9px; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+        .ins-meta-value { font-size: 12px; font-weight: 600; color: #334155; }
+
+        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em; }
+        .status-pending { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
+        .status-assigned { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; }
+        .status-closed { background: #f0fdf4; color: #15803d; border: 1px solid #dcfce7; }
+
+        .ai-suggestion-btn { 
+            background: white; border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 12px; 
+            font-size: 11px; font-weight: 700; color: #64748b; transition: all 0.2s;
+        }
+        .ai-suggestion-btn:hover { border-color: var(--apple-blue); color: var(--apple-blue); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+        .btn-apple-delegate { background: #f2f2f7; color: var(--apple-blue); padding: 8px 16px; border-radius: 10px; font-weight: 800; font-size: 10px; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
     <aside class="apple-sidebar" id="sidebar">
         <div class="sidebar-resizer" id="resizer"></div>
-        <div class="p-10 text-center">
+        <div class="p-10 text-left">
             <h1 class="text-xl font-extrabold tracking-tighter text-slate-900 leading-none italic">Agent Email <span style="color:var(--apple-blue)">AIRIS</span></h1>
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-3">Control Center Pro</p>
         </div>
         <nav class="flex-1 overflow-y-auto custom-scrollbar">
             <div class="px-4 mb-8">
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 px-4">Cuentas Activas</p>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 px-4">Empresas Activas</p>
                 <div id="company-list-sidebar" class="space-y-1"></div>
             </div>
         </nav>
@@ -119,11 +183,11 @@
 
     <div class="main-stage">
         <header class="glass-header">
-            <h2 id="current-view-title" class="text-2xl font-extrabold tracking-tight text-slate-900">Bandeja General</h2>
+            <h2 id="current-view-title" class="text-xl font-extrabold tracking-tight text-slate-900">Bandeja General</h2>
             <div class="flex items-center gap-10">
                 <div class="bg-blue-600 px-8 py-3 rounded-[24px] shadow-xl shadow-blue-200 flex items-center gap-5 cursor-pointer hover:scale-105 transition-all" onclick="resetFilter()">
                     <p class="text-[10px] font-black text-white/80 uppercase tracking-widest">Emails Global</p>
-                    <p id="stat-total" class="text-2xl font-black text-white leading-none">0</p>
+                    <p id="stat-total" class="text-xl font-black text-white leading-none">0</p>
                 </div>
                 <div class="relative">
                     <input type="text" placeholder="Buscar hilos..." class="bg-slate-200/50 border-none rounded-full px-12 py-3 text-sm text-slate-700 outline-none w-80 focus:ring-2 focus:ring-blue-400/20 focus:bg-white transition-all">
@@ -131,64 +195,105 @@
                 </div>
             </div>
         </header>
-        <main class="flex-1 overflow-y-auto custom-scrollbar px-12 py-8"><div id="thread-list"></div></main>
+        <main class="flex-1 overflow-y-auto custom-scrollbar px-12 py-8">
+            <!-- ADMIN DASHBOARD -->
+            <div id="admin-dashboard" class="grid grid-cols-4 gap-6 mb-12">
+                <div class="dash-card">
+                    <div class="dash-icon bg-blue-100 text-blue-600">Σ</div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Hilos</p>
+                    <p id="dash-total" class="text-3xl font-black text-slate-900">0</p>
+                </div>
+                <div class="dash-card">
+                    <div class="dash-icon bg-amber-100 text-amber-600">!</div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pendientes</p>
+                    <p id="dash-pending" class="text-3xl font-black text-slate-900">0</p>
+                </div>
+                <div class="dash-card">
+                    <div class="dash-icon bg-indigo-100 text-indigo-600">👤</div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Asignados</p>
+                    <p id="dash-assigned" class="text-3xl font-black text-slate-900">0</p>
+                </div>
+                <div class="dash-card">
+                    <div class="dash-icon bg-emerald-100 text-emerald-600">✓</div>
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Resueltos</p>
+                    <p id="dash-resolved" class="text-3xl font-black text-slate-900">0%</p>
+                </div>
+            </div>
+
+            <div id="thread-list"></div>
+        </main>
     </div>
 
     <!-- INSPECTOR -->
     <div id="inspector-overlay" class="inspector-overlay">
         <div class="inspector-window">
-            <header class="px-10 py-8 border-b border-slate-100 flex justify-between items-center bg-white">
-                <div class="flex items-center gap-6">
-                    <div id="ins-avatar" class="w-14 h-14 bg-blue-500 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-xl shadow-blue-100"></div>
-                    <div>
-                        <h3 id="ins-subject" class="text-xl font-extrabold text-slate-900 truncate w-[500px]"></h3>
-                        <p id="ins-participants" class="text-xs font-bold text-blue-600 mt-1 uppercase"></p>
+            <header class="px-10 py-8 border-b border-slate-100 flex justify-between items-start bg-white">
+                <div class="flex items-start gap-6">
+                    <div id="ins-avatar-large" class="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-xl"></div>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4">
+                            <h3 id="ins-subject" class="text-xl font-extrabold text-slate-900 tracking-tight"></h3>
+                            <span id="ins-status-badge" class="status-badge"></span>
+                        </div>
+                        <div class="ins-meta-grid">
+                            <span class="ins-meta-label">De:</span>
+                            <span id="ins-from" class="ins-meta-value"></span>
+                            <span class="ins-meta-label">Para:</span>
+                            <span id="ins-to" class="ins-meta-value"></span>
+                            <span id="ins-cc-label" class="ins-meta-label">Cc:</span>
+                            <span id="ins-cc" class="ins-meta-value"></span>
+                        </div>
                     </div>
                 </div>
-                <button onclick="closeInspector()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-all text-xl">✕</button>
+                <div class="flex items-center gap-4">
+                    <button class="text-slate-400 hover:text-slate-600 p-2 rounded-xl hover:bg-slate-50 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                    </button>
+                    <button onclick="closeInspector()" class="text-slate-400 hover:text-slate-900 p-2 rounded-xl hover:bg-slate-50 transition-all text-2xl font-light">✕</button>
+                </div>
             </header>
             <div class="flex-1 flex overflow-hidden">
-                <div class="flex-1 flex flex-col bg-slate-50/20">
-                    <div id="ins-body" class="flex-1 overflow-y-auto p-12 custom-scrollbar space-y-8"></div>
+                <div class="flex-1 flex flex-col bg-slate-50/50">
+                    <div id="ins-body" class="flex-1 overflow-y-auto p-12 custom-scrollbar space-y-6"></div>
                     <div class="p-10 bg-white border-t border-slate-100">
-                        <textarea id="ins-reply-text" rows="3" class="w-full bg-slate-50 border border-slate-100 rounded-[24px] p-6 text-base outline-none focus:ring-4 focus:ring-blue-100 transition-all resize-none mb-6" placeholder="Escribe tu respuesta..."></textarea>
+                        <div id="ai-suggestions" class="flex gap-3 mb-6"></div>
+                        <textarea id="ins-reply-text" rows="3" class="w-full bg-slate-50 border border-slate-100 rounded-[24px] p-6 text-base outline-none focus:ring-4 focus:ring-blue-100 transition-all resize-none mb-6" placeholder="Escribe tu respuesta aquí..."></textarea>
                         <div class="flex justify-between items-center">
                             <div class="flex items-center gap-4">
                                 <span class="text-[11px] font-black text-slate-400 uppercase">Delegar a:</span>
                                 <select id="ins-delegate-select" onchange="delegateIns()" class="bg-slate-100 border-none text-xs font-bold rounded-xl px-4 py-2 outline-none cursor-pointer hover:bg-slate-200"></select>
                             </div>
-                            <button onclick="sendMailIns()" class="bg-blue-600 text-white px-12 py-4 rounded-[20px] font-black text-xs uppercase shadow-2xl shadow-blue-200">Enviar Mensaje</button>
+                            <button onclick="sendMailIns()" class="bg-blue-600 text-white px-12 py-4 rounded-[20px] font-black text-xs uppercase shadow-2xl shadow-blue-200">Enviar Respuesta</button>
                         </div>
                     </div>
                 </div>
-                <aside class="w-80 border-l border-slate-100 p-8 overflow-y-auto custom-scrollbar">
-                    <h4 class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-8">Historial</h4>
+                <aside class="w-80 border-l border-slate-100 p-8 overflow-y-auto custom-scrollbar bg-white/50">
+                    <h4 class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-8">Historial Reciente</h4>
                     <div id="ins-history-list" class="space-y-4"></div>
                 </aside>
             </div>
         </div>
     </div>
 
-    <!-- CONFIG -->
+    <!-- CONFIG DRAWER -->
     <div id="config-drawer" class="config-drawer">
         <div class="flex justify-between items-center mb-16">
-            <h2 class="text-3xl font-extrabold tracking-tight">Settings</h2>
+            <h2 class="text-3xl font-extrabold tracking-tight text-slate-900">Settings</h2>
             <button onclick="toggleConfig()" class="text-slate-400 hover:text-slate-900 transition-colors">✕</button>
         </div>
         <div class="space-y-6">
-            <button onclick="openForm('operadores')" class="w-full text-left bg-white border border-slate-100 p-8 rounded-[32px] hover:border-blue-400 transition-all flex items-center gap-6 group">
-                <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 font-bold text-2xl group-hover:bg-blue-600 group-hover:text-white">U</div>
+            <button onclick="openForm('operadores')" class="w-full text-left bg-white border border-slate-200 p-8 rounded-[32px] hover:border-blue-400 hover:shadow-xl transition-all flex items-center gap-6 group">
+                <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 font-bold text-2xl group-hover:bg-blue-600 group-hover:text-white transition-all">U</div>
                 <p class="text-sm font-black text-slate-800 uppercase">Gestión Operadores</p>
             </button>
-            <button onclick="openForm('empresas')" class="w-full text-left bg-white border border-slate-100 p-8 rounded-[32px] hover:border-blue-400 transition-all flex items-center gap-6 group">
-                <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 font-bold text-2xl group-hover:bg-indigo-600 group-hover:text-white">E</div>
+            <button onclick="openForm('empresas')" class="w-full text-left bg-white border border-slate-200 p-8 rounded-[32px] hover:border-blue-400 hover:shadow-xl transition-all flex items-center gap-6 group">
+                <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 font-bold text-2xl group-hover:bg-indigo-600 group-hover:text-white transition-all">E</div>
                 <p class="text-sm font-black text-slate-800 uppercase">Alta Empresas</p>
             </button>
         </div>
     </div>
 
     <script id="app-js">
-        // LÓGICA DE REDIMENSIONAMIENTO
         const sidebar = document.getElementById('sidebar');
         const resizer = document.getElementById('resizer');
         let isResizing = false;
@@ -219,10 +324,14 @@
         let activeCompany = null;
         let currentTid = null;
 
-        window.onload = async () => {
-            await loadData();
-            await loadOperators();
+        const getAvatarColor = (name) => {
+            const colors = ['#FF9500', '#FF2D55', '#5856D6', '#34C759', '#007AFF', '#AF52DE', '#5AC8FA'];
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            return colors[Math.abs(hash) % colors.length];
         };
+
+        window.onload = async () => { await loadData(); await loadOperators(); };
 
         async function loadData() {
             try {
@@ -231,8 +340,64 @@
                 hilos = Array.isArray(data) ? data : [data];
             } catch (e) {
                 hilos = [
-                    { id:1, thread_id:'th_1', remitente:'tim.cook@apple.com', asunto:'Agent Email Design AIRIS', mensaje:'The premium glassmorphism looks stunning.', cuenta_empresa:'Apple Inc', correo_empresa:'contact@apple.com', fecha: new Date().toISOString(), adjuntos: true, estado_ticket: 'PENDIENTE' },
-                    { id:2, thread_id:'th_2', remitente:'bob@pixar.com', asunto:'Render Farm Issue', mensaje:'The animation buffers are full.', cuenta_empresa:'Pixar Studios', correo_empresa:'support@pixar.com', fecha: new Date().toISOString(), adjuntos: false, estado_ticket: 'ASIGNADO', asignado_a: 'admin' }
+                    { 
+                        id: 1, 
+                        thread_id: 'th_1', 
+                        remitente: 'tim.cook@apple.com', 
+                        asunto: 'Agent Email AIRIS Design - Revisión Final', 
+                        mensaje: 'The premium glassmorphism looks stunning. We should check the memory usage of the blur effects.', 
+                        cuenta_empresa: 'Apple Inc', 
+                        correo_empresa: 'contact@apple.com', 
+                        fecha: new Date().toISOString(), 
+                        adjuntos: true, 
+                        archivos: [
+                            { nombre: 'propuesta_ia_v2.pdf', tamano: '4.2 MB' }, 
+                            { nombre: 'pantalla_demo.png', tamano: '1.5 MB' }
+                        ], 
+                        tamano_total: '5.8 MB',
+                        estado_ticket: 'PENDIENTE',
+                        leido: false,
+                        de: 'Tim Cook <tim.cook@apple.com>',
+                        para: 'airis-design@airis.com',
+                        cc: 'design-team@apple.com'
+                    },
+                    { 
+                        id: 2, 
+                        thread_id: 'th_2', 
+                        remitente: 'bob@pixar.com', 
+                        asunto: 'Render Farm Issue - Critical Error', 
+                        mensaje: 'The animation buffers are full. We need immediate assistance with the cloud nodes.', 
+                        cuenta_empresa: 'Pixar Studios', 
+                        correo_empresa: 'support@pixar.com', 
+                        fecha: new Date().toISOString(), 
+                        adjuntos: true, 
+                        archivos: [
+                            { nombre: 'log_error_render.txt', tamano: '12 KB' }
+                        ], 
+                        tamano_total: '25 KB',
+                        estado_ticket: 'ASIGNADO', 
+                        asignado_a: 'admin',
+                        leido: true,
+                        de: 'Bob Peterson <bob@pixar.com>',
+                        para: 'support@airis.com'
+                    },
+                    { 
+                        id: 3, 
+                        thread_id: 'th_3', 
+                        remitente: 'support@aws.com', 
+                        asunto: 'Facturación Mensual - Marzo 2026', 
+                        mensaje: 'Su factura de este mes ya está disponible para revisión.', 
+                        cuenta_empresa: 'AWS', 
+                        correo_empresa: 'billing@aws.com', 
+                        fecha: new Date().toISOString(), 
+                        adjuntos: false, 
+                        archivos: [], 
+                        tamano_total: '8 KB',
+                        estado_ticket: 'CERRADO',
+                        leido: true,
+                        de: 'AWS Billing <support@aws.com>',
+                        para: 'admin@airis.com'
+                    }
                 ];
             }
             renderSidebar();
@@ -240,7 +405,19 @@
             updateStats();
         }
 
-        function updateStats() { document.getElementById('stat-total').innerText = hilos.length; }
+        function updateStats() { 
+            const total = hilos.length;
+            const pending = hilos.filter(h => h.estado_ticket === 'PENDIENTE').length;
+            const assigned = hilos.filter(h => h.estado_ticket === 'ASIGNADO').length;
+            const closed = hilos.filter(h => h.estado_ticket === 'CERRADO').length;
+            const resolutionRate = total > 0 ? Math.round((closed / total) * 100) : 0;
+
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('dash-total').innerText = total;
+            document.getElementById('dash-pending').innerText = pending;
+            document.getElementById('dash-assigned').innerText = assigned;
+            document.getElementById('dash-resolved').innerText = `${resolutionRate}%`;
+        }
 
         function renderSidebar() {
             const container = document.getElementById('company-list-sidebar');
@@ -255,13 +432,11 @@
             container.innerHTML = companyData.map(c => {
                 const count = hilos.filter(h => h.cuenta_empresa === c.name).length;
                 return `
-                <div onclick="toggleSubmenu('${c.name}')" class="sidebar-item ${activeCompany === c.name ? 'active' : ''}">
+                <div onclick="toggleSubmenu('${c.name}')" class="sidebar-item ${activeCompany === c.name ? 'active shadow-lg' : ''}">
                     <div class="flex flex-col min-w-0 flex-1 text-left overflow-hidden pr-2">
                         <div class="flex items-center justify-between w-full gap-2">
                             <span class="truncate text-slate-900 font-extrabold flex-1 ${activeCompany === c.name ? 'text-blue-600' : ''}">${c.name}</span>
-                            <div class="company-badge ${activeCompany === c.name ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}">
-                                ${count}
-                            </div>
+                            <div class="company-badge ${activeCompany === c.name ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}">${count}</div>
                         </div>
                         <span class="text-[10px] text-slate-400 font-bold truncate pr-4">${c.email}</span>
                     </div>
@@ -280,29 +455,121 @@
             const container = document.getElementById('thread-list');
             if(!container) return;
             const filtered = activeCompany ? hilos.filter(h => h.cuenta_empresa === activeCompany) : hilos;
-            container.innerHTML = filtered.map(m => `
-                <div ondblclick="openInspector('${m.thread_id}')" class="email-card">
-                    <div><p class="text-[10px] font-black text-blue-600 uppercase tracking-tighter mb-1">${m.cuenta_empresa || 'System'}</p><p class="text-[13px] font-bold text-slate-900 truncate">${(m.remitente || 'User').split('@')[0]}</p></div>
-                    <div class="px-10 border-l border-slate-100"><p class="text-[15px] font-extrabold text-slate-900 truncate">${m.asunto || '(Sin Asunto)'}</p><p class="text-[13px] font-medium text-slate-400 truncate w-[450px] mt-1.5">${(m.mensaje || '').replace(/<[^>]*>?/gm, '')}</p></div>
-                    <div class="text-center">${m.adjuntos ? '📎' : ''}</div>
-                    <div class="flex items-center gap-3 px-6"><select onchange="delegate('${m.thread_id}', this.value)" onclick="event.stopPropagation()" class="btn-apple-delegate flex-1 outline-none"><option value="">Delegar</option>${operators.map(op => `<option value="${op}" ${m.asignado_a === op ? 'selected' : ''}>${op.toUpperCase()}</option>`).join('')}</select></div>
-                    <div class="text-right"><p class="text-[11px] font-black text-slate-900 uppercase">${new Date(m.fecha).toLocaleDateString([], {day:'2-digit', month:'short'})}</p><p class="text-[10px] font-bold text-slate-300 mt-1 uppercase">${new Date(m.fecha).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</p></div>
-                </div>`).join('') || '<p class="text-center text-slate-400 mt-20 italic">Bandeja vacía.</p>';
+            
+            container.innerHTML = filtered.map(m => {
+                const avatarColor = getAvatarColor(m.remitente || 'A');
+                const initial = (m.remitente || 'A')[0];
+                const isRead = m.leido === true;
+
+                const attachmentsHtml = (m.adjuntos && m.archivos && m.archivos.length > 0) ? m.archivos.map(f => `
+                    <div class="attachment-pill">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
+                        ${typeof f === 'string' ? f : `${f.nombre} <span class="ml-1 opacity-60">(${f.tamano})</span>`}
+                    </div>`).join('') : '';
+
+                return `
+                <div ondblclick="openInspector('${m.thread_id}')" class="email-card ${isRead ? 'read' : ''}">
+                    ${!isRead ? '<div class="unread-dot"></div>' : ''}
+                    <div class="flex justify-center">
+                        <div class="avatar-circle" style="background-color: ${avatarColor}">${initial}</div>
+                    </div>
+                    <div class="px-4">
+                        <p class="text-[9px] font-black text-blue-600 uppercase tracking-tighter mb-0.5">${m.cuenta_empresa || 'System'}</p>
+                        <p class="text-[12px] font-bold text-slate-900 truncate sender-text"><span class="meta-label">DE:</span>${(m.remitente || 'User').split('@')[0]}</p>
+                        ${m.cc ? `<p class="text-[9px] font-medium text-slate-400 truncate"><span class="meta-label">CC:</span>${m.cc.split('@')[0]}</p>` : ''}
+                    </div>
+                    <div class="px-8 border-l border-slate-100 overflow-hidden text-left">
+                        <p class="text-[13px] font-extrabold text-slate-900 truncate tracking-tight subject-text">${m.asunto || '(Sin Asunto)'}</p>
+                        <p class="text-[11px] font-medium text-slate-400 truncate w-full">${(m.mensaje || '').replace(/<[^>]*>?/gm, '')}</p>
+                        <div class="flex flex-wrap gap-2">${attachmentsHtml}</div>
+                    </div>
+                    <div class="flex items-center gap-3 px-4">
+                        <select onchange="delegate('${m.thread_id}', this.value)" onclick="event.stopPropagation()" class="btn-apple-delegate flex-1 outline-none">
+                            <option value="">Delegar</option>
+                            ${operators.map(op => `<option value="${op}" ${m.asignado_a === op ? 'selected' : ''}>${op.toUpperCase()}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div class="text-right pl-4">
+                        <p class="text-[10px] font-black text-slate-900 uppercase">${new Date(m.fecha).toLocaleDateString([], {day:'2-digit', month:'short'})}</p>
+                        <p class="text-[9px] font-black text-blue-500 mt-0.5 uppercase">${m.tamano_total || '0 KB'}</p>
+                    </div>
+                </div>`;
+            }).join('') || '<p class="text-center text-slate-400 mt-20 italic">Bandeja vacía.</p>';
         }
 
         function openInspector(tid) {
             currentTid = tid;
             const msgs = hilos.filter(h => h.thread_id === tid);
             if (msgs.length === 0) return;
+            
+            hilos.forEach(h => { if(h.thread_id === tid) h.leido = true; });
+            renderThreads();
+            updateStats();
+
             const first = msgs[0];
             const overlay = document.getElementById('inspector-overlay');
             if(overlay) overlay.style.display = 'flex';
+
+            // Cabecera Enriquecida
             document.getElementById('ins-subject').innerText = first.asunto || '(Sin Asunto)';
-            document.getElementById('ins-participants').innerHTML = `<span class="text-blue-600 font-bold">${first.remitente}</span> <span class="mx-2 text-slate-300">•</span> <span class="text-slate-500">${first.cuenta_empresa}</span>`;
-            document.getElementById('ins-avatar').innerText = (first.remitente || 'A')[0].toUpperCase();
-            document.getElementById('ins-body').innerHTML = msgs.map(m => `<div class="flex flex-col ${m.de_operador ? 'items-end' : 'items-start'}"><p class="text-[9px] font-black text-slate-400 uppercase mb-2 px-3">${m.de_operador ? 'Admin' : (m.remitente || 'User').split('@')[0]}</p><div class="bubble-apple ${m.de_operador ? 'bubble-out' : 'bubble-in'} shadow-sm">${m.mensaje}</div><p class="text-[8px] text-slate-300 font-bold px-3 mt-1">${new Date(m.fecha).toLocaleTimeString()}</p></div>`).join('');
+            const avatar = document.getElementById('ins-avatar-large');
+            avatar.innerText = (first.remitente || 'A')[0].toUpperCase();
+            avatar.style.backgroundColor = getAvatarColor(first.remitente || 'A');
+            
+            const badge = document.getElementById('ins-status-badge');
+            badge.innerText = first.estado_ticket || 'PENDIENTE';
+            badge.className = `status-badge ${first.estado_ticket === 'PENDIENTE' ? 'status-pending' : first.estado_ticket === 'ASIGNADO' ? 'status-assigned' : 'status-closed'}`;
+
+            // Metadatos
+            document.getElementById('ins-from').innerText = first.de || first.remitente;
+            document.getElementById('ins-to').innerText = first.para || first.correo_empresa;
+            if(first.cc) {
+                document.getElementById('ins-cc').innerText = first.cc;
+                document.getElementById('ins-cc').style.display = 'inline';
+                document.getElementById('ins-cc-label').style.display = 'inline';
+            } else {
+                document.getElementById('ins-cc').style.display = 'none';
+                document.getElementById('ins-cc-label').style.display = 'none';
+            }
+
+            // Sugerencias IA
+            const suggestions = ["Confirmar recepción", "Solicitar más info", "Problema resuelto", "Escalar a técnico"];
+            document.getElementById('ai-suggestions').innerHTML = suggestions.map(s => `
+                <button onclick="applySuggestion('${s}')" class="ai-suggestion-btn">${s}</button>
+            `).join('');
+
+            // Cuerpo del mensaje
+            document.getElementById('ins-body').innerHTML = msgs.map(m => `
+                <div class="flex flex-col ${m.de_operador ? 'items-end' : 'items-start'}">
+                    <p class="text-[9px] font-black text-slate-400 uppercase mb-2 px-3">
+                        ${m.de_operador ? 'Tú (Operador)' : (m.remitente || 'User').split('@')[0]}
+                    </p>
+                    <div class="bubble-apple ${m.de_operador ? 'bubble-out' : 'bubble-in'}">
+                        ${m.mensaje}
+                        ${(m.adjuntos && m.archivos) ? `
+                            <div class="mt-4 pt-4 border-t ${m.de_operador ? 'border-white/20' : 'border-slate-100'} flex flex-wrap gap-2">
+                                ${m.archivos.map(f => `<div class="px-3 py-1.5 bg-black/5 rounded-lg text-[10px] font-bold flex items-center gap-2">📎 ${typeof f === 'string' ? f : f.nombre}</div>`).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                    <p class="text-[8px] text-slate-400 font-bold px-3 mt-1">${new Date(m.fecha).toLocaleString()}</p>
+                </div>
+            `).join('');
+
             document.getElementById('ins-delegate-select').innerHTML = '<option value="">Sin Asignar</option>' + operators.map(op => `<option value="${op}" ${first.asignado_a === op ? 'selected' : ''}>${op.toUpperCase()}</option>`).join('');
-            document.getElementById('ins-history-list').innerHTML = hilos.filter(h => h.remitente === first.remitente).map(h => `<div onclick="openInspector('${h.thread_id}')" class="p-5 bg-white/50 border border-slate-100 rounded-[20px] hover:border-blue-400 transition-all cursor-pointer"><p class="text-[10px] font-black text-blue-600 mb-1">${new Date(h.fecha).toLocaleDateString()}</p><p class="text-[12px] font-extrabold text-slate-800 truncate">${h.asunto}</p></div>`).join('');
+            
+            document.getElementById('ins-history-list').innerHTML = hilos.filter(h => h.remitente === first.remitente && h.thread_id !== tid).map(h => `
+                <div onclick="openInspector('${h.thread_id}')" class="p-5 bg-white border border-slate-100 rounded-[20px] hover:border-blue-400 transition-all cursor-pointer shadow-sm">
+                    <p class="text-[10px] font-black text-blue-600 mb-1 uppercase tracking-tighter">${new Date(h.fecha).toLocaleDateString()}</p>
+                    <p class="text-[12px] font-extrabold text-slate-800 truncate">${h.asunto}</p>
+                    <p class="text-[10px] text-slate-400 mt-1">${h.estado_ticket}</p>
+                </div>`).join('') || '<p class="text-[10px] text-slate-400 italic text-center py-4">No hay hilos anteriores</p>';
+        }
+
+        function applySuggestion(text) {
+            const textarea = document.getElementById('ins-reply-text');
+            textarea.value = text + "... ";
+            textarea.focus();
         }
 
         function closeInspector() { document.getElementById('inspector-overlay').style.display = 'none'; }

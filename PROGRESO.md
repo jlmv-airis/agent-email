@@ -3,30 +3,31 @@
 Este archivo refleja el estado actual del desarrollo y los hitos alcanzados.
 
 ## 📌 Estado Actual
-- **Rama Git:** `main` (Post v0.0.8 Premium Merge)
+- **Rama Git:** `v0.0.9` (Fase Optimización de Bandeja)
 - **Entorno Local:** Activo
   - **Servidor Web:** [http://localhost:8000/Panel.html](http://localhost:8000/Panel.html)
   - **n8n Backend:** [http://localhost:5678](http://localhost:5678)
   - **Base de Datos:** PostgreSQL (Docker) activa.
 
-## 🍎 Hito Alcanzado: Experiencia Premium Apple/iCloud (v0.0.8)
-Se ha transformado el panel en una herramienta de gestión de alto nivel con estándares de diseño de Apple.
+## 📥 Fase Actual: Densidad y Adjuntos (v0.0.9)
+Optimización de la bandeja general para una gestión más rápida y visualización de archivos.
 
 ### ✅ Tareas Completadas
-- [x] **Estética Premium:** Implementación de Glassmorphism, tipografía Retina y paleta iCloud.
-- [x] **Sidebar Inteligente:** Lista de empresas con doble línea (nombre/correo) y contadores estilo Spark.
-- [x] **Resizer Manual:** Implementación de barra de arrastre para ajustar el ancho del sidebar.
-- [x] **Inspector Pro:** Modal sofisticado para lectura, respuesta admin y delegación rápida.
-- [x] **Bandeja de Alta Claridad:** Layout de tarjetas blancas con sombras suaves y estados hover.
-- [x] **Merge a Main:** Consolidación de la versión v0.0.8.
+- [x] Rama `v0.0.8` Premium unificada en `main`.
+- [x] Estructura Sidebar Resizable y Spark Style.
+- [x] Inspector Pro con historial de cliente.
 
-### ⏳ Próximos Pasos
-- [ ] Implementar la lógica real de filtrado por carpetas (Inbox, Sent, Bin) conectada a n8n.
-- [ ] Desarrollar los formularios de "Alta de Empresa" y "Alta de Operador" dentro del drawer de ajustes.
-- [ ] Añadir notificaciones visuales suaves tipo iOS al recibir nuevos correos.
+### ⏳ Tareas en Proceso
+- [ ] **feat:** Reducción de tamaño de filas de correo para mayor densidad.
+- [ ] **feat:** Implementación de visualización de adjuntos dentro de la tarjeta de email.
+- [ ] **style:** Refinamiento de tipografía en vista compacta.
+
+### 📅 Próximos Pasos
+- [ ] Conectar la lógica de adjuntos real con los datos de n8n.
+- [ ] Implementar los formularios de alta en el drawer de ajustes.
 
 ---
 
 ## 🛠️ Última Modificación
 - **Fecha:** lunes, 6 de abril de 2026
-- **Detalle:** Finalización del rediseño Premium iCloud Style, Sidebar Resizable y fusión exitosa con la rama principal.
+- **Detalle:** `docs: actualización de progreso para fase v0.0.9`.
