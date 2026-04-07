@@ -15,7 +15,20 @@
             --apple-text: #1d1d1f;
             --apple-gray: #86868b;
             --apple-border: rgba(0,0,0,0.08);
+            --glass-bg: rgba(255, 255, 255, 0.7);
         }
+        
+        /* MODO OSCURO */
+        body.dark-mode {
+            --apple-bg: #000000;
+            --apple-white: #1c1c1e;
+            --apple-blue: #0a84ff;
+            --apple-text: #f5f5f7;
+            --apple-gray: #98989d;
+            --apple-border: rgba(255,255,255,0.12);
+            --glass-bg: rgba(28, 28, 30, 0.8);
+        }
+
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background-color: var(--apple-bg); 
@@ -24,6 +37,7 @@
             height: 100vh; 
             display: flex; 
             -webkit-font-smoothing: antialiased;
+            transition: background-color 0.5s ease, color 0.5s ease;
         }
         
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
@@ -95,9 +109,50 @@
 
         .meta-label { font-size: 8px; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 4px; }
 
+        /* TEMA TOGGLE BUTTONS */
+        .theme-btn { 
+            @apply flex-1 flex flex-col items-center justify-center p-6 rounded-3xl border transition-all;
+            background: var(--apple-bg); border-color: var(--apple-border);
+        }
+        .theme-btn.active { border-color: var(--apple-blue); border-width: 2px; box-shadow: 0 10px 20px rgba(0, 122, 255, 0.1); }
+        .theme-btn:hover { transform: translateY(-3px); }
+
+        body.dark-mode .text-slate-900 { color: #ffffff; }
+        body.dark-mode .text-slate-400 { color: #8e8e93; }
+        body.dark-mode .bg-slate-50 { background: #1c1c1e; }
+        body.dark-mode .border-slate-100 { border-color: rgba(255,255,255,0.1); }
+        body.dark-mode .bg-white { background: #1c1c1e; }
+        body.dark-mode .bg-white\/50 { background: rgba(28, 28, 30, 0.5); }
+        body.dark-mode .bg-slate-50\/50 { background: rgba(28, 28, 30, 0.5); }
+        body.dark-mode .inspector-window { background: #1c1c1e; }
+        body.dark-mode .modal-floating-card { background: #1c1c1e; }
+        body.dark-mode .op-card { background: #2c2c2e; border-color: rgba(255,255,255,0.05); }
+        body.dark-mode .dash-card { background: #1c1c1e; border-color: rgba(255,255,255,0.05); }
+        body.dark-mode .email-card { background: #1c1c1e; }
+        body.dark-mode .email-card.read { background: #000000; }
+        
         .attachment-pill {
             @apply flex items-center gap-1.5 px-2 py-0.5 bg-slate-100 rounded-md text-[9px] font-bold text-slate-500 border border-slate-200 mt-2 w-max;
         }
+        body.dark-mode .attachment-pill { background: #2c2c2e; border-color: #3a3a3c; color: #8e8e93; }
+        
+        /* OPERATOR V2 DARK MODE */
+        body.dark-mode .op-card { background: #1c1c1e; }
+        body.dark-mode .op-stat-card { background: #1c1c1e; }
+        body.dark-mode .op-stats { background: #000000; }
+        body.dark-mode .op-stat-value { color: #ffffff !important; }
+        body.dark-mode .op-name { color: #f5f5f7; }
+        body.dark-mode .op-email { color: #8e8e93; }
+        body.dark-mode .op-search-bar input { background: #2c2c2e; border-color: #3a3a3c; color: #f5f5f7; }
+        body.dark-mode .op-filter-tab { background: #1c1c1e; border-color: #3a3a3c; }
+        body.dark-mode .op-stat-text { color: #6e6e73; }
+        body.dark-mode .modal-floating-card { background: #1c1c1e; }
+        body.dark-mode #modal-title { color: #f5f5f7; }
+        
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-slide-up { animation: slideUp 0.3s ease-out; }
+        
+        .z-500 { z-index: 500; }
 
         /* DASHBOARD CARDS */
         .dash-card {
@@ -122,11 +177,146 @@
             font-size: 20px; margin-bottom: 4px;
         }
 
-        .config-drawer { 
-            position: fixed; right: -400px; top: 0; bottom: 0; width: 400px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(40px);
-            border-left: 1px solid var(--apple-border); transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1); z-index: 150; padding: 48px; 
+        /* CONFIG FORMS */
+        .config-input { 
+            @apply w-full bg-slate-100/50 border border-slate-200 rounded-2xl px-6 py-4 text-sm font-semibold outline-none transition-all mb-4 focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-400;
         }
-        .config-drawer.open { right: 0; box-shadow: -20px 0 60px rgba(0,0,0,0.05); }
+        .config-label { @apply text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block ml-2; }
+        .btn-save-config { @apply w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xs uppercase shadow-xl shadow-blue-200 hover:bg-blue-700 transition-all mt-4; }
+        .btn-back-config { @apply mb-8 text-blue-600 font-bold text-xs uppercase flex items-center gap-2 hover:opacity-70 transition-all; }
+
+        /* OPERATOR CARDS */
+        /* OPERATOR CARDS - V2 OPTIMIZADO */
+        .op-card {
+            background: white; border: 1px solid var(--apple-border); border-radius: 28px;
+            padding: 24px; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex; flex-direction: column; gap: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02); position: relative; overflow: hidden;
+        }
+        .op-card:hover { transform: translateY(-4px); box-shadow: 0 24px 48px rgba(0,0,0,0.1); border-color: var(--apple-blue); }
+        
+        .op-card-header {
+            display: flex; align-items: flex-start; justify-content: space-between;
+        }
+        .op-avatar-wrapper {
+            position: relative;
+        }
+        .op-avatar { 
+            width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; 
+            justify-content: center; font-weight: 800; color: white; font-size: 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        .op-status-dot {
+            position: absolute; bottom: -2px; right: -2px; width: 16px; height: 16px;
+            border-radius: 50%; border: 3px solid white;
+            background: #34C759;
+        }
+        .op-status-dot.offline { background: #8e8e93; }
+        
+        .op-info { flex: 1; margin-left: 16px; }
+        .op-name { font-size: 16px; font-bold text-slate-900 font-extrabold mb-1; }
+        .op-email { font-size: 11px; color: var(--apple-gray); margin-bottom: 8px; }
+        
+        .op-role-badge { 
+            padding: 6px 14px; border-radius: 12px; font-size: 9px; font-weight: 900; 
+            text-transform: uppercase; letter-spacing: 0.08em; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .op-role-badge.admin { background: linear-gradient(135deg, #FF2D55 0%, #FF6B6B 100%); color: white; }
+        .op-role-badge.supervisor { background: linear-gradient(135deg, #5856D6 0%, #AF52DE 100%); color: white; }
+        .op-role-badge.operador { background: #f2f2f7; color: #8e8e93; }
+        body.dark-mode .op-role-badge.operador { background: #2c2c2e; color: #8e8e93; }
+        
+        .op-stats { 
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+            background: var(--apple-bg); border-radius: 16px; padding: 12px;
+        }
+        .op-stat { text-align: center; }
+        .op-stat-value { font-size: 18px; font-extrabold text-slate-900 font-black; }
+        .op-stat-label { font-size: 8px; font-bold text-slate-400 uppercase; letter-spacing: 0.05em; }
+        
+        .op-actions { 
+            display: flex; gap: 8px; padding-top: 8px; border-top: 1px solid var(--apple-border);
+        }
+        .btn-op-action { 
+            flex: 1; padding: 10px; border-radius: 14px; display: flex; align-items: center; 
+            justify-content: center; gap: 6px; font-size: 11px; font-weight: 700; transition: 0.25s;
+        }
+        .btn-op-action.edit { background: #f2f2f7; color: var(--apple-blue); }
+        .btn-op-action.edit:hover { background: var(--apple-blue); color: white; }
+        .btn-op-action.delete { background: #fff0f0; color: #FF3B30; }
+        .btn-op-action.delete:hover { background: #FF3B30; color: white; }
+
+        /* OPERATOR HEADER STATS */
+        .op-header-stats {
+            display: flex; gap: 12px; margin-bottom: 20px;
+        }
+        .op-stat-card {
+            flex: 1; background: white; border: 1px solid var(--apple-border); border-radius: 20px;
+            padding: 16px; display: flex; align-items: center; gap: 14px;
+            transition: all 0.3s;
+        }
+        .op-stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.06); }
+        .op-stat-icon { 
+            width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; 
+            justify-content: center; font-size: 18px;
+        }
+        .op-stat-card .op-stat-num { font-size: 24px; font-extrabold text-slate-900 font-black; }
+        .op-stat-card .op-stat-text { font-size: 10px; font-bold text-slate-400 uppercase; }
+
+        /* SEARCH OPERATORS */
+        .op-search-bar {
+            position: relative; margin-bottom: 20px;
+        }
+        .op-search-bar input {
+            width: 100%; background: white; border: 1px solid var(--apple-border); border-radius: 16px;
+            padding: 14px 20px 14px 48px; font-size: 13px; outline: none; transition: 0.3s;
+        }
+        .op-search-bar input:focus { border-color: var(--apple-blue); box-shadow: 0 0 0 4px rgba(0,122,255,0.1); }
+        .op-search-bar svg { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+
+        /* ROLE FILTER TABS */
+        .op-filter-tabs {
+            display: flex; gap: 8px; margin-bottom: 20px;
+        }
+        .op-filter-tab {
+            padding: 10px 20px; border-radius: 14px; font-size: 11px; font-weight: 700;
+            background: white; border: 1px solid var(--apple-border); color: var(--apple-gray);
+            cursor: pointer; transition: 0.25s;
+        }
+        .op-filter-tab:hover { border-color: var(--apple-blue); color: var(--apple-blue); }
+        .op-filter-tab.active { background: var(--apple-blue); color: white; border-color: var(--apple-blue); }
+
+        /* EMPTY STATE */
+        .op-empty-state {
+            text-align: center; padding: 60px 40px; background: white; border-radius: 28px;
+            border: 2px dashed var(--apple-border);
+        }
+        .op-empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+        .op-empty-text { font-size: 14px; font-bold text-slate-400; }
+
+        /* FLOATING MODAL */
+        .modal-floating-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.2); backdrop-filter: blur(20px);
+            z-index: 300; align-items: center; justify-content: center; padding: 20px;
+        }
+        .modal-floating-card {
+            width: 100%; max-width: 500px; background: white; border-radius: 32px; padding: 40px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.2); animation: modalPop 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes modalPop { from { opacity: 0; transform: scale(0.9) translateY(30px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+        /* COLORES DE SECCIÓN MODAL */
+        .section-personal { background: rgba(0, 122, 255, 0.03); border: 1px solid rgba(0, 122, 255, 0.1); }
+        .section-account { background: rgba(88, 86, 214, 0.03); border: 1px solid rgba(88, 86, 214, 0.1); }
+        .section-notes { background: rgba(255, 149, 0, 0.03); border: 1px solid rgba(255, 149, 0, 0.1); }
+
+        .config-drawer { 
+            position: fixed; right: -480px; top: 0; bottom: 0; width: 480px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(50px);
+            border-left: 1px solid var(--apple-border); transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1); z-index: 150; padding: 0; 
+            display: flex; flex-direction: column;
+        }
+        .config-drawer.open { right: 0; box-shadow: -20px 0 80px rgba(0,0,0,0.1); }
+        .config-content { padding: 48px; flex: 1; overflow-y: auto; }
 
         .inspector-overlay { 
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.1); backdrop-filter: blur(15px); 
@@ -278,19 +468,87 @@
 
     <!-- CONFIG DRAWER -->
     <div id="config-drawer" class="config-drawer">
-        <div class="flex justify-between items-center mb-16">
-            <h2 class="text-3xl font-extrabold tracking-tight text-slate-900">Settings</h2>
-            <button onclick="toggleConfig()" class="text-slate-400 hover:text-slate-900 transition-colors">✕</button>
+        <div id="config-content" class="config-content">
+            <!-- El contenido se genera dinámicamente -->
         </div>
-        <div class="space-y-6">
-            <button onclick="openForm('operadores')" class="w-full text-left bg-white border border-slate-200 p-8 rounded-[32px] hover:border-blue-400 hover:shadow-xl transition-all flex items-center gap-6 group">
-                <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 font-bold text-2xl group-hover:bg-blue-600 group-hover:text-white transition-all">U</div>
-                <p class="text-sm font-black text-slate-800 uppercase">Gestión Operadores</p>
-            </button>
-            <button onclick="openForm('empresas')" class="w-full text-left bg-white border border-slate-200 p-8 rounded-[32px] hover:border-blue-400 hover:shadow-xl transition-all flex items-center gap-6 group">
-                <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 font-bold text-2xl group-hover:bg-indigo-600 group-hover:text-white transition-all">E</div>
-                <p class="text-sm font-black text-slate-800 uppercase">Alta Empresas</p>
-            </button>
+    </div>
+
+    <!-- FLOATING MODAL FOR OPERATORS - V2 -->
+    <div id="modal-operator" class="modal-floating-overlay">
+        <div class="modal-floating-card !max-w-[560px]">
+            <div class="flex justify-between items-center mb-8">
+                <div class="flex items-center gap-4">
+                    <div id="modal-avatar-preview" class="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-bold text-xl" style="background: linear-gradient(135deg, #5856D6 0%, #AF52DE 100%)">?</div>
+                    <div>
+                        <h3 id="modal-title" class="text-2xl font-extrabold text-slate-900">Nuevo Operador</h3>
+                        <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mt-0.5">Configuración de Acceso</p>
+                    </div>
+                </div>
+                <button onclick="closeOpModal()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:text-slate-900 hover:bg-slate-200 transition-all text-xl">✕</button>
+            </div>
+            <form id="form-operador" onsubmit="saveConfig(event, 'operadores')">
+                <div class="space-y-5">
+                    <!-- SECCIÓN: DATOS PERSONALES -->
+                    <div class="p-5 bg-slate-50/50 rounded-[24px] border border-slate-100">
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-6 h-6 rounded-lg bg-blue-500 flex items-center justify-center text-white text-xs font-bold">1</div>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Información Personal</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="config-label">Nombre Completo</label>
+                                <input type="text" name="nombre" id="input-nombre" class="config-input !mb-0 !py-3" placeholder="Ej: Juan Pérez" required oninput="updateModalPreview()">
+                            </div>
+                            <div>
+                                <label class="config-label">Correo Empresarial</label>
+                                <input type="email" name="email" id="input-email" class="config-input !mb-0 !py-3" placeholder="juan@empresa.com" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN: CUENTA Y SEGURIDAD -->
+                    <div class="p-5 bg-slate-50/50 rounded-[24px] border border-slate-100">
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-6 h-6 rounded-lg bg-purple-500 flex items-center justify-center text-white text-xs font-bold">2</div>
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Cuenta y Seguridad</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="config-label">Username</label>
+                                <input type="text" name="username" id="input-username" class="config-input !mb-0 !py-3" placeholder="juan.perez" required>
+                            </div>
+                            <div>
+                                <label class="config-label">Rol del Sistema</label>
+                                <select name="rol" id="input-rol" class="config-input !mb-0 !py-3" onchange="updateModalPreview()">
+                                    <option value="operador">Operador</option>
+                                    <option value="supervisor">Supervisor</option>
+                                    <option value="admin">Administrador</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="password-field">
+                            <label class="config-label">Contraseña Temporal</label>
+                            <input type="password" name="password" id="input-password" class="config-input !mb-0 !py-3" placeholder="••••••••" required>
+                        </div>
+                    </div>
+
+                    <!-- SECCIÓN: NOTAS -->
+                    <div class="p-5 bg-amber-50/50 rounded-[24px] border border-amber-100/50">
+                        <div class="flex items-center gap-2 mb-3">
+                            <div class="w-6 h-6 rounded-lg bg-amber-500 flex items-center justify-center text-white text-xs font-bold">3</div>
+                            <p class="text-[10px] font-black text-amber-600 uppercase tracking-widest">Notas Internas (Opcional)</p>
+                        </div>
+                        <textarea name="notas" class="config-input h-20 resize-none !mb-0 !py-3" placeholder="Notas sobre el perfil del operador..."></textarea>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex gap-4">
+                    <button type="button" onclick="closeOpModal()" class="flex-1 py-4 rounded-2xl font-black text-xs uppercase text-slate-400 hover:bg-slate-100 transition-all">Cancelar</button>
+                    <button type="submit" id="btn-submit-op" class="flex-[2] btn-save-config !mt-0 !py-4">
+                        <span id="btn-submit-text">Crear Operador</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -321,7 +579,11 @@
 
         const N8N_URL = 'http://localhost:5678';
         let hilos = [];
-        let operators = ['admin', 'operador_1', 'operador_2'];
+        let operators = [
+            { username: 'admin', nombre: 'Administrador', email: 'admin@airis.com', rol: 'admin', notas: 'Cuenta principal' },
+            { username: 'operador_1', nombre: 'Juan Pérez', email: 'juan@airis.com', rol: 'operador', notas: 'Soporte Nivel 1' }
+        ];
+        let editingUser = null;
         let activeCompany = null;
         let activeFolder = 'inbox';
         let currentTid = null;
@@ -334,7 +596,25 @@
             return colors[Math.abs(hash) % colors.length];
         };
 
-        window.onload = async () => { await loadData(); await loadOperators(); };
+        function setTheme(theme) {
+            const isDark = theme === 'dark';
+            if(isDark) {
+                document.body.classList.add('dark-mode');
+                document.body.classList.remove('light-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+                document.body.classList.add('light-mode');
+            }
+            localStorage.setItem('theme', theme);
+            if(document.getElementById('config-drawer').classList.contains('open')) renderConfigMenu();
+        }
+
+        function initTheme() {
+            const saved = localStorage.getItem('theme') || 'light';
+            setTheme(saved);
+        }
+
+        window.onload = async () => { initTheme(); await loadData(); await loadOperators(); };
 
         async function loadData() {
             try {
@@ -425,7 +705,7 @@
         function renderSidebar() {
             const container = document.getElementById('company-list-sidebar');
             if(!container) return;
-            
+
             let companyData = hilos.reduce((acc, h) => {
                 if (h.cuenta_empresa && !acc.find(x => x.name === h.cuenta_empresa)) {
                     acc.push({ 
@@ -444,7 +724,7 @@
             const favs = companyData.filter(c => c.isFavorite);
             const others = companyData.filter(c => !c.isFavorite);
             const sortedData = [...favs, ...others];
-            
+
             let html = '';
             if(favs.length > 0) {
                 html += `<p class="text-[9px] font-black text-amber-500 uppercase tracking-widest mb-3 px-4">Acceso Rápido ★</p>`;
@@ -453,7 +733,7 @@
             html += sortedData.map(c => {
                 const count = hilos.filter(h => h.cuenta_empresa === c.name).length;
                 const isSelected = activeCompany === c.name;
-                
+
                 return `
                 <div class="mb-1">
                     <div onclick="toggleSubmenu('${c.name}')" class="sidebar-item ${isSelected ? 'active shadow-lg' : ''} ${c.isFavorite ? 'favorite' : ''}">
@@ -470,7 +750,7 @@
                             <span class="text-[10px] text-slate-400 font-bold truncate pr-4">${c.email}</span>
                         </div>
                     </div>
-                    
+
                     ${isSelected ? `
                     <div class="ml-8 mt-2 space-y-1 pr-4 animate-apple-slide-down">
                         <button onclick="setFolder('inbox')" class="w-full text-left px-4 py-2 rounded-xl text-[11px] font-bold ${activeFolder==='inbox'?'bg-blue-50 text-blue-600':'text-slate-500 hover:bg-slate-50'} transition-all flex items-center gap-3">
@@ -527,7 +807,7 @@
             const container = document.getElementById('thread-list');
             if(!container) return;
             const filtered = activeCompany ? hilos.filter(h => h.cuenta_empresa === activeCompany) : hilos;
-            
+
             container.innerHTML = filtered.map(m => {
                 const avatarColor = getAvatarColor(m.remitente || 'A');
                 const initial = (m.remitente || 'A')[0];
@@ -558,7 +838,7 @@
                     <div class="flex items-center gap-3 px-4">
                         <select onchange="delegate('${m.thread_id}', this.value)" onclick="event.stopPropagation()" class="btn-apple-delegate flex-1 outline-none">
                             <option value="">Delegar</option>
-                            ${operators.map(op => `<option value="${op}" ${m.asignado_a === op ? 'selected' : ''}>${op.toUpperCase()}</option>`).join('')}
+                            ${operators.map(op => `<option value="${op.username}" ${m.asignado_a === op.username ? 'selected' : ''}>${op.username.toUpperCase()}</option>`).join('')}
                         </select>
                     </div>
                     <div class="text-right pl-4">
@@ -573,7 +853,7 @@
             currentTid = tid;
             const msgs = hilos.filter(h => h.thread_id === tid);
             if (msgs.length === 0) return;
-            
+
             hilos.forEach(h => { if(h.thread_id === tid) h.leido = true; });
             renderThreads();
             updateStats();
@@ -587,7 +867,7 @@
             const avatar = document.getElementById('ins-avatar-large');
             avatar.innerText = (first.remitente || 'A')[0].toUpperCase();
             avatar.style.backgroundColor = getAvatarColor(first.remitente || 'A');
-            
+
             const badge = document.getElementById('ins-status-badge');
             badge.innerText = first.estado_ticket || 'PENDIENTE';
             badge.className = `status-badge ${first.estado_ticket === 'PENDIENTE' ? 'status-pending' : first.estado_ticket === 'ASIGNADO' ? 'status-assigned' : 'status-closed'}`;
@@ -628,8 +908,8 @@
                 </div>
             `).join('');
 
-            document.getElementById('ins-delegate-select').innerHTML = '<option value="">Sin Asignar</option>' + operators.map(op => `<option value="${op}" ${first.asignado_a === op ? 'selected' : ''}>${op.toUpperCase()}</option>`).join('');
-            
+            document.getElementById('ins-delegate-select').innerHTML = '<option value="">Sin Asignar</option>' + operators.map(op => `<option value="${op.username}" ${first.asignado_a === op.username ? 'selected' : ''}>${op.username.toUpperCase()}</option>`).join('');
+
             document.getElementById('ins-history-list').innerHTML = hilos.filter(h => h.remitente === first.remitente && h.thread_id !== tid).map(h => `
                 <div onclick="openInspector('${h.thread_id}')" class="p-5 bg-white border border-slate-100 rounded-[20px] hover:border-blue-400 transition-all cursor-pointer shadow-sm">
                     <p class="text-[10px] font-black text-blue-600 mb-1 uppercase tracking-tighter">${new Date(h.fecha).toLocaleDateString()}</p>
@@ -645,14 +925,328 @@
         }
 
         function closeInspector() { document.getElementById('inspector-overlay').style.display = 'none'; }
-        function toggleConfig() { document.getElementById('config-drawer').classList.toggle('open'); }
-        async function delegate(tid, op) { try { await fetch(`${N8N_URL}/webhook/master-gestion`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'asignar_ticket', thread_id: tid, operador: op }) }); await loadData(); } catch (e) { console.error('Error delegando'); } }
+
+        function toggleConfig() { 
+            const drawer = document.getElementById('config-drawer');
+            drawer.classList.toggle('open'); 
+            if(drawer.classList.contains('open')) renderConfigMenu();
+        }
+
+        function renderConfigMenu() {
+            document.getElementById('config-content').innerHTML = `
+                <div class="flex justify-between items-center mb-16">
+                    <h2 class="text-3xl font-extrabold tracking-tight text-slate-900">Configuración</h2>
+                    <button onclick="toggleConfig()" class="text-slate-400 hover:text-slate-900 transition-colors">✕</button>
+                </div>
+                <div class="space-y-6">
+                    <button onclick="openForm('operadores')" class="w-full text-left bg-white border border-slate-200 p-8 rounded-[32px] hover:border-blue-400 hover:shadow-xl transition-all flex items-center gap-6 group">
+                        <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 font-bold text-2xl group-hover:bg-blue-600 group-hover:text-white transition-all">U</div>
+                        <p class="text-sm font-black text-slate-800 uppercase">Gestión Operadores</p>
+                    </button>
+                    <button onclick="openForm('empresas')" class="w-full text-left bg-white border border-slate-200 p-8 rounded-[32px] hover:border-blue-400 hover:shadow-xl transition-all flex items-center gap-6 group">
+                        <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 font-bold text-2xl group-hover:bg-indigo-600 group-hover:text-white transition-all">E</div>
+                        <p class="text-sm font-black text-slate-800 uppercase">Alta Empresas</p>
+                    </button>
+                </div>`;
+        }
+
+        function openForm(type) {
+            const content = document.getElementById('config-content');
+            let html = `<button onclick="renderConfigMenu()" class="btn-back-config">← Volver al menú</button>`;
+
+            if(type === 'operadores') {
+                const adminCount = operators.filter(o => o.rol === 'admin').length;
+                const supCount = operators.filter(o => o.rol === 'supervisor').length;
+                const opCount = operators.filter(o => o.rol === 'operador').length;
+                
+                html += `
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-extrabold text-slate-900">Gestión de Operadores</h3>
+                        <button onclick="showOpModal()" class="bg-blue-600 text-white px-5 py-3 rounded-2xl font-bold text-[10px] uppercase shadow-xl shadow-blue-200 hover:shadow-2xl hover:scale-105 transition-all flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
+                            Nuevo Operador
+                        </button>
+                    </div>
+                    
+                    <div class="op-header-stats">
+                        <div class="op-stat-card">
+                            <div class="op-stat-icon" style="background: linear-gradient(135deg, #5856D6 0%, #AF52DE 100%); color: white;">👥</div>
+                            <div>
+                                <p class="op-stat-num">${operators.length}</p>
+                                <p class="op-stat-text">Total</p>
+                            </div>
+                        </div>
+                        <div class="op-stat-card">
+                            <div class="op-stat-icon" style="background: linear-gradient(135deg, #FF2D55 0%, #FF6B6B 100%); color: white;">👑</div>
+                            <div>
+                                <p class="op-stat-num">${adminCount}</p>
+                                <p class="op-stat-text">Admins</p>
+                            </div>
+                        </div>
+                        <div class="op-stat-card">
+                            <div class="op-stat-icon" style="background: #f2f2f7; color: #8e8e93;">🎧</div>
+                            <div>
+                                <p class="op-stat-num">${opCount}</p>
+                                <p class="op-stat-text">Operadores</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="op-search-bar">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        <input type="text" id="op-search" placeholder="Buscar operador por nombre o email..." oninput="filterOperators()">
+                    </div>
+                    
+                    <div class="op-filter-tabs">
+                        <button class="op-filter-tab active" onclick="filterByRole('all', this)">Todos (${operators.length})</button>
+                        <button class="op-filter-tab" onclick="filterByRole('admin', this)">Admin (${adminCount})</button>
+                        <button class="op-filter-tab" onclick="filterByRole('supervisor', this)">Supervisor (${supCount})</button>
+                        <button class="op-filter-tab" onclick="filterByRole('operador', this)">Operador (${opCount})</button>
+                    </div>
+                    
+                    <div id="op-list-container" class="grid grid-cols-1 gap-4"></div>`;
+                content.innerHTML = html;
+                renderOperatorsList();
+            } else if(type === 'empresas') {
+                html += `
+                    <h3 class="text-2xl font-extrabold text-slate-900 mb-8">Alta de Empresa (Webmail)</h3>
+                    <form id="form-empresa" onsubmit="saveConfig(event, 'empresas')">
+                        <div class="mb-8">
+                            <p class="text-[11px] font-black text-blue-600 uppercase mb-4 tracking-tighter">— Datos Generales</p>
+                            <label class="config-label">Nombre de la Empresa</label>
+                            <input type="text" name="empresa" class="config-input" placeholder="Ej: Apple Inc" required>
+                            <label class="config-label">Alias de Cuenta</label>
+                            <input type="text" name="alias" class="config-input" placeholder="Ej: Soporte Técnico" required>
+                        </div>
+                        <div class="mb-8 p-6 bg-slate-50 rounded-[28px] border border-slate-100">
+                            <p class="text-[11px] font-black text-amber-600 uppercase mb-4 tracking-tighter">— Configuración IMAP (Entrada)</p>
+                            <label class="config-label">Servidor IMAP</label>
+                            <input type="text" name="imap_host" class="config-input" placeholder="imap.gmail.com" required>
+                            <label class="config-label">Puerto</label>
+                            <input type="number" name="imap_port" class="config-input" value="993" required>
+                            <label class="config-label">Usuario / Email</label>
+                            <input type="email" name="email_user" class="config-input" required>
+                            <label class="config-label">Contraseña de Aplicación</label>
+                            <input type="password" name="email_pass" class="config-input" required>
+                        </div>
+                        <div class="mb-8">
+                            <p class="text-[11px] font-black text-indigo-600 uppercase mb-4 tracking-tighter">— Configuración SMTP (Salida)</p>
+                            <label class="config-label">Servidor SMTP</label>
+                            <input type="text" name="smtp_host" class="config-input" placeholder="smtp.gmail.com" required>
+                            <label class="config-label">Puerto SMTP</label>
+                            <input type="number" name="smtp_port" class="config-input" value="465" required>
+                        </div>
+                        <label class="config-label">Logo URL (Opcional)</label>
+                        <input type="url" name="logo_url" class="config-input" placeholder="https://...">
+                        <button type="submit" class="btn-save-config">Vincular Empresa</button>
+                    </form>`;
+                content.innerHTML = html;
+            }
+        }
+
+        function renderOperatorsList(filteredOps) {
+            const container = document.getElementById('op-list-container');
+            if(!container) return;
+            const opsToRender = filteredOps || operators;
+            
+            if(opsToRender.length === 0) {
+                container.innerHTML = `
+                    <div class="op-empty-state">
+                        <div class="op-empty-icon">🔍</div>
+                        <p class="op-empty-text">No se encontraron operadores</p>
+                    </div>`;
+                return;
+            }
+            
+            container.innerHTML = opsToRender.map(op => {
+                const assignedTickets = hilos.filter(h => h.asignado_a === op.username).length;
+                const pendingTickets = hilos.filter(h => h.asignado_a === op.username && h.estado_ticket === 'PENDIENTE').length;
+                const roleIcon = op.rol === 'admin' ? '👑' : op.rol === 'supervisor' ? '⭐' : '👤';
+                
+                return `
+                <div class="op-card" data-role="${op.rol}" data-name="${op.nombre.toLowerCase()}" data-email="${op.email.toLowerCase()}">
+                    <div class="op-card-header">
+                        <div class="op-avatar-wrapper">
+                            <div class="op-avatar" style="background: linear-gradient(135deg, ${getAvatarColor(op.username)} 0%, ${getAvatarColor(op.username)}99 100%)">${op.username[0].toUpperCase()}</div>
+                            <div class="op-status-dot ${op.rol === 'operador' ? 'offline' : ''}"></div>
+                        </div>
+                        <div class="op-info">
+                            <p class="op-name">${op.nombre || op.username}</p>
+                            <p class="op-email">${op.email}</p>
+                            <span class="op-role-badge ${op.rol}">${roleIcon} ${op.rol}</span>
+                        </div>
+                    </div>
+                    <div class="op-stats">
+                        <div class="op-stat">
+                            <p class="op-stat-value" style="color: ${getAvatarColor(op.username)}">${assignedTickets}</p>
+                            <p class="op-stat-label">Asignados</p>
+                        </div>
+                        <div class="op-stat">
+                            <p class="op-stat-value text-amber-500">${pendingTickets}</p>
+                            <p class="op-stat-label">Pendientes</p>
+                        </div>
+                        <div class="op-stat">
+                            <p class="op-stat-value text-emerald-500">${assignedTickets - pendingTickets}</p>
+                            <p class="op-stat-label">Resueltos</p>
+                        </div>
+                    </div>
+                    <div class="op-actions">
+                        <button onclick="editOperator('${op.username}')" class="btn-op-action edit">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                            Editar
+                        </button>
+                        <button onclick="deleteOperator('${op.username}')" class="btn-op-action delete" ${op.username === 'admin' ? 'disabled style="opacity:0.5;cursor:not-allowed"' : ''}>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            Eliminar
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+        
+        function filterOperators() {
+            const searchTerm = document.getElementById('op-search').value.toLowerCase();
+            const activeTab = document.querySelector('.op-filter-tab.active');
+            const currentRole = activeTab ? activeTab.getAttribute('data-role') || 'all' : 'all';
+            applyFilters(searchTerm, currentRole);
+        }
+        
+        function filterByRole(role, btn) {
+            document.querySelectorAll('.op-filter-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            const searchTerm = document.getElementById('op-search')?.value?.toLowerCase() || '';
+            applyFilters(searchTerm, role);
+        }
+        
+        function applyFilters(search, role) {
+            let filtered = operators;
+            if(role !== 'all') filtered = filtered.filter(o => o.rol === role);
+            if(search) filtered = filtered.filter(o => 
+                o.nombre?.toLowerCase().includes(search) || 
+                o.email?.toLowerCase().includes(search) ||
+                o.username?.toLowerCase().includes(search)
+            );
+            renderOperatorsList(filtered);
+        }
+
+        function showOpModal(isEdit = false) {
+            const modal = document.getElementById('modal-operator');
+            const form = document.getElementById('form-operador');
+            const passwordField = document.getElementById('password-field');
+            
+            if(!isEdit) {
+                editingUser = null;
+                form.reset();
+                document.getElementById('modal-title').innerText = "Nuevo Operador";
+                document.getElementById('btn-submit-text').innerText = "Crear Operador";
+                document.getElementById('input-username').disabled = false;
+                passwordField.style.display = 'block';
+                document.getElementById('input-password').required = true;
+                updateModalPreview();
+            }
+            modal.style.display = 'flex';
+        }
+
+        function closeOpModal() { 
+            document.getElementById('modal-operator').style.display = 'none'; 
+            editingUser = null; 
+            renderOperatorsList();
+        }
+
+        function editOperator(username) {
+            const op = operators.find(o => o.username === username);
+            if(!op) return;
+            editingUser = username;
+            showOpModal(true);
+            const form = document.getElementById('form-operador');
+            document.getElementById('modal-title').innerText = "Editar Operador";
+            document.getElementById('btn-submit-text').innerText = "Guardar Cambios";
+            document.getElementById('input-username').disabled = true;
+            document.getElementById('password-field').style.display = 'none';
+            document.getElementById('input-password').required = false;
+            form.nombre.value = op.nombre || '';
+            form.username.value = op.username;
+            form.email.value = op.email;
+            form.rol.value = op.rol;
+            form.notas.value = op.notas || '';
+            updateModalPreview();
+        }
+        
+        function updateModalPreview() {
+            const nombre = document.getElementById('input-nombre')?.value || '';
+            const rol = document.getElementById('input-rol')?.value || 'operador';
+            const preview = document.getElementById('modal-avatar-preview');
+            if(preview) {
+                const initial = nombre ? nombre[0].toUpperCase() : '?';
+                const colors = {
+                    admin: 'linear-gradient(135deg, #FF2D55 0%, #FF6B6B 100%)',
+                    supervisor: 'linear-gradient(135deg, #5856D6 0%, #AF52DE 100%)',
+                    operador: 'linear-gradient(135deg, #34C759 0%, #30D158 100%)'
+                };
+                preview.innerText = initial;
+                preview.style.background = colors[rol];
+            }
+        }
+
+        function deleteOperator(username) {
+            if(username === 'admin') {
+                showToast('No se puede eliminar al administrador principal', 'error');
+                return;
+            }
+            if(confirm(`¿Eliminar al operador "${username}"? Esta acción no se puede deshacer.`)) {
+                operators = operators.filter(o => o.username !== username);
+                renderOperatorsList();
+                showToast(`Operador "${username}" eliminado`, 'success');
+            }
+        }
+        
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-6 right-6 px-6 py-4 rounded-2xl font-bold text-sm shadow-2xl z-500 animate-slide-up ${type === 'success' ? 'bg-emerald-500 text-white' : type === 'error' ? 'bg-red-500 text-white' : 'bg-slate-800 text-white'}`;
+            toast.innerText = message;
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 3000);
+        }
+
+        async function saveConfig(e, type) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+
+            try {
+                if(type === 'operadores') {
+                    if(editingUser) {
+                        const index = operators.findIndex(o => o.username === editingUser);
+                        operators[index] = { ...operators[index], ...data };
+                    } else {
+                        if(operators.find(o => o.username === data.username)) return alert("El username ya existe");
+                        operators.push(data);
+                    }
+                    closeOpModal();
+                    renderOperatorsList();
+                    renderThreads();
+                } else {
+                    renderConfigMenu();
+                }
+                alert(`¡${type.toUpperCase()} guardado correctamente!`);
+            } catch (err) {
+                alert('Error al guardar');
+            }
+        }
+
+        async function delegate(tid, op) { try { await fetch(`${N8N_URL}/webhook/master-api?action=asignar_ticket&tid=${tid}&operator=${op}`); await loadData(); } catch (e) { console.error('Error delegando'); } }
         function delegateIns() { const op = document.getElementById('ins-delegate-select').value; if(currentTid && op) delegate(currentTid, op); }
         function sendMailIns() { if(!document.getElementById('ins-reply-text').value) return; alert(`Enviado`); document.getElementById('ins-reply-text').value = ''; closeInspector(); }
         function resetFilter() { activeCompany = null; renderSidebar(); renderThreads(); document.getElementById('current-view-title').innerText = 'Bandeja General'; }
-        function openForm(type) { alert(`Abriendo Alta de ${type.toUpperCase()}`); }
         document.onkeydown = (e) => { if (e.key === "Escape") { closeInspector(); if(document.getElementById('config-drawer').classList.contains('open')) toggleConfig(); } };
-        async function loadOperators() { try { const res = await fetch(`${N8N_URL}/webhook/master-api?folder=users`); const data = await res.json(); operators = Array.isArray(data) ? data.map(u => u.username) : ['admin']; renderThreads(); } catch (e) { operators = ['admin', 'operador_1', 'operador_2']; } }
+        async function loadOperators() { 
+            try { 
+                const res = await fetch(`${N8N_URL}/webhook/master-api?folder=users`); 
+                const data = await res.json(); 
+                if(Array.isArray(data)) operators = data;
+                renderThreads(); 
+            } catch (e) { console.warn("Usando operadores locales"); } 
+        }
     </script>
-</body>
-</html>
+    </body>
+    </html>
