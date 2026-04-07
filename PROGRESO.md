@@ -1,37 +1,36 @@
-# 🚀 Progreso del Proyecto: Agente de Email AI
+# 🚀 Progreso del Proyecto: Agent Email AIRIS
 
-Este archivo se actualiza automáticamente para reflejar el estado actual del desarrollo.
+Este archivo refleja el estado actual del desarrollo y los hitos alcanzados.
 
 ## 📌 Estado Actual
-- **Rama Git:** `v.0.0.7`
+- **Rama Git:** `v0.0.8` (Fase Apple UI Design)
 - **Entorno Local:** Activo
-  - **Servidor Web:** [http://localhost:8000/Panel.html](http://localhost:8000/Panel.html) (Puerto 8000)
+  - **Servidor Web:** [http://localhost:8000/Panel.html](http://localhost:8000/Panel.html)
   - **n8n Backend:** [http://localhost:5678](http://localhost:5678)
   - **Base de Datos:** PostgreSQL (Docker) activa.
 
-## 🎨 Fase Actual: Dashboard de Supervisión y Delegación (Admin Core)
-Rediseñando la experiencia del administrador para priorizar la gestión de recursos sobre la operativa.
+## 🍎 Fase Actual: iCloud Inspired UI (v0.0.8)
+Transformación estética hacia el lenguaje de diseño de Apple: limpio, minimalista y sofisticado.
 
 ### ✅ Tareas Completadas
-- [x] Rama `v.0.0.7` activa.
-- [x] Layout base de 3 columnas (descartado por falta de foco en delegación).
-- [x] Servidor local y base de datos verificados y activos.
+- [x] Consolidación de Rama `v0.0.7` y Merge a `main`.
+- [x] Eliminación de barras laterales redundantes.
+- [x] Sistema de delegación integrado en filas.
+- [x] Menú contextual de buzones por empresa.
+- [x] **Lanzamiento v0.0.8:** Definición de línea gráfica Apple.
 
-### ⏳ Tareas en Proceso (NUEVO ENFOQUE)
-- [ ] **Master Dashboard (Top):** Reestructuración para vista superior de métricas y Logs detallados.
-- [ ] **Bandeja de Gestión (Bottom):** Lista optimizada para delegación rápida con botones de asignación prominentes.
-- [ ] **Reply Locking Logic:** Implementación de bloqueo de respuesta con override de emergencia.
-- [ ] **Timeline de Auditoría:** Logs detallados de cada acción de la IA y Operadores.
+### ⏳ Tareas en Proceso (Diseño Apple)
+- [x] **Paleta de Colores iCloud:** Implementación de fondos `#f5f5f7` y superficies blancas puras.
+- [x] **Efectos de Translucidez:** Uso de `backdrop-blur` en menús y paneles flotantes.
+- [x] **Tipografía y Espaciado:** Ajuste de pesos visuales para maximizar la elegancia y legibilidad.
+- [x] **Rediseño de Filas de Email:** Conversión a tarjetas minimalistas con sombras suaves estilo iOS.
 
 ### 📅 Próximos Pasos
-- [ ] Implementar el "Modo Emergencia" en la UI.
-- [ ] Vincular los Logs detallados con el historial de n8n.
+- [ ] Mejorar la visualización de adjuntos con iconos estilo SF Symbols.
+- [ ] Implementar animaciones de transición entre vistas.
 
 ---
 
 ## 🛠️ Última Modificación
 - **Fecha:** lunes, 6 de abril de 2026
-- **Detalle:** Creación de rama v.0.0.7 y lanzamiento de la fase de rediseño visual experto.
-
----
-*Nota: Este archivo se sobreescribirá en cada fase de planeación o mejora solicitada.*
+- **Detalle:** Aplicación del nuevo sistema de diseño inspirado en Apple/iCloud.

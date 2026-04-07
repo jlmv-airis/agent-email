@@ -3,179 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agent Email AIRIS - Control Center</title>
+    <title>Agent Email AIRIS - Command Center</title>
+    <link rel="icon" href="data:,">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --bg-neutral: #f4f7fa; 
-            --panel-white: #ffffff; 
-            --accent-blue: #5a78a6; 
-            --text-main: #334155;
-            --text-muted: #64748b;
-            --border-soft: #e2e8f0;
+            --apple-bg: #f5f5f7; 
+            --apple-white: #ffffff; 
+            --apple-blue: #007aff; 
+            --apple-text: #1d1d1f;
+            --apple-gray: #86868b;
+            --apple-border: rgba(0,0,0,0.08);
         }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-neutral); color: var(--text-main); overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--apple-bg); 
+            color: var(--apple-text); 
+            overflow: hidden; 
+            height: 100vh; 
+            display: flex; 
+            -webkit-font-smoothing: antialiased;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
         
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        
-        /* New Inbox Interface */
-        .email-row { 
-            background: var(--panel-white); 
-            border: 1px solid var(--border-soft);
-            border-radius: 12px;
-            transition: all 0.2s ease;
-            margin-bottom: 8px;
-            display: grid;
-            grid-template-columns: 180px 1fr 80px 220px 120px;
-            align-items: center;
-            padding: 12px 24px;
+        .apple-sidebar { 
+            width: 300px; 
+            background: rgba(255, 255, 255, 0.6); 
+            backdrop-filter: blur(50px) saturate(200%); 
+            border-right: 1px solid var(--apple-border);
+            display: flex; flex-direction: column;
+            z-index: 40;
         }
-        .email-row:hover { 
-            border-color: #cbd5e1;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            transform: translateY(-1px);
-            cursor: pointer;
+        .sidebar-item { 
+            @apply flex items-center justify-between px-5 py-4 rounded-2xl mx-3 transition-all cursor-pointer mb-1; 
         }
-        .email-row.unread { border-left: 4px solid var(--accent-blue); }
-
-        /* Dashboard Refinement */
-        .dash-top { 
-            height: 160px; 
-            background: #ffffff; 
-            border-bottom: 1px solid var(--border-soft); 
-            padding: 0 48px;
-            display: flex;
-            align-items: center;
-            gap: 48px;
+        .sidebar-item:hover { background: rgba(0,0,0,0.03); }
+        .sidebar-item.active { background: white; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .company-badge {
+            background: var(--apple-blue); color: white; min-width: 22px; height: 22px; border-radius: 11px;
+            display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; padding: 0 6px;
+            box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3);
         }
-        
-        /* Buttons & Chips */
-        .company-card { 
-            background: #f8fafc; 
-            border: 1px solid #e2e8f0; 
-            border-radius: 16px; 
-            padding: 12px 20px; 
-            min-width: 160px; 
-            transition: all 0.2s;
+        .main-stage { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .glass-header { 
+            background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(30px);
+            border-bottom: 1px solid var(--apple-border); padding: 0 48px; height: 90px;
+            display: flex; align-items: center; justify-content: space-between;
         }
-        .company-card:hover { border-color: var(--accent-blue); background: white; }
-        
-        .btn-delegate { 
-            background: #f1f5f9; 
-            color: var(--accent-blue); 
-            border: 1px solid #e2e8f0; 
-            padding: 8px 12px; 
-            border-radius: 8px; 
-            font-weight: 700; 
-            font-size: 11px; 
-            text-transform: uppercase;
+        .email-card { 
+            background: var(--apple-white); border-radius: 20px; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-bottom: 12px; display: grid; grid-template-columns: 160px 1fr 60px 200px 110px;
+            align-items: center; padding: 20px 30px; border: 1px solid transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.01);
         }
-        .btn-delegate:hover { background: var(--accent-blue); color: white; }
-
+        .email-card:hover { transform: translateY(-2px); box-shadow: 0 15px 35px rgba(0,0,0,0.06); border-color: rgba(0, 122, 255, 0.1); cursor: pointer; }
+        .inspector-overlay { 
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.1); backdrop-filter: blur(15px); 
+            z-index: 200; align-items: center; justify-content: center;
+        }
+        .inspector-window { 
+            width: 1000px; height: 85vh; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(50px);
+            border-radius: 32px; border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 50px 120px rgba(0,0,0,0.15);
+            display: flex; flex-direction: column; overflow: hidden; animation: applePremiumEntry 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes applePremiumEntry { from { opacity: 0; transform: scale(0.92) translateY(40px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+        .bubble-apple { max-width: 80%; padding: 16px 22px; border-radius: 22px; font-size: 14px; line-height: 1.6; margin-bottom: 10px; }
+        .bubble-in { background: #f2f2f7; color: var(--apple-text); border-bottom-left-radius: 4px; }
+        .bubble-out { background: var(--apple-blue); color: white; border-bottom-right-radius: 4px; margin-left: auto; box-shadow: 0 10px 25px rgba(0, 122, 255, 0.2); }
+        .btn-apple-delegate { background: #f2f2f7; color: var(--apple-blue); padding: 8px 16px; border-radius: 12px; font-weight: 800; font-size: 10px; text-transform: uppercase; }
         .config-drawer { 
-            position: fixed; right: -360px; top: 0; bottom: 0; width: 360px; 
-            background: white; border-left: 1px solid var(--border-soft); 
-            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 150; padding: 32px; 
+            position: fixed; right: -400px; top: 0; bottom: 0; width: 400px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(40px);
+            border-left: 1px solid var(--apple-border); transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1); z-index: 150; padding: 48px; 
         }
-        .config-drawer.open { right: 0; }
-
-        .mailbox-popup { 
-            display: none; position: absolute; z-index: 100; width: 220px; 
-            background: white; border-radius: 12px; border: 1px solid var(--border-soft); 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden;
-        }
+        .config-drawer.open { right: 0; box-shadow: -20px 0 60px rgba(0,0,0,0.05); }
     </style>
 </head>
 <body>
-
-    <!-- TOP HEADER -->
-    <header class="dash-top shadow-sm shrink-0">
-        <div class="shrink-0">
-            <h1 class="text-2xl font-bold tracking-tight text-slate-800">Agent Email <span style="color:var(--accent-blue)">AIRIS</span></h1>
-            <p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mt-1">Centro de Mando</p>
+    <aside class="apple-sidebar">
+        <div class="p-10 text-center">
+            <h1 class="text-xl font-extrabold tracking-tighter text-slate-900 italic">Agent Email <span style="color:var(--apple-blue)">AIRIS</span></h1>
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-3">Control Center</p>
         </div>
-
-        <div id="company-stats" class="flex-1 flex gap-4 overflow-x-auto custom-scrollbar py-2">
-            <!-- Chips Empresas -->
-        </div>
-
-        <div class="flex items-center gap-8">
-            <div class="text-right">
-                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Volumen Total</p>
-                <p id="stat-total" class="text-3xl font-bold text-slate-700 leading-none">0</p>
+        <nav class="flex-1 overflow-y-auto custom-scrollbar">
+            <div class="px-4 mb-8">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 px-4">Cuentas Activas</p>
+                <div id="company-list-sidebar" class="space-y-1"></div>
             </div>
-            <button onclick="toggleConfig()" class="w-12 h-12 bg-white border border-slate-200 rounded-2xl flex items-center justify-center text-slate-400 hover:text-slate-600 transition-all shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+        </nav>
+        <div class="p-8">
+            <button onclick="toggleConfig()" class="w-full flex items-center justify-between px-5 py-4 rounded-2xl bg-white/50 border border-slate-100 text-slate-500 hover:text-slate-900 transition-all">
+                <span class="text-xs font-black uppercase tracking-widest">Settings</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
             </button>
         </div>
-    </header>
-
-    <!-- INBOX SECTION -->
-    <main class="flex-1 overflow-hidden flex flex-col p-8">
-        <div class="mb-6 flex justify-between items-center">
-            <h2 class="text-sm font-bold text-slate-500 uppercase tracking-widest flex items-center gap-3">
-                <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
-                Bandeja General
-            </h2>
-            <div class="relative">
-                <input type="text" placeholder="Buscar..." class="bg-white border border-slate-200 rounded-xl px-10 py-2.5 text-sm text-slate-600 outline-none w-80 shadow-sm focus:ring-2 focus:ring-blue-100">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 absolute left-4 top-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+    </aside>
+    <div class="main-stage">
+        <header class="glass-header">
+            <h2 id="current-view-title" class="text-2xl font-extrabold tracking-tight text-slate-900">Bandeja General</h2>
+            <div class="flex items-center gap-10">
+                <div class="bg-blue-600 px-8 py-3 rounded-[24px] shadow-xl shadow-blue-200 flex items-center gap-5 cursor-pointer hover:scale-105 transition-all" onclick="resetFilter()">
+                    <p class="text-[10px] font-black text-white/80 uppercase tracking-widest">Emails Global</p>
+                    <p id="stat-total" class="text-2xl font-black text-white leading-none">0</p>
+                </div>
+                <div class="relative">
+                    <input type="text" placeholder="Buscar hilos..." class="bg-slate-200/50 border-none rounded-full px-12 py-3 text-sm text-slate-700 outline-none w-80 focus:ring-2 focus:ring-blue-400/20 focus:bg-white transition-all">
+                </div>
+            </div>
+        </header>
+        <main class="flex-1 overflow-y-auto custom-scrollbar px-12 py-8"><div id="thread-list"></div></main>
+    </div>
+    <div id="inspector-overlay" class="inspector-overlay">
+        <div class="inspector-window">
+            <header class="px-10 py-8 border-b border-slate-100 flex justify-between items-center bg-white">
+                <div class="flex items-center gap-6">
+                    <div id="ins-avatar" class="w-14 h-14 bg-blue-500 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-xl"></div>
+                    <div><h3 id="ins-subject" class="text-xl font-extrabold text-slate-900 truncate w-[500px]"></h3><p id="ins-participants" class="text-xs font-bold text-blue-600 mt-1 uppercase"></p></div>
+                </div>
+                <button onclick="closeInspector()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition-all text-xl">✕</button>
+            </header>
+            <div class="flex-1 flex overflow-hidden">
+                <div class="flex-1 flex flex-col bg-slate-50/20">
+                    <div id="ins-body" class="flex-1 overflow-y-auto p-12 custom-scrollbar space-y-8"></div>
+                    <div class="p-10 bg-white border-t border-slate-100">
+                        <textarea id="ins-reply-text" rows="3" class="w-full bg-slate-50 border border-slate-100 rounded-[24px] p-6 text-base outline-none focus:ring-4 focus:ring-blue-100 transition-all resize-none mb-6" placeholder="Escribe tu respuesta..."></textarea>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-4"><span class="text-[11px] font-black text-slate-400 uppercase">Delegar a:</span><select id="ins-delegate-select" onchange="delegateIns()" class="bg-slate-100 border-none text-xs font-bold rounded-xl px-4 py-2 outline-none cursor-pointer"></select></div>
+                            <button onclick="sendMailIns()" class="bg-blue-600 text-white px-12 py-4 rounded-[20px] font-black text-xs uppercase shadow-2xl">Enviar</button>
+                        </div>
+                    </div>
+                </div>
+                <aside class="w-80 border-l border-slate-100 p-8 overflow-y-auto custom-scrollbar"><h4 class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-8">Contexto</h4><div id="ins-history-list" class="space-y-4"></div></aside>
             </div>
         </div>
-
-        <!-- NEW ROW-BASED LIST -->
-        <div id="thread-list" class="flex-1 overflow-y-auto custom-scrollbar pr-2">
-            <!-- Email rows dynamic -->
-        </div>
-    </main>
-
-    <!-- POPUP MENU -->
-    <div id="mailbox-popup" class="mailbox-popup">
-        <div class="p-4 bg-slate-50 border-b border-slate-100">
-            <p id="popup-company-name" class="text-xs font-bold text-slate-800 uppercase"></p>
-            <p class="text-[10px] text-slate-400 font-medium mt-0.5">Gestión de Buzón</p>
-        </div>
-        <div class="p-1">
-            <button class="w-full text-left px-4 py-2.5 hover:bg-blue-50 hover:text-blue-700 rounded-lg flex items-center gap-3 text-xs font-semibold transition-colors"><span>📥</span> Bandeja Entrada</button>
-            <button class="w-full text-left px-4 py-2.5 hover:bg-blue-50 hover:text-blue-700 rounded-lg flex items-center gap-3 text-xs font-semibold transition-colors"><span>📤</span> Bandeja Salida</button>
-            <button class="w-full text-left px-4 py-2.5 hover:bg-blue-50 hover:text-blue-700 rounded-lg flex items-center gap-3 text-xs font-semibold transition-colors"><span>📝</span> Borradores</button>
-            <button class="w-full text-left px-4 py-2.5 hover:bg-rose-50 hover:text-rose-700 rounded-lg flex items-center gap-3 text-xs font-semibold transition-colors text-rose-500"><span>🗑️</span> Papelera</button>
-        </div>
     </div>
-
-    <!-- CONFIG DRAWER -->
     <div id="config-drawer" class="config-drawer">
-        <div class="flex justify-between items-center mb-12 border-b border-slate-100 pb-6">
-            <h2 class="text-lg font-bold text-slate-800 uppercase tracking-tight">Configuración</h2>
-            <button onclick="toggleConfig()" class="text-slate-400 hover:text-slate-600">✕</button>
-        </div>
-        <div class="space-y-4">
-            <button onclick="openForm('operadores')" class="w-full text-left border border-slate-200 p-6 rounded-2xl hover:border-blue-400 hover:bg-blue-50/30 transition-all flex items-center gap-5">
-                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 font-bold text-xl">U</div>
-                <div>
-                    <p class="text-sm font-bold text-slate-800 uppercase tracking-tight">Gestión Operadores</p>
-                    <p class="text-[11px] text-slate-400 font-medium">Altas y bajas de usuarios</p>
-                </div>
-            </button>
-            <button onclick="openForm('empresas')" class="w-full text-left border border-slate-200 p-6 rounded-2xl hover:border-blue-400 hover:bg-blue-50/30 transition-all flex items-center gap-5">
-                <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 font-bold text-xl">E</div>
-                <div>
-                    <p class="text-sm font-bold text-slate-800 uppercase tracking-tight">Gestión Empresas</p>
-                    <p class="text-[11px] text-slate-400 font-medium">Configuración de buzones corporativos</p>
-                </div>
-            </button>
+        <div class="flex justify-between items-center mb-16"><h2 class="text-3xl font-extrabold tracking-tight">Settings</h2><button onclick="toggleConfig()" class="✕">✕</button></div>
+        <div class="space-y-6">
+            <button onclick="openForm('operadores')" class="w-full text-left bg-white border border-slate-200 p-8 rounded-[32px] hover:border-blue-400 transition-all flex items-center gap-6 group"><div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 font-bold text-2xl group-hover:bg-blue-600 group-hover:text-white">U</div><p class="text-sm font-black text-slate-800 uppercase">Gestión Operadores</p></button>
+            <button onclick="openForm('empresas')" class="w-full text-left bg-white border border-slate-200 p-8 rounded-[32px] hover:border-blue-400 transition-all flex items-center gap-6 group"><div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 font-bold text-2xl group-hover:bg-indigo-600 group-hover:text-white">E</div><p class="text-sm font-black text-slate-800 uppercase">Alta Empresas</p></button>
         </div>
     </div>
-
-    <script>
+    <script id="app-js">
         const N8N_URL = 'http://localhost:5678';
         let hilos = [];
         let operators = ['admin', 'operador_1', 'operador_2'];
+        let activeCompany = null;
+        let currentTid = null;
 
         window.onload = async () => {
+            console.log('Premium Panel Loaded.');
             await loadData();
             await loadOperators();
         };
@@ -186,94 +163,119 @@
                 const data = await res.json();
                 hilos = Array.isArray(data) ? data : [data];
             } catch (e) {
+                console.warn('Usando simulador de datos.');
                 hilos = [
-                    { id:1, thread_id:'th_1', remitente:'contacto@servicios.com', asunto:'Solicitud de Soporte Técnico Urgente', mensaje:'Hola, el sistema no responde desde hace 2 horas...', cuenta_empresa:'Industrial MX', fecha: new Date().toISOString(), adjuntos: true },
-                    { id:2, thread_id:'th_2', remitente:'info@airis.ai', asunto:'Actualización de Servidores de IA', mensaje:'Se ha completado la migración a la v2.0...', cuenta_empresa:'AIRIS CORE', fecha: new Date().toISOString(), adjuntos: false }
+                    { id:1, thread_id:'th_1', remitente:'tim.cook@apple.com', asunto:'Agent Email Design AIRIS', mensaje:'The premium glassmorphism looks stunning. Great job on the Retina typography.', cuenta_empresa:'Apple Inc', correo_empresa:'contact@apple.com', fecha: new Date().toISOString(), adjuntos: true, estado_ticket: 'PENDIENTE' },
+                    { id:2, thread_id:'th_2', remitente:'bob@pixar.com', asunto:'Render Farm Issue', mensaje:'The animation buffers are full. Can we check the logs?', cuenta_empresa:'Pixar Studios', correo_empresa:'support@pixar.com', fecha: new Date().toISOString(), adjuntos: false, estado_ticket: 'ASIGNADO', asignado_a: 'admin' },
+                    { id:3, thread_id:'th_3', remitente:'elon@tesla.com', asunto:'FSD v12 Deployment', mensaje:'AI training is complete. Sending final parameters.', cuenta_empresa:'Tesla Motors', correo_empresa:'hq@tesla.com', fecha: new Date().toISOString(), adjuntos: false, estado_ticket: 'PENDIENTE' }
                 ];
             }
+            renderSidebar();
             renderThreads();
             updateStats();
         }
 
         function updateStats() {
-            document.getElementById('stat-total').innerText = hilos.length;
-            renderCompanyStats();
+            const el = document.getElementById('stat-total');
+            if(el) el.innerText = hilos.length;
         }
 
-        function renderCompanyStats() {
-            const container = document.getElementById('company-stats');
-            const counts = hilos.reduce((acc, m) => {
-                acc[m.cuenta_empresa] = (acc[m.cuenta_empresa] || 0) + 1;
+        function renderSidebar() {
+            const container = document.getElementById('company-list-sidebar');
+            if(!container) return;
+            const companyData = hilos.reduce((acc, h) => {
+                if (h.cuenta_empresa && !acc.find(x => x.name === h.cuenta_empresa)) {
+                    acc.push({ name: h.cuenta_empresa, email: h.correo_empresa || 'sin-correo@empresa.com' });
+                }
                 return acc;
-            }, {});
+            }, []);
             
-            container.innerHTML = Object.entries(counts).map(([name, count]) => `
-                <div onclick="showMailboxMenu(event, '${name}')" class="company-card group">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase truncate mb-1">${name}</p>
-                    <div class="flex items-center justify-between">
-                        <p class="text-lg font-bold text-slate-700 leading-none">${count}</p>
-                        <div class="w-2 h-2 rounded-full bg-blue-400"></div>
+            container.innerHTML = companyData.map(c => {
+                const count = hilos.filter(h => h.cuenta_empresa === c.name).length;
+                return `
+                <div onclick="toggleSubmenu('${c.name}')" class="sidebar-item ${activeCompany === c.name ? 'active' : ''}">
+                    <div class="flex flex-col min-w-0 pr-2 text-left">
+                        <div class="flex items-baseline gap-2">
+                            <span class="truncate text-slate-900 font-extrabold ${activeCompany === c.name ? 'text-blue-600' : ''}">${c.name}</span>
+                            <span class="text-[11px] font-medium ${activeCompany === c.name ? 'text-blue-400' : 'text-slate-400'}">(${count})</span>
+                        </div>
+                        <span class="text-[10px] text-slate-400 font-bold truncate">${c.email}</span>
                     </div>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
+        }
+
+        function toggleSubmenu(company) {
+            activeCompany = (activeCompany === company) ? null : company;
+            renderSidebar();
+            renderThreads();
+            const titleEl = document.getElementById('current-view-title');
+            if(titleEl) titleEl.innerText = activeCompany ? activeCompany : 'Bandeja General';
         }
 
         function renderThreads() {
             const container = document.getElementById('thread-list');
-            container.innerHTML = hilos.map(m => `
-                <div ondblclick="inspect('${m.thread_id}')" class="email-row">
-                    <div class="pr-4 border-r border-slate-100">
-                        <p class="text-[10px] font-bold text-blue-600 uppercase tracking-tighter">${m.cuenta_empresa}</p>
-                        <p class="text-sm font-semibold text-slate-800 truncate">${m.remitente.split('@')[0]}</p>
+            if(!container) return;
+            const filtered = activeCompany ? hilos.filter(h => h.cuenta_empresa === activeCompany) : hilos;
+            
+            container.innerHTML = filtered.map(m => `
+                <div ondblclick="openInspector('${m.thread_id}')" class="email-card">
+                    <div>
+                        <p class="text-[10px] font-black text-blue-600 uppercase tracking-tighter mb-1">${m.cuenta_empresa || 'System'}</p>
+                        <p class="text-[13px] font-bold text-slate-900 truncate">${(m.remitente || 'User').split('@')[0]}</p>
                     </div>
-                    <div class="px-6">
-                        <p class="text-sm font-bold text-slate-800 leading-tight mb-1 truncate">${m.asunto}</p>
-                        <p class="text-xs font-medium text-slate-400 truncate">${m.mensaje.replace(/<[^>]*>?/gm, '')}</p>
+                    <div class="px-10 border-l border-slate-100">
+                        <p class="text-[15px] font-extrabold text-slate-900 truncate tracking-tight">${m.asunto || '(Sin Asunto)'}</p>
+                        <p class="text-[13px] font-medium text-slate-400 truncate w-[450px] mt-1.5">${(m.mensaje || '').replace(/<[^>]*>?/gm, '')}</p>
                     </div>
-                    <div class="text-center">
-                        ${m.adjuntos ? '<span class="text-slate-300 text-lg">📎</span>' : '<span class="text-slate-100">-</span>'}
-                    </div>
-                    <div class="flex items-center gap-3 px-4">
-                        <select onchange="delegate('${m.thread_id}', this.value)" onclick="event.stopPropagation()" class="btn-delegate flex-1 outline-none text-[10px]">
-                            <option value="">Delegar...</option>
+                    <div class="text-center">${m.adjuntos ? '<span class="text-slate-300 text-xl">📎</span>' : ''}</div>
+                    <div class="flex items-center gap-3 px-6">
+                        <select onchange="delegate('${m.thread_id}', this.value)" onclick="event.stopPropagation()" class="btn-apple-delegate flex-1 outline-none">
+                            <option value="">Delegar</option>
                             ${operators.map(op => `<option value="${op}" ${m.asignado_a === op ? 'selected' : ''}>${op.toUpperCase()}</option>`).join('')}
                         </select>
-                        <button class="p-2 text-amber-500 hover:bg-amber-50 rounded-lg transition-all" onclick="event.stopPropagation(); unlockReply('${m.thread_id}')">🔓</button>
                     </div>
-                    <div class="text-right pl-4">
-                        <p class="text-xs font-bold text-slate-700">${new Date(m.fecha).toLocaleDateString([], {day:'2-digit', month:'short'})}</p>
-                        <p class="text-[10px] font-semibold text-slate-400 mt-0.5">${new Date(m.fecha).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</p>
+                    <div class="text-right">
+                        <p class="text-[11px] font-black text-slate-900 uppercase">${new Date(m.fecha).toLocaleDateString([], {day:'2-digit', month:'short'})}</p>
+                        <p class="text-[10px] font-bold text-slate-400 mt-1 uppercase">${new Date(m.fecha).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</p>
                     </div>
-                </div>
-            `).join('');
+                </div>`).join('') || '<p class="text-center text-slate-400 mt-20 italic">Bandeja vacía.</p>';
         }
 
-        function showMailboxMenu(e, company) {
-            e.stopPropagation();
-            const popup = document.getElementById('mailbox-popup');
-            document.getElementById('popup-company-name').innerText = company;
-            popup.style.display = 'block';
-            popup.style.left = `${e.clientX}px`;
-            popup.style.top = `${e.clientY + 20}px`;
+        function openInspector(tid) {
+            currentTid = tid;
+            const msgs = hilos.filter(h => h.thread_id === tid);
+            if (msgs.length === 0) return;
+            const first = msgs[0];
+            const overlay = document.getElementById('inspector-overlay');
+            if(overlay) overlay.style.display = 'flex';
+            document.getElementById('ins-subject').innerText = first.asunto || '(Sin Asunto)';
+            document.getElementById('ins-participants').innerHTML = `<span class="text-blue-600 font-bold">${first.remitente}</span> <span class="mx-2 text-slate-300">•</span> <span class="text-slate-500">${first.cuenta_empresa}</span>`;
+            document.getElementById('ins-avatar').innerText = (first.remitente || 'A')[0].toUpperCase();
+            document.getElementById('ins-body').innerHTML = msgs.map(m => `
+                <div class="flex flex-col ${m.de_operador ? 'items-end' : 'items-start'}">
+                    <p class="text-[9px] font-black text-slate-400 uppercase mb-2 px-3">${m.de_operador ? 'Admin' : (m.remitente || 'User').split('@')[0]}</p>
+                    <div class="bubble-apple ${m.de_operador ? 'bubble-out' : 'bubble-in'} shadow-sm">${m.mensaje}</div>
+                    <p class="text-[8px] text-slate-300 font-bold px-3 mt-1">${new Date(m.fecha).toLocaleTimeString()}</p>
+                </div>`).join('');
+            document.getElementById('ins-delegate-select').innerHTML = '<option value="">Sin Asignar</option>' + operators.map(op => `<option value="${op}" ${first.asignado_a === op ? 'selected' : ''}>${op.toUpperCase()}</option>`).join('');
+            document.getElementById('ins-history-list').innerHTML = hilos.filter(h => h.remitente === first.remitente).map(h => `
+                <div onclick="openInspector('${h.thread_id}')" class="p-5 bg-white/50 border border-slate-100 rounded-[20px] hover:border-blue-400 hover:bg-white transition-all cursor-pointer">
+                    <p class="text-[10px] font-black text-blue-600 mb-1">${new Date(h.fecha).toLocaleDateString()}</p>
+                    <p class="text-[12px] font-extrabold text-slate-800 truncate">${h.asunto}</p>
+                </div>`).join('');
         }
 
+        function closeInspector() { document.getElementById('inspector-overlay').style.display = 'none'; }
         function toggleConfig() { document.getElementById('config-drawer').classList.toggle('open'); }
-        function inspect(tid) { alert(`Inspeccionando Ticket: ${tid}`); }
-        function delegate(tid, op) { alert(`Delegado a ${op.toUpperCase()}`); }
-        function unlockReply(tid) { alert(`Desbloqueo de emergencia activado para: ${tid}`); }
-        function openForm(type) { alert(`Abriendo: ALTA DE ${type.toUpperCase()}`); }
-
-        document.onclick = () => { document.getElementById('mailbox-popup').style.display = 'none'; };
-        document.onkeydown = (e) => { if (e.key === "Escape" && document.getElementById('config-drawer').classList.contains('open')) toggleConfig(); };
-
-        async function loadOperators() {
-            try {
-                const res = await fetch(`${N8N_URL}/webhook/master-api?folder=users`);
-                const data = await res.json();
-                operators = Array.isArray(data) ? data.map(u => u.username) : ['admin'];
-                renderThreads();
-            } catch (e) { operators = ['admin', 'operador_1', 'operador_2']; }
-        }
+        async function delegate(tid, op) { try { await fetch(`${N8N_URL}/webhook/master-gestion`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ action: 'asignar_ticket', thread_id: tid, operador: op }) }); await loadData(); } catch (e) { console.error('Error delegando'); } }
+        function delegateIns() { const op = document.getElementById('ins-delegate-select').value; if(currentTid && op) delegate(currentTid, op); }
+        function sendMailIns() { if(!document.getElementById('ins-reply-text').value) return; alert(`Respuesta Enviada`); document.getElementById('ins-reply-text').value = ''; closeInspector(); }
+        function resetFilter() { activeCompany = null; renderSidebar(); renderThreads(); document.getElementById('current-view-title').innerText = 'Bandeja General'; }
+        function openForm(type) { alert(`Abriendo Alta de ${type.toUpperCase()}`); }
+        function filterByFolder(c, f) { console.log('Filtrando', f, 'en', c); }
+        document.onkeydown = (e) => { if (e.key === "Escape") { closeInspector(); if(document.getElementById('config-drawer').classList.contains('open')) toggleConfig(); } };
+        async function loadOperators() { try { const res = await fetch(`${N8N_URL}/webhook/master-api?folder=users`); const data = await res.json(); operators = Array.isArray(data) ? data.map(u => u.username) : ['admin']; renderThreads(); } catch (e) { operators = ['admin', 'operador_1', 'operador_2']; } }
     </script>
 </body>
 </html>
