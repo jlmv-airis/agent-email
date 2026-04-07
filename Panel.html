@@ -52,6 +52,7 @@
         .sidebar-item { @apply flex items-center justify-between px-5 py-4 rounded-2xl mx-3 transition-all cursor-pointer mb-1; }
         .sidebar-item:hover { background: rgba(0,0,0,0.03); }
         .sidebar-item.active { background: white; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .sidebar-item.favorite .star-icon { color: #ffcc00; fill: #ffcc00; }
         
         .company-badge {
             background: var(--apple-blue); color: white; min-width: 24px; height: 24px; border-radius: 12px;
@@ -175,7 +176,7 @@
         </nav>
         <div class="p-8">
             <button onclick="toggleConfig()" class="w-full flex items-center justify-between px-5 py-4 rounded-2xl bg-white/50 border border-slate-100 text-slate-500 hover:text-slate-900 transition-all">
-                <span class="text-xs font-black uppercase tracking-widest">Settings</span>
+                <span class="text-xs font-black uppercase tracking-widest">Configuración</span>
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
             </button>
         </div>
@@ -322,7 +323,9 @@
         let hilos = [];
         let operators = ['admin', 'operador_1', 'operador_2'];
         let activeCompany = null;
+        let activeFolder = 'inbox';
         let currentTid = null;
+        let favorites = JSON.parse(localStorage.getItem('fav_companies') || '[]');
 
         const getAvatarColor = (name) => {
             const colors = ['#FF9500', '#FF2D55', '#5856D6', '#34C759', '#007AFF', '#AF52DE', '#5AC8FA'];
@@ -335,7 +338,7 @@
 
         async function loadData() {
             try {
-                const res = await fetch(`${N8N_URL}/webhook/master-api?folder=inbox&role=admin`);
+                const res = await fetch(`${N8N_URL}/webhook/master-api?folder=${activeFolder}&role=admin`);
                 const data = await res.json();
                 hilos = Array.isArray(data) ? data : [data];
             } catch (e) {
@@ -422,33 +425,102 @@
         function renderSidebar() {
             const container = document.getElementById('company-list-sidebar');
             if(!container) return;
-            const companyData = hilos.reduce((acc, h) => {
+            
+            let companyData = hilos.reduce((acc, h) => {
                 if (h.cuenta_empresa && !acc.find(x => x.name === h.cuenta_empresa)) {
-                    acc.push({ name: h.cuenta_empresa, email: h.correo_empresa || 'sin-correo@empresa.com' });
+                    acc.push({ 
+                        name: h.cuenta_empresa, 
+                        email: h.correo_empresa || 'sin-correo@empresa.com',
+                        isFavorite: favorites.includes(h.cuenta_empresa)
+                    });
                 }
                 return acc;
             }, []);
+
+            // Orden Alfabético
+            companyData.sort((a, b) => a.name.localeCompare(b.name));
+
+            // Mover favoritos al principio
+            const favs = companyData.filter(c => c.isFavorite);
+            const others = companyData.filter(c => !c.isFavorite);
+            const sortedData = [...favs, ...others];
             
-            container.innerHTML = companyData.map(c => {
+            let html = '';
+            if(favs.length > 0) {
+                html += `<p class="text-[9px] font-black text-amber-500 uppercase tracking-widest mb-3 px-4">Acceso Rápido ★</p>`;
+            }
+
+            html += sortedData.map(c => {
                 const count = hilos.filter(h => h.cuenta_empresa === c.name).length;
+                const isSelected = activeCompany === c.name;
+                
                 return `
-                <div onclick="toggleSubmenu('${c.name}')" class="sidebar-item ${activeCompany === c.name ? 'active shadow-lg' : ''}">
-                    <div class="flex flex-col min-w-0 flex-1 text-left overflow-hidden pr-2">
-                        <div class="flex items-center justify-between w-full gap-2">
-                            <span class="truncate text-slate-900 font-extrabold flex-1 ${activeCompany === c.name ? 'text-blue-600' : ''}">${c.name}</span>
-                            <div class="company-badge ${activeCompany === c.name ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}">${count}</div>
+                <div class="mb-1">
+                    <div onclick="toggleSubmenu('${c.name}')" class="sidebar-item ${isSelected ? 'active shadow-lg' : ''} ${c.isFavorite ? 'favorite' : ''}">
+                        <div class="flex flex-col min-w-0 flex-1 text-left overflow-hidden pr-2">
+                            <div class="flex items-center justify-between w-full gap-2">
+                                <span class="truncate text-slate-900 font-extrabold flex-1 ${isSelected ? 'text-blue-600' : ''}">${c.name}</span>
+                                <div onclick="toggleFavorite(event, '${c.name}')" class="cursor-pointer p-1 hover:scale-120 transition-transform">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 star-icon ${c.isFavorite ? 'text-amber-400 fill-amber-400' : 'text-slate-300'}" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    </svg>
+                                </div>
+                                <div class="company-badge ${isSelected ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'}">${count}</div>
+                            </div>
+                            <span class="text-[10px] text-slate-400 font-bold truncate pr-4">${c.email}</span>
                         </div>
-                        <span class="text-[10px] text-slate-400 font-bold truncate pr-4">${c.email}</span>
                     </div>
+                    
+                    ${isSelected ? `
+                    <div class="ml-8 mt-2 space-y-1 pr-4 animate-apple-slide-down">
+                        <button onclick="setFolder('inbox')" class="w-full text-left px-4 py-2 rounded-xl text-[11px] font-bold ${activeFolder==='inbox'?'bg-blue-50 text-blue-600':'text-slate-500 hover:bg-slate-50'} transition-all flex items-center gap-3">
+                            <span>📥</span> Bandeja de Entrada
+                        </button>
+                        <button onclick="setFolder('sent')" class="w-full text-left px-4 py-2 rounded-xl text-[11px] font-bold ${activeFolder==='sent'?'bg-blue-50 text-blue-600':'text-slate-500 hover:bg-slate-50'} transition-all flex items-center gap-3">
+                            <span>📤</span> Enviados
+                        </button>
+                        <button onclick="setFolder('drafts')" class="w-full text-left px-4 py-2 rounded-xl text-[11px] font-bold ${activeFolder==='drafts'?'bg-blue-50 text-blue-600':'text-slate-500 hover:bg-slate-50'} transition-all flex items-center gap-3">
+                            <span>📝</span> Borradores
+                        </button>
+                        <button onclick="setFolder('trash')" class="w-full text-left px-4 py-2 rounded-xl text-[11px] font-bold ${activeFolder==='trash'?'bg-red-50 text-red-600':'text-slate-500 hover:bg-slate-50'} transition-all flex items-center gap-3">
+                            <span>🗑️</span> Papelera
+                        </button>
+                    </div>
+                    ` : ''}
                 </div>`;
             }).join('');
+
+            container.innerHTML = html;
+        }
+
+        function toggleFavorite(e, company) {
+            e.stopPropagation();
+            if(favorites.includes(company)) {
+                favorites = favorites.filter(f => f !== company);
+            } else {
+                favorites.push(company);
+            }
+            localStorage.setItem('fav_companies', JSON.stringify(favorites));
+            renderSidebar();
+        }
+
+        async function setFolder(folder) {
+            activeFolder = folder;
+            renderSidebar();
+            // Aquí iría la carga real desde n8n
+            await loadData();
         }
 
         function toggleSubmenu(company) {
-            activeCompany = (activeCompany === company) ? null : company;
+            if(activeCompany === company) {
+                activeCompany = null;
+            } else {
+                activeCompany = company;
+                activeFolder = 'inbox'; // Reset a inbox al cambiar de empresa
+            }
             renderSidebar();
             renderThreads();
-            document.getElementById('current-view-title').innerText = activeCompany ? activeCompany : 'Bandeja General';
+            document.getElementById('current-view-title').innerText = activeCompany ? `${activeCompany} - ${activeFolder.toUpperCase()}` : 'Bandeja General';
         }
 
         function renderThreads() {
