@@ -245,6 +245,160 @@
         .op-role-badge.operador { background: #f2f2f7; color: #8e8e93; }
         body.dark-mode .op-role-badge.operador { background: #2c2c2e; color: #8e8e93; }
         
+        /* DARK MODE COMPLETO */
+        body.dark-mode .apple-sidebar { background: rgba(28, 28, 30, 0.6); }
+        body.dark-mode .sidebar-item:hover { background: rgba(255,255,255,0.05); }
+        body.dark-mode .sidebar-item.active { background: #2c2c2e; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        body.dark-mode .glass-header { background: rgba(28, 28, 30, 0.8); border-color: rgba(255,255,255,0.1); }
+        body.dark-mode .main-stage { background: var(--apple-bg); }
+        
+        /* INPUTS GLOBALES */
+        body.dark-mode input[type="text"],
+        body.dark-mode input[type="email"],
+        body.dark-mode input[type="password"],
+        body.dark-mode input[type="number"],
+        body.dark-mode input[type="url"],
+        body.dark-mode textarea,
+        body.dark-mode select {
+            background: #2c2c2e !important;
+            border-color: #3a3a3c !important;
+            color: #f5f5f7 !important;
+        }
+        body.dark-mode input::placeholder { color: #8e8e93; }
+        body.dark-mode input:focus, body.dark-mode textarea:focus, body.dark-mode select:focus {
+            background: #1c1c1e !important;
+            box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.2) !important;
+        }
+        
+        /* SEARCH INPUT */
+        body.dark-mode input[placeholder="Buscar hilos..."] {
+            background: rgba(255,255,255,0.1) !important;
+            color: #f5f5f7 !important;
+        }
+        body.dark-mode input[placeholder="Buscar hilos..."]::placeholder { color: #8e8e93; }
+        
+        /* CONFIG INPUTS */
+        body.dark-mode .config-input {
+            background: #2c2c2e !important;
+            border-color: #3a3a3c !important;
+            color: #f5f5f7 !important;
+        }
+        body.dark-mode .config-input:focus {
+            background: #1c1c1e !important;
+            box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.2) !important;
+        }
+        body.dark-mode .config-label { color: #8e8e93 !important; }
+        body.dark-mode .btn-save-config { background: #0a84ff !important; }
+        body.dark-mode .btn-back-config { color: #0a84ff !important; }
+        
+        /* DASHBOARD CARDS */
+        body.dark-mode .dash-card { background: #1c1c1e; border-color: rgba(255,255,255,0.05); }
+        body.dark-mode .dash-card:hover { box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        body.dark-mode .dash-card p { color: #f5f5f7; }
+        body.dark-mode .dash-card .text-slate-400 { color: #8e8e93; }
+        body.dark-mode .dash-icon { opacity: 0.9; }
+        
+        /* INSPECTOR */
+        body.dark-mode .inspector-overlay { background: rgba(0,0,0,0.5); }
+        body.dark-mode .inspector-window { background: rgba(28, 28, 30, 0.95); border-color: rgba(255,255,255,0.1); }
+        body.dark-mode .inspector-window header { background: #1c1c1e; border-color: rgba(255,255,255,0.1); }
+        body.dark-mode .bubble-apple { background: #2c2c2e; color: #f5f5f7; border-color: #3a3a3c; }
+        body.dark-mode .bubble-out { background: #0a84ff; }
+        body.dark-mode .ins-meta-label { color: #8e8e93; }
+        body.dark-mode .ins-meta-value { color: #f5f5f7; }
+        body.dark-mode .ai-suggestion-btn { background: #2c2c2e; border-color: #3a3a3c; color: #f5f5f7; }
+        body.dark-mode .ai-suggestion-btn:hover { border-color: #0a84ff; color: #0a84ff; }
+        body.dark-mode #ins-reply-text { background: #2c2c2e !important; color: #f5f5f7 !important; border-color: #3a3a3c !important; }
+        body.dark-mode .border-t { border-color: rgba(255,255,255,0.1) !important; }
+        body.dark-mode aside { background: rgba(28, 28, 30, 0.5); border-color: rgba(255,255,255,0.1); }
+        
+        /* STATUS BADGES */
+        body.dark-mode .status-badge { border-color: transparent; }
+        body.dark-mode .status-pending { background: rgba(255, 179, 0, 0.2); color: #ffb347; border-color: rgba(255, 179, 0, 0.3); }
+        body.dark-mode .status-assigned { background: rgba(10, 132, 255, 0.2); color: #64b5f6; border-color: rgba(10, 132, 255, 0.3); }
+        body.dark-mode .status-closed { background: rgba(52, 199, 89, 0.2); color: #81c784; border-color: rgba(52, 199, 89, 0.3); }
+        
+        /* CONFIG BUTTONS */
+        body.dark-mode button[class*="bg-white"] { background: #2c2c2e !important; border-color: #3a3a3c !important; }
+        body.dark-mode .btn-apple-delegate { background: #2c2c2e; color: #0a84ff; }
+        
+        /* MODAL OVERLAY */
+        body.dark-mode .modal-floating-overlay { background: rgba(0,0,0,0.7); }
+        
+        /* CONFIG DRAWER */
+        body.dark-mode .config-drawer { background: rgba(28, 28, 30, 0.95); border-color: rgba(255,255,255,0.1); }
+        body.dark-mode .config-content { background: transparent; }
+        
+        /* SECTION BADGES IN MODALS */
+        body.dark-mode .bg-slate-100 { background: rgba(44, 44, 46, 0.5) !important; }
+        body.dark-mode .border-slate-200 { border-color: #3a3a3c !important; }
+        body.dark-mode .border-slate-100 { border-color: rgba(255,255,255,0.1) !important; }
+        
+        /* NUMBER STATS */
+        body.dark-mode #stat-total { color: white; }
+        body.dark-mode .text-amber-500 { color: #ffb347; }
+        body.dark-mode .text-emerald-500 { color: #81c784; }
+        body.dark-mode .text-indigo-600 { color: #9fa8da; }
+        
+        /* TEXT COLORS */
+        body.dark-mode .text-slate-500 { color: #8e8e93; }
+        body.dark-mode .text-slate-600 { color: #a1a1aa; }
+        body.dark-mode .text-slate-700 { color: #d4d4d8; }
+        body.dark-mode .text-slate-800 { color: #e4e4e7; }
+        body.dark-mode .text-slate-900 { color: #f4f4f5; }
+        
+        /* BACKGROUND COLORS */
+        body.dark-mode .bg-slate-200 { background: #3a3a3c !important; }
+        body.dark-mode .bg-slate-100 { background: #2c2c2e !important; }
+        body.dark-mode .bg-blue-50 { background: rgba(10, 132, 255, 0.1) !important; }
+        body.dark-mode .bg-amber-100 { background: rgba(255, 179, 0, 0.15) !important; }
+        body.dark-mode .bg-indigo-100 { background: rgba(88, 86, 214, 0.15) !important; }
+        body.dark-mode .bg-emerald-100 { background: rgba(52, 199, 89, 0.15) !important; }
+        
+        /* BORDER COLORS */
+        body.dark-mode .border-slate-200 { border-color: #3a3a3c !important; }
+        body.dark-mode .border-slate-300 { border-color: #52525b !important; }
+        
+        /* SHADOWS */
+        body.dark-mode .shadow-xl { box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        body.dark-mode .shadow-blue-200 { box-shadow: 0 10px 25px rgba(10, 132, 255, 0.15); }
+        body.dark-mode .shadow-2xl { box-shadow: 0 25px 50px rgba(0,0,0,0.3); }
+        
+        /* SCROLLBAR */
+        body.dark-mode .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
+        body.dark-mode .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        
+        /* SPECIAL ELEMENTS */
+        body.dark-mode .email-list-container { background: transparent; }
+        body.dark-mode .thread-group { border-color: rgba(255,255,255,0.05); }
+        body.dark-mode .border-t { border-color: rgba(255,255,255,0.1); }
+        body.dark-mode .border-b { border-color: rgba(255,255,255,0.1); }
+        
+        /* DELEGATE SELECT */
+        body.dark-mode #ins-delegate-select { background: #2c2c2e !important; color: #f5f5f7 !important; }
+        
+        /* TITLE HEADINGS */
+        body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, body.dark-mode h4, body.dark-mode h5 {
+            color: #f5f5f7;
+        }
+        body.dark-mode #current-view-title { color: #f5f5f7; }
+        body.dark-mode #ins-subject { color: #f5f5f7; }
+        
+        /* LOGO */
+        body.dark-mode .text-slate-900.italic { color: #f5f5f7; }
+        
+        /* FAVORITE STAR */
+        body.dark-mode .text-slate-400 { color: #8e8e93; }
+        
+        /* CONFIG MENU BUTTONS */
+        body.dark-mode .bg-white.border.border-slate-200 {
+            background: #1c1c1e !important;
+            border-color: rgba(255,255,255,0.1) !important;
+        }
+        body.dark-mode .bg-white.border.border-slate-200:hover {
+            background: #2c2c2e !important;
+        }
+        
         .op-stats { 
             display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
             background: var(--apple-bg); border-radius: 16px; padding: 12px;
