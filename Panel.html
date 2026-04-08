@@ -202,7 +202,17 @@
         }
         .config-label { @apply text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block ml-2; }
         .btn-save-config { @apply w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xs uppercase shadow-xl shadow-blue-200 hover:bg-blue-700 transition-all mt-4; }
-        .btn-back-config { @apply mb-8 text-blue-600 font-bold text-xs uppercase flex items-center gap-2 hover:opacity-70 transition-all; }
+        .btn-back-config { 
+            @apply mb-6 text-blue-600 font-semibold text-sm flex items-center gap-2 hover:opacity-70 transition-all;
+            padding: 10px 16px;
+            border-radius: 12px;
+            background: rgba(0, 122, 255, 0.08);
+            display: inline-flex;
+            width: fit-content;
+        }
+        .btn-back-config:hover {
+            background: rgba(0, 122, 255, 0.12);
+        }
 
         /* OPERATOR CARDS */
         /* OPERATOR CARDS - V2 OPTIMIZADO */
@@ -1315,14 +1325,20 @@
                     </div>
                 </div>
                 
-                <div class="space-y-6">
-                    <button onclick="openForm('operadores')" class="config-menu-btn w-full text-left bg-white border border-slate-200 p-8 rounded-[32px] hover:border-blue-400 hover:shadow-xl transition-all flex items-center gap-6 group">
-                        <div class="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 font-bold text-2xl group-hover:bg-blue-600 group-hover:text-white transition-all">U</div>
-                        <p class="text-sm font-black text-slate-800 uppercase">Gestión Operadores</p>
+                <div class="space-y-4">
+                    <button onclick="openForm('operadores')" class="config-menu-btn w-full text-left bg-white border border-slate-200 p-5 rounded-[24px] hover:border-blue-400 hover:shadow-xl transition-all flex items-center gap-4 group">
+                        <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 font-bold text-lg group-hover:bg-blue-600 group-hover:text-white transition-all">U</div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-800">Gestión de Operadores</p>
+                            <p class="text-xs text-slate-400">Usuarios y permisos del sistema</p>
+                        </div>
                     </button>
-                    <button onclick="openForm('empresas')" class="config-menu-btn w-full text-left bg-white border border-slate-200 p-8 rounded-[32px] hover:border-blue-400 hover:shadow-xl transition-all flex items-center gap-6 group">
-                        <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600 font-bold text-2xl group-hover:bg-indigo-600 group-hover:text-white transition-all">E</div>
-                        <p class="text-sm font-black text-slate-800 uppercase">Alta Empresas</p>
+                    <button onclick="openForm('empresas')" class="config-menu-btn w-full text-left bg-white border border-slate-200 p-5 rounded-[24px] hover:border-blue-400 hover:shadow-xl transition-all flex items-center gap-4 group">
+                        <div class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 font-bold text-lg group-hover:bg-indigo-600 group-hover:text-white transition-all">E</div>
+                        <div>
+                            <p class="text-sm font-bold text-slate-800">Alta de Empresas</p>
+                            <p class="text-xs text-slate-400">Configurar cuentas de correo</p>
+                        </div>
                     </button>
                 </div>`;
         }
