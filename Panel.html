@@ -926,10 +926,12 @@
             
             const configButton = e.target.closest('[onclick*="toggleConfig"]');
             const menuButtons = e.target.closest('.config-menu-btn');
+            const backButton = e.target.closest('.btn-back-config');
+            const insideDrawer = drawer.contains(e.target);
             
-            if (configButton || menuButtons) return;
+            if (configButton || menuButtons || backButton) return;
             
-            if (!drawer.contains(e.target)) {
+            if (!insideDrawer) {
                 drawer.classList.remove('open');
             }
         });
