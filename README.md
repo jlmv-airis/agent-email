@@ -3,7 +3,7 @@
 ![Versión](https://img.shields.io/badge/version-1.2-blue)
 ![Python](https://img.shields.io/badge/python-3.8+-green)
 ![Flask](https://img.shields.io/badge/flask-2.3+-red)
-![PostgreSQL](https://img.shields.io/badge/postgresql-15+-blue)
+![SQLite](https://img.shields.io/badge/sqlite-3+-orange)
 
 Sistema SaaS de gestión híbrida masiva para correos electrónicos, diseñado para centralizar la operación de **150+ empresas** en una interfaz profesional estilo Gmail, con asistencia de IA (Gemini) y lógica de hilos inteligentes.
 
@@ -32,11 +32,13 @@ Sistema SaaS de gestión híbrida masiva para correos electrónicos, diseñado p
 - **Panel Gmail-Pro**: Interfaz administrativa con buscador de empresas y vista densa
 - **Gestión de Hilos**: Agrupamiento por `thread_id` para trazabilidad completa
 - **Asignación Manual**: Delegar hilos a operadores específicos
-- **Base de Datos**: PostgreSQL para persistencia
+- **Base de Datos**: SQLite (local, sin instalación de servidor)
 - **API REST**: Endpoints para gestión de operadores y empresas
 - **Soporte IA**: Integración con Gemini para sugerencias
-- **Dark Mode**: Soporte completo para modo oscuro
+- **Dark Mode**: Soporte completo para modo oscuro estilo Apple
 - **CRUD Completo**: Gestión visual de operadores y empresas
+- **Status Visual**: Estados de correo con colores distintivos (SIN LEER, EN REVISIÓN, EN ATENCIÓN, RESUELTO, CERRADO)
+- **Adjuntos**: Visualización de archivos adjuntos con contador
 
 ---
 
@@ -756,5 +758,30 @@ Este proyecto es propiedad de **AIRIS AI Team**.
 
 ---
 
+## 📋 Historial de Versiones
+
+### v0.1.1 - Dark Mode Completo y Mejoras de UI
+**Fecha**: 8 de Abril 2026
+
+**Nuevas características:**
+- Dark mode completo implementado en todo el Panel.html
+- Toggle de tema estilo Apple en configuración
+- Indicador visual de perfil Admin en el header
+- Footer con versión y datos del desarrollador (Jorge Meneses)
+
+**Mejoras de UI:**
+- Encabezados de columnas visibles (Avatar, Remitente, Asunto/Mensaje, Status, Operador, Adjunto, Fecha/Hora)
+- Status del correo: SIN LEER (azul), EN REVISIÓN (naranja), EN ATENCIÓN (ámbar), RESUELTO (verde), CERRADO (gris)
+- Fecha completa con día-mes-año y hora en formato 24hrs
+- Columna de adjuntos con contador de archivos
+- Correo completo del remitente visible
+
+**Cambios técnicos:**
+- Cambio de PostgreSQL a SQLite (base de datos local, no requiere servicio)
+- Fix de errores de elementos null en el DOM
+- Mejoras en la accesibilidad y contraste
+
+---
+
 **Versión**: 1.2  
-**Última actualización**: 2024
+**Última actualización**: Abril 2026

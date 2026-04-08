@@ -84,7 +84,7 @@
         /* EMAIL CARDS OPTIMIZADAS (MÁS REDUCIDAS) */
         .email-card { 
             background: var(--apple-white); border-radius: 20px; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            margin-bottom: 10px; display: grid; grid-template-columns: 60px 180px 1fr 180px 100px;
+            margin-bottom: 10px; display: grid; grid-template-columns: 60px 180px 1fr 120px 120px 80px 140px;
             align-items: center; padding: 16px 24px; border: 1px solid transparent; box-shadow: 0 4px 6px rgba(0,0,0,0.02);
             position: relative;
         }
@@ -108,6 +108,21 @@
         }
 
         .meta-label { font-size: 8px; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-right: 4px; }
+
+        .email-card-header {
+            display: grid;
+            grid-template-columns: 60px 180px 1fr 120px 120px 80px 140px;
+            align-items: center;
+            padding: 12px 24px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .header-label { font-size: 9px; font-weight: 900; color: #86868b; text-transform: uppercase; letter-spacing: 0.08em; }
+
+        body.dark-mode .email-card-header { border-color: rgba(255,255,255,0.08); }
+        body.dark-mode .header-label { color: #636366; }
+        body.dark-mode .email-card { grid-template-columns: 60px 180px 1fr 120px 120px 80px 140px; }
+        body.dark-mode .bg-violet-100 { background: rgba(124, 58, 237, 0.25); color: #a78bfa; }
 
         /* TEMA TOGGLE BUTTONS */
         .theme-btn { 
@@ -261,7 +276,18 @@
         body.dark-mode .sidebar-item:hover { background: rgba(255,255,255,0.05); }
         body.dark-mode .sidebar-item.active { background: #2c2c2e; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         body.dark-mode .glass-header { background: rgba(28, 28, 30, 0.8); border-color: rgba(255,255,255,0.1); }
+        body.dark-mode .bg-blue-100 { background: rgba(10, 132, 255, 0.2); }
+        body.dark-mode .text-blue-700 { color: #0a84ff; }
+        body.dark-mode #current-view-title { color: #f5f5f7; }
         body.dark-mode .main-stage { background: var(--apple-bg); }
+        body.dark-mode .email-card-header { background: transparent; }
+        body.dark-mode .bg-orange-100 { background: rgba(249, 115, 22, 0.25); color: #fb923c; }
+        body.dark-mode .bg-emerald-100 { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+        body.dark-mode .bg-amber-100 { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+        body.dark-mode .email-card { background: #1c1c1e; }
+        body.dark-mode .email-card.read { background: #000000; }
+        body.dark-mode .email-card .text-slate-900 { color: #f5f5f7; }
+        body.dark-mode .btn-apple-delegate { background: #2c2c2e; color: #f5f5f7; }
         
         /* INPUTS GLOBALES */
         body.dark-mode input[type="text"],
@@ -353,7 +379,6 @@
         body.dark-mode .border-slate-100 { border-color: rgba(255,255,255,0.1) !important; }
         
         /* NUMBER STATS */
-        body.dark-mode #stat-total { color: white; }
         body.dark-mode .text-amber-500 { color: #ffb347; }
         body.dark-mode .text-emerald-500 { color: #81c784; }
         body.dark-mode .text-indigo-600 { color: #9fa8da; }
@@ -639,7 +664,13 @@
 
     <div class="main-stage">
         <header class="glass-header">
-            <h2 id="current-view-title" class="text-xl font-extrabold tracking-tight text-slate-900">Bandeja General</h2>
+            <div class="flex items-center gap-4">
+                <h2 id="current-view-title" class="text-xl font-extrabold tracking-tight text-slate-900">Bandeja General</h2>
+                <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full flex items-center gap-1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                    Admin
+                </span>
+            </div>
             <div class="flex items-center gap-6">
                 <div class="relative">
                     <input type="text" placeholder="Buscar hilos..." class="bg-slate-200/50 border-none rounded-full px-12 py-3 text-sm text-slate-700 outline-none w-80 focus:ring-2 focus:ring-blue-400/20 focus:bg-white transition-all">
@@ -1079,7 +1110,6 @@
             const closed = hilos.filter(h => h.estado_ticket === 'CERRADO').length;
             const resolutionRate = total > 0 ? Math.round((closed / total) * 100) : 0;
 
-            document.getElementById('stat-total').innerText = total;
             document.getElementById('dash-total').innerText = total;
             document.getElementById('dash-pending').innerText = pending;
             document.getElementById('dash-assigned').innerText = assigned;
@@ -1192,7 +1222,18 @@
             if(!container) return;
             const filtered = activeCompany ? hilos.filter(h => h.cuenta_empresa === activeCompany) : hilos;
 
-            container.innerHTML = filtered.map(m => {
+            const columnsHeader = `
+                <div class="email-card-header">
+                    <div class="text-center"><span class="header-label">Avatar</span></div>
+                    <div class="px-4"><span class="header-label">Remitente</span></div>
+                    <div class="px-8 border-l border-slate-100/50"><span class="header-label">Asunto / Mensaje</span></div>
+                    <div class="px-4"><span class="header-label">Status</span></div>
+                    <div class="px-4"><span class="header-label">Operador</span></div>
+                    <div class="text-center"><span class="header-label">Adjunto</span></div>
+                    <div class="text-right pl-4"><span class="header-label">Fecha / Hora</span></div>
+                </div>`;
+
+            container.innerHTML = columnsHeader + filtered.map(m => {
                 const avatarColor = getAvatarColor(m.remitente || 'A');
                 const initial = (m.remitente || 'A')[0];
                 const isRead = m.leido === true;
@@ -1203,6 +1244,29 @@
                         ${typeof f === 'string' ? f : `${f.nombre} <span class="ml-1 opacity-60">(${f.tamano})</span>`}
                     </div>`).join('') : '';
 
+                let statusHtml = '';
+                const status = m.estado_ticket || 'PENDIENTE';
+                const deOperador = m.de_operador;
+                let estadoActual = !isRead ? 'RECIBIDO' : (deOperador ? 'RESUELTO' : 'EN REVISIÓN');
+                if (status === 'CERRADO') {
+                    estadoActual = 'CERRADO';
+                } else if (status === 'ASIGNADO' || status === 'EN ATENCIÓN') {
+                    estadoActual = 'EN ATENCIÓN';
+                }
+
+                const statusConfig = {
+                    'SIN LEER': { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200' },
+                    'EN REVISIÓN': { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-200' },
+                    'EN ATENCIÓN': { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-200' },
+                    'RESUELTO': { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-200' },
+                    'CERRADO': { bg: 'bg-slate-100', text: 'text-slate-600', border: 'border-slate-200' }
+                };
+                const cfg = statusConfig[estadoActual] || statusConfig['SIN LEER'];
+
+                const fechaObj = new Date(m.fecha);
+                const fechaFormat = fechaObj.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+                const horaFormat = fechaObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
+
                 return `
                 <div ondblclick="openInspector('${m.thread_id}')" class="email-card ${isRead ? 'read' : ''}">
                     ${!isRead ? '<div class="unread-dot"></div>' : ''}
@@ -1211,23 +1275,35 @@
                     </div>
                     <div class="px-4">
                         <p class="text-[9px] font-black text-blue-600 uppercase tracking-tighter mb-0.5">${m.cuenta_empresa || 'System'}</p>
-                        <p class="text-[12px] font-bold text-slate-900 truncate sender-text"><span class="meta-label">DE:</span>${(m.remitente || 'User').split('@')[0]}</p>
-                        ${m.cc ? `<p class="text-[9px] font-medium text-slate-400 truncate"><span class="meta-label">CC:</span>${m.cc.split('@')[0]}</p>` : ''}
+                        <p class="text-[10px] font-bold text-slate-900 truncate sender-text">${m.remitente || 'sin-correo@email.com'}</p>
+                        ${m.cc ? `<p class="text-[9px] font-medium text-slate-400 truncate"><span class="meta-label">CC:</span>${m.cc}</p>` : ''}
                     </div>
                     <div class="px-8 border-l border-slate-100 overflow-hidden text-left">
                         <p class="text-[13px] font-extrabold text-slate-900 truncate tracking-tight subject-text">${m.asunto || '(Sin Asunto)'}</p>
                         <p class="text-[11px] font-medium text-slate-400 truncate w-full">${(m.mensaje || '').replace(/<[^>]*>?/gm, '')}</p>
                         <div class="flex flex-wrap gap-2">${attachmentsHtml}</div>
                     </div>
-                    <div class="flex items-center gap-3 px-4">
+                    <div class="px-4 flex items-center">
+                        <span class="px-3 py-1.5 rounded-full text-[9px] font-black uppercase ${cfg.bg} ${cfg.text} border ${cfg.border}">${estadoActual}</span>
+                    </div>
+                    <div class="px-4">
                         <select onchange="delegate('${m.thread_id}', this.value)" onclick="event.stopPropagation()" class="btn-apple-delegate flex-1 outline-none">
-                            <option value="">Delegar</option>
+                            <option value="">--</option>
                             ${operators.map(op => `<option value="${op.username}" ${m.asignado_a === op.username ? 'selected' : ''}>${op.username.toUpperCase()}</option>`).join('')}
                         </select>
                     </div>
+                    <div class="text-center">
+                        ${m.adjuntos && m.archivos && m.archivos.length > 0 ? 
+                            `<span class="px-2 py-1 bg-violet-100 text-violet-700 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 mx-auto w-max">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
+                                ${m.archivos.length}
+                            </span>` : 
+                            `<span class="text-slate-300 text-[14px]">—</span>`
+                        }
+                    </div>
                     <div class="text-right pl-4">
-                        <p class="text-[10px] font-black text-slate-900 uppercase">${new Date(m.fecha).toLocaleDateString([], {day:'2-digit', month:'short'})}</p>
-                        <p class="text-[9px] font-black text-blue-500 mt-0.5 uppercase">${m.tamano_total || '0 KB'}</p>
+                        <p class="text-[10px] font-black text-slate-900 uppercase">${fechaFormat}</p>
+                        <p class="text-[9px] font-bold text-blue-500 mt-0.5">${horaFormat}</p>
                     </div>
                 </div>`;
             }).join('') || '<p class="text-center text-slate-400 mt-20 italic">Bandeja vacía.</p>';
