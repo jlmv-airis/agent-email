@@ -203,7 +203,7 @@
         .config-label { @apply text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block ml-2; }
         .btn-save-config { @apply w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-xs uppercase shadow-xl shadow-blue-200 hover:bg-blue-700 transition-all mt-4; }
         .btn-back-config { 
-            @apply mb-6 text-blue-600 font-semibold text-sm flex items-center gap-2 hover:opacity-70 transition-all;
+            @apply text-blue-600 font-semibold text-sm flex items-center gap-2 hover:opacity-70 transition-all;
             padding: 10px 16px;
             border-radius: 12px;
             background: rgba(0, 122, 255, 0.08);
@@ -1353,7 +1353,7 @@
 
         function openForm(type) {
             const content = document.getElementById('config-content');
-            let html = `<button onclick="renderConfigMenu()" class="btn-back-config">← Volver al menú</button>`;
+            let html = `<button onclick="renderConfigMenu()" class="btn-back-config mb-8">← Volver al menú</button>`;
 
             if(type === 'operadores') {
                 const adminCount = operators.filter(o => o.rol === 'admin').length;
@@ -1361,10 +1361,10 @@
                 const opCount = operators.filter(o => o.rol === 'operador').length;
                 
                 html += `
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-2xl font-extrabold text-slate-900">Gestión de Operadores</h3>
-                        <button onclick="showOpModal()" class="bg-blue-600 text-white px-5 py-3 rounded-2xl font-bold text-[10px] uppercase shadow-xl shadow-blue-200 hover:shadow-2xl hover:scale-105 transition-all flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
+                    <div class="flex justify-between items-center mb-8 mt-4">
+                        <h3 class="text-lg font-bold text-slate-900">Operadores</h3>
+                        <button onclick="showOpModal()" class="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold text-[10px] uppercase shadow-lg shadow-blue-200 hover:shadow-xl hover:scale-105 transition-all flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
                             Nuevo
                         </button>
                     </div>
