@@ -652,7 +652,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
             </button>
             <div class="pt-4 border-t border-slate-200/50 text-center">
-                <span class="inline-block px-3 py-1 bg-blue-100 text-blue-600 rounded-full font-bold text-xs mb-3">v0.1.1</span>
+                <span class="inline-block px-3 py-1 bg-blue-100 text-blue-600 rounded-full font-bold text-xs mb-3">v0.1.2-mejoras</span>
                 <p class="text-[9px] font-bold text-slate-400 leading-relaxed">
                     Desarrollado por <span class="text-slate-500">Jorge Meneses</span><br>
                     <a href="mailto:jorge.meneses@airis-ae.com.mx" class="text-blue-500 hover:text-blue-600 transition-colors">jorge.meneses@airis-ae.com.mx</a>
@@ -1029,14 +1029,30 @@
             setTheme(saved);
         }
 
-        window.onload = async () => { initTheme(); await loadData(); await loadOperators(); await loadEmpresas(); };
+        window.onload = async () => { initTheme(); await loadEmpresas(); await loadData(); await loadOperators(); };
 
         async function loadData() {
             try {
-                const res = await fetch(`${N8N_URL}/webhook/master-api?folder=${activeFolder}&role=admin`);
+                const res = await fetch(`${API_URL}/hilos`);
                 const data = await res.json();
-                hilos = Array.isArray(data) ? data : [data];
+                if (Array.isArray(data) && data.length > 0) {
+                    hilos = data;
+                } else {
+                    throw new Error('Sin datos en BD');
+                }
             } catch (e) {
+                try {
+                    const res = await fetch(`${N8N_URL}/webhook/master-api?folder=${activeFolder}&role=admin`);
+                    const data = await res.json();
+                    hilos = Array.isArray(data) ? data : [data];
+                } catch (e2) {
+                    hilos = [];
+                }
+            }
+            renderSidebar();
+            renderThreads();
+            updateStats();
+        }
                 hilos = [
                     { 
                         id: 1, 
@@ -1120,16 +1136,26 @@
             const container = document.getElementById('company-list-sidebar');
             if(!container) return;
 
-            let companyData = hilos.reduce((acc, h) => {
-                if (h.cuenta_empresa && !acc.find(x => x.name === h.cuenta_empresa)) {
-                    acc.push({ 
-                        name: h.cuenta_empresa, 
-                        email: h.correo_empresa || 'sin-correo@empresa.com',
-                        isFavorite: favorites.includes(h.cuenta_empresa)
-                    });
-                }
-                return acc;
-            }, []);
+            // Use empresas from API if available
+            let companyData;
+            if (empresas && empresas.length > 0) {
+                companyData = empresas.map(e => ({
+                    name: e.nombre,
+                    email: e.email_user || 'sin-correo@empresa.com',
+                    isFavorite: favorites.includes(e.nombre)
+                }));
+            } else {
+                companyData = hilos.reduce((acc, h) => {
+                    if (h.cuenta_empresa && !acc.find(x => x.name === h.cuenta_empresa)) {
+                        acc.push({ 
+                            name: h.cuenta_empresa, 
+                            email: h.correo_empresa || 'sin-correo@empresa.com',
+                            isFavorite: favorites.includes(h.cuenta_empresa)
+                        });
+                    }
+                    return acc;
+                }, []);
+            }
 
             // Orden Alfabético
             companyData.sort((a, b) => a.name.localeCompare(b.name));
@@ -1167,18 +1193,17 @@
 
                     ${isSelected ? `
                     <div class="ml-8 mt-2 space-y-1 pr-4 animate-apple-slide-down">
+                        ${(() => {
+                            const inboxCount = hilos.filter(h => h.cuenta_empresa === c.name).length;
+                            return `
                         <button onclick="setFolder('inbox')" class="w-full text-left px-4 py-2 rounded-xl text-[11px] font-bold ${activeFolder==='inbox'?'bg-blue-50 text-blue-600':'text-slate-500 hover:bg-slate-50'} transition-all flex items-center gap-3">
-                            <span>📥</span> Bandeja de Entrada
+                            <span>📥</span> Bandeja de Entrada <span class="ml-auto text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full">${inboxCount}</span>
                         </button>
                         <button onclick="setFolder('sent')" class="w-full text-left px-4 py-2 rounded-xl text-[11px] font-bold ${activeFolder==='sent'?'bg-blue-50 text-blue-600':'text-slate-500 hover:bg-slate-50'} transition-all flex items-center gap-3">
-                            <span>📤</span> Enviados
+                            <span>📤</span> Enviados <span class="ml-auto text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">0</span>
                         </button>
-                        <button onclick="setFolder('drafts')" class="w-full text-left px-4 py-2 rounded-xl text-[11px] font-bold ${activeFolder==='drafts'?'bg-blue-50 text-blue-600':'text-slate-500 hover:bg-slate-50'} transition-all flex items-center gap-3">
-                            <span>📝</span> Borradores
-                        </button>
-                        <button onclick="setFolder('trash')" class="w-full text-left px-4 py-2 rounded-xl text-[11px] font-bold ${activeFolder==='trash'?'bg-red-50 text-red-600':'text-slate-500 hover:bg-slate-50'} transition-all flex items-center gap-3">
-                            <span>🗑️</span> Papelera
-                        </button>
+                        `;
+                        })()}
                     </div>
                     ` : ''}
                 </div>`;
@@ -1314,7 +1339,16 @@
             const msgs = hilos.filter(h => h.thread_id === tid);
             if (msgs.length === 0) return;
 
+            // Mark as read in UI
             hilos.forEach(h => { if(h.thread_id === tid) h.leido = true; });
+            
+            // Update in database
+            fetch(`${API_URL}/hilos/${tid}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ leido: 1 })
+            }).catch(e => console.log('Error marking as read:', e));
+            
             renderThreads();
             updateStats();
 
@@ -1851,6 +1885,37 @@
                 empresas = [];
             }
         }
+
+        async function syncEmails(empresaId) {
+            showToast('Sincronizando correos...');
+            try {
+                const res = await fetch(`${API_URL}/imap/sync/${empresaId}`, { method: 'POST' });
+                const data = await res.json();
+                if(data.success) {
+                    showToast(`Sincronizados ${data.synced} correos`);
+                    await loadData();
+                } else {
+                    showToast(data.error || 'Error al sincronizar', 'error');
+                }
+            } catch (err) {
+                showToast('Error de conexión', 'error');
+            }
+        }
+
+        async function syncAllEmails() {
+            showToast('Sincronizando todas las cuentas...');
+            try {
+                const res = await fetch(`${API_URL}/imap/sync-all`, { method: 'POST' });
+                const data = await res.json();
+                if(data.results) {
+                    const successCount = data.results.filter(r => r.success).length;
+                    showToast(`Sincronizadas ${successCount} cuentas`);
+                    await loadData();
+                }
+            } catch (err) {
+                showToast('Error de conexión', 'error');
+            }
+        }
         
         function showEmpresaModal(isEdit = false) {
             const modal = document.getElementById('modal-empresa');
@@ -1991,6 +2056,10 @@
                         </div>
                     </div>
                     <div class="op-actions">
+                        <button onclick="syncEmails(${emp.id})" class="btn-op-action" style="background: #007aff; color: white;">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                            Sincronizar
+                        </button>
                         <button onclick="editEmpresa(${emp.id})" class="btn-op-action edit">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                             Editar

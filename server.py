@@ -5,11 +5,29 @@ from flask_cors import CORS
 from werkzeug.security import generate_password_hash
 import logging
 from dotenv import load_dotenv
+from cryptography.fernet import Fernet
+import imap_tools
 
 load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+KEY_FILE = os.path.join(os.path.dirname(__file__), '.key')
+
+def get_cipher():
+    if not os.path.exists(KEY_FILE):
+        key = Fernet.generate_key()
+        with open(KEY_FILE, 'wb') as f:
+            f.write(key)
+    with open(KEY_FILE, 'rb') as f:
+        return Fernet(f.read())
+
+def encrypt_password(password):
+    return get_cipher().encrypt(password.encode()).decode()
+
+def decrypt_password(encrypted):
+    return get_cipher().decrypt(encrypted.encode()).decode()
 
 app = Flask(__name__, static_folder='.')
 CORS(app)
@@ -129,7 +147,7 @@ def create_empresa():
             data.get('imap_host', 'imap.gmail.com'),
             data.get('imap_port', 993),
             data['email_user'],
-            data.get('email_pass', ''),
+            encrypt_password(data.get('email_pass', '')) if data.get('email_pass') else '',
             data.get('smtp_host', data.get('imap_host', '')),
             data.get('smtp_port', 465),
             data.get('logo_url', '')
@@ -335,6 +353,150 @@ def delete_operador(username):
         return jsonify({'message': 'Operador eliminado correctamente'})
     except Exception as e:
         logger.error(f"Error delete_operador: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/imap/test', methods=['POST'])
+def test_imap_connection():
+    data = request.json
+    try:
+        with imap_tools.MailBox(data['imap_host']).login(data['email'], data['password']) as mailbox:
+            return jsonify({'success': True, 'message': 'Conexión exitosa'})
+    except Exception as e:
+        logger.error(f"Error test_imap: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/imap/sync/<int:empresa_id>', methods=['POST'])
+def sync_emails(empresa_id):
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        cur.execute('SELECT * FROM empresas WHERE id = ?', (empresa_id,))
+        empresa = dict(cur.fetchone())
+        
+        if not empresa or not empresa.get('email_user') or not empresa.get('email_pass'):
+            return jsonify({'error': 'Empresa no encontrada o sin credenciales'}), 404
+        
+        password = decrypt_password(empresa['email_pass'])
+        
+        with imap_tools.MailBox(empresa['imap_host']).login(empresa['email_user'], password) as mailbox:
+            mailbox.folder.set('INBOX')
+            messages = list(mailbox.fetch(limit=50))
+            
+            synced_count = 0
+            for msg in reversed(messages):
+                archivos = []
+                if msg.attachments:
+                    for att in msg.attachments:
+                        archivos.append({
+                            'nombre': att.filename,
+                            'tamano': f"{len(att.payload) / 1024:.1f} KB" if att.payload else "0 KB"
+                        })
+                
+                fecha_str = msg.date.strftime('%Y-%m-%dT%H:%M:%S') if msg.date else ''
+                thread_id = f"{empresa['email_user']}_{msg.uid}"
+                
+                cur.execute('SELECT id FROM hilos WHERE thread_id = ?', (thread_id,))
+                if not cur.fetchone():
+                    para_value = str(msg.to[0]) if isinstance(msg.to, (list, tuple)) and msg.to else empresa['email_user']
+                    cur.execute('''
+                        INSERT INTO hilos (thread_id, remitente, asunto, mensaje, cuenta_empresa, correo_empresa, fecha, adjuntos, archivos, tamano_total, estado_ticket, leido, de, para)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ''', (
+                        thread_id,
+                        msg.from_ or '',
+                        msg.subject or '',
+                        msg.text or msg.html or '',
+                        empresa['nombre'],
+                        empresa['email_user'],
+                        fecha_str,
+                        1 if archivos else 0,
+                        str(archivos),
+                        '0 KB',
+                        'PENDIENTE',
+                        0,
+                        msg.from_ or '',
+                        para_value
+                    ))
+                    synced_count += 1
+            
+            conn.commit()
+        
+        cur.close()
+        conn.close()
+        
+        return jsonify({'success': True, 'synced': synced_count})
+    except Exception as e:
+        logger.error(f"Error sync_emails: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/imap/sync-all', methods=['POST'])
+def sync_all_emails():
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        cur.execute("SELECT id, nombre, alias, imap_host, imap_port, email_user, email_pass FROM empresas WHERE activo = 1 AND email_user IS NOT NULL AND email_pass IS NOT NULL")
+        empresas = [dict(row) for row in cur.fetchall()]
+        
+        results = []
+        for empresa in empresas:
+            try:
+                password = decrypt_password(empresa['email_pass'])
+                
+                with imap_tools.MailBox(empresa['imap_host']).login(empresa['email_user'], password) as mailbox:
+                    mailbox.folder.set('INBOX')
+                    messages = list(mailbox.fetch(limit=30))
+                    
+                    synced_count = 0
+                    for msg in reversed(messages):
+                        archivos = []
+                        if msg.attachments:
+                            for att in msg.attachments:
+                                archivos.append({
+                                    'nombre': att.filename,
+                                    'tamano': f"{len(att.payload) / 1024:.1f} KB" if att.payload else "0 KB"
+                                })
+                        
+                        fecha_str = msg.date.strftime('%Y-%m-%dT%H:%M:%S') if msg.date else ''
+                        thread_id = f"{empresa['email_user']}_{msg.uid}"
+                        
+                        cur.execute('SELECT id FROM hilos WHERE thread_id = ?', (thread_id,))
+                        if not cur.fetchone():
+                            para_value = str(msg.to[0]) if isinstance(msg.to, (list, tuple)) and msg.to else empresa['email_user']
+                            cur.execute('''
+                                INSERT INTO hilos (thread_id, remitente, asunto, mensaje, cuenta_empresa, correo_empresa, fecha, adjuntos, archivos, tamano_total, estado_ticket, leido, de, para)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            ''', (
+                                thread_id,
+                                msg.from_ or '',
+                                msg.subject or '',
+                                msg.text or msg.html or '',
+                                empresa['nombre'],
+                                empresa['email_user'],
+                                fecha_str,
+                                1 if archivos else 0,
+                                str(archivos),
+                                '0 KB',
+                                'PENDIENTE',
+                                0,
+                                msg.from_ or '',
+                                para_value
+                            ))
+                            synced_count += 1
+                    
+                    results.append({'empresa': empresa['nombre'], 'synced': synced_count, 'success': True})
+                    
+            except Exception as e:
+                results.append({'empresa': empresa['nombre'], 'error': str(e), 'success': False})
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return jsonify({'results': results})
+    except Exception as e:
+        logger.error(f"Error sync_all: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/health')
