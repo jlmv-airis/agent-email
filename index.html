@@ -1,15 +1,210 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Agente Email AI - Redireccionando</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Email AIRIS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
 </head>
-<body style="background: #0f172a; color: white; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh;">
-    <div style="text-align: center;">
-        <p>Cargando sistema...</p>
-        <script>
-            // Redirección inmediata por JS
-            window.location.replace('login.html');
-        </script>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 w-full max-w-md">
+            <h2 class="text-2xl font-bold mb-6">Iniciar Sesión</h2>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Email</label>
+                    <input type="email" id="login-email" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Contraseña</label>
+                    <input type="password" id="login-password" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">Entrar</button>
+            </form>
+            <p id="login-error" class="text-red-500 text-sm mt-2 hidden"></p>
+        </div>
     </div>
+
+    <!-- Main App -->
+    <div id="app" class="max-w-7xl mx-auto p-4 hidden">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">Agent Email AIRIS</h1>
+            <div class="flex items-center gap-4">
+                <span id="user-name" class="text-sm text-gray-500"></span>
+                <button onclick="logout()" class="text-sm text-red-500 hover:text-red-700">Cerrar Sesión</button>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Dashboard</h2>
+                <button onclick="syncAll()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">Sincronizar Todo</button>
+            </div>
+            <div id="stats" class="grid grid-cols-4 gap-4">
+                <div class="bg-blue-100 rounded-xl p-4">
+                    <div class="text-blue-600 font-bold text-2xl" id="dash-total">0</div>
+                    <div class="text-blue-400 text-sm">Total</div>
+                </div>
+                <div class="bg-amber-100 rounded-xl p-4">
+                    <div class="text-amber-600 font-bold text-2xl" id="dash-pending">0</div>
+                    <div class="text-amber-400 text-sm">Pendientes</div>
+                </div>
+                <div class="bg-indigo-100 rounded-xl p-4">
+                    <div class="text-indigo-600 font-bold text-2xl" id="dash-assigned">0</div>
+                    <div class="text-indigo-400 text-sm">Asignados</div>
+                </div>
+                <div class="bg-emerald-100 rounded-xl p-4">
+                    <div class="text-emerald-600 font-bold text-2xl" id="dash-resolved">0%</div>
+                    <div class="text-emerald-400 text-sm">Resueltos</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-2xl shadow-lg p-6">
+            <h2 class="text-xl font-bold mb-4">Bandeja de Entrada</h2>
+            <div id="email-list" class="space-y-2">
+                <p class="text-gray-500">Cargando...</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = '/api';
+        let token = localStorage.getItem('token');
+        
+        if (token) {
+            verifyToken();
+        } else {
+            document.getElementById('login-modal').classList.remove('hidden');
+        }
+        
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            try {
+                const res = await fetch(API_URL + '/auth/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email, password})
+                });
+                
+                if (!res.ok) {
+                    const data = await res.json();
+                    throw new Error(data.error || 'Error al iniciar sesión');
+                }
+                
+                const data = await res.json();
+                token = data.token;
+                localStorage.setItem('token', token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                
+                document.getElementById('login-modal').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+                loadData();
+            } catch(e) {
+                document.getElementById('login-error').textContent = e.message;
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        });
+        
+        async function verifyToken() {
+            try {
+                const res = await fetch(API_URL + '/auth/verify', {
+                    headers: {'Authorization': 'Bearer ' + token}
+                });
+                
+                if (!res.ok) {
+                    logout();
+                    return;
+                }
+                
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                document.getElementById('user-name').textContent = user.nombre || user.email;
+                document.getElementById('login-modal').classList.add('hidden');
+                document.getElementById('app').classList.remove('hidden');
+                loadData();
+            } catch(e) {
+                logout();
+            }
+        }
+        
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            token = null;
+            document.getElementById('login-modal').classList.remove('hidden');
+            document.getElementById('app').classList.add('hidden');
+        }
+        
+        async function syncAll() {
+            try {
+                const res = await fetch(API_URL + '/imap/sync-all', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                
+                if (res.ok) {
+                    loadData();
+                    alert('Sincronización completada!');
+                }
+            } catch(e) {
+                alert('Error: ' + e.message);
+            }
+        }
+        
+        async function loadData() {
+            try {
+                const res = await fetch(API_URL + '/hilos');
+                const hilos = await res.json();
+                
+                const total = hilos.length;
+                const pending = hilos.filter(h => h.estado_ticket === 'PENDIENTE').length;
+                const assigned = hilos.filter(h => h.estado_ticket === 'ASIGNADO').length;
+                const resolved = hilos.filter(h => h.estado_ticket === 'CERRADO').length;
+                
+                document.getElementById('dash-total').textContent = total;
+                document.getElementById('dash-pending').textContent = pending;
+                document.getElementById('dash-assigned').textContent = assigned;
+                document.getElementById('dash-resolved').textContent = total > 0 ? Math.round((resolved / total) * 100) + '%' : '0%';
+                
+                const list = document.getElementById('email-list');
+                if (hilos.length === 0) {
+                    list.innerHTML = '<p class="text-gray-500">No hay emails</p>';
+                } else {
+                    let html = '';
+                    for (const h of hilos) {
+                        const estadoColor = h.estado_ticket === 'PENDIENTE' ? 'bg-yellow-100 text-yellow-800' : 
+                                         h.estado_ticket === 'ASIGNADO' ? 'bg-blue-100 text-blue-800' : 
+                                         'bg-green-100 text-green-800';
+                        html += '<div class="border rounded-lg p-3 hover:bg-gray-50">';
+                        html += '<div class="flex justify-between items-start">';
+                        html += '<div class="font-bold">' + (h.asunto || 'Sin asunto') + '</div>';
+                        html += '<span class="text-xs px-2 py-1 rounded ' + estadoColor + '">' + h.estado_ticket + '</span>';
+                        html += '</div>';
+                        html += '<div class="text-sm text-gray-500 mt-1">' + (h.remitente || 'Sin remitente') + ' - ' + (h.cuenta_empresa || 'Sin empresa') + '</div>';
+                        html += '<div class="text-xs text-gray-400">' + (h.fecha || '') + '</div>';
+                        html += '</div>';
+                    }
+                    list.innerHTML = html;
+                }
+                
+                console.log('Loaded:', hilos.length, 'emails');
+            } catch(e) {
+                console.error('Error:', e);
+            }
+        }
+        
+        loadData();
+    </script>
 </body>
 </html>

@@ -3,31 +3,43 @@
 Este archivo refleja el estado actual del desarrollo y los hitos alcanzados.
 
 ## 📌 Estado Actual
-- **Rama Git:** `v0.0.9` (Fase Optimización de Bandeja)
+- **Rama Git:** `v0.1.0` (Fase Analytics y Notificaciones)
 - **Entorno Local:** Activo
   - **Servidor Web:** [http://localhost:8000/Panel.html](http://localhost:8000/Panel.html)
   - **n8n Backend:** [http://localhost:5678](http://localhost:5678)
-  - **Base de Datos:** PostgreSQL (Docker) activa.
+  - **Base de Datos:** SQLite (local) + PostgreSQL (n8n)
 
-## 📥 Fase Actual: Densidad y Adjuntos (v0.0.9)
-Optimización de la bandeja general para una gestión más rápida y visualización de archivos.
+## 📥 Fase Actual: Analytics y Notificaciones (v0.1.0)
+Dashboard avanzado con métricas detalladas y sistema de notificaciones en tiempo real.
 
-### ✅ Tareas Completadas
-- [x] Rama `v0.0.8` Premium unificada en `main`.
-- [x] Estructura Sidebar Resizable y Spark Style.
-- [x] Inspector Pro con historial de cliente.
+### 📧 Cuentas Configuradas
+| ID | Empresa | Host IMAP | Puerto | Correo | Emails Sincronizados |
+|----|---------|-----------|--------|--------|---------------------|
+| 1 | PlatinoServicios | mail.platinoservicios.com | 993 | administracion@platinoservicios.com | 6 |
+| 2 | All4Store | mail.all4store.com.mx | 993 | ejecutivo.logistica@all4store.com.mx | 1 |
 
-### ⏳ Tareas en Proceso
-- [ ] **feat:** Reducción de tamaño de filas de correo para mayor densidad.
-- [ ] **feat:** Implementación de visualización de adjuntos dentro de la tarjeta de email.
-- [ ] **style:** Refinamiento de tipografía en vista compacta.
+**Total emails en bandeja:** 7
+
+### ✅ Tareas Completadas v0.0.9
+- [x] Reducción de tamaño de filas de correo para mayor densidad.
+- [x] Implementación de visualización de adjuntos dentro de la tarjeta de email.
+- [x] Refinamiento de tipografía en vista compacta.
+- [x] Formularios de alta en drawer de ajustes.
+
+### ⏳ Tareas Completadas v0.1.0
+- [x] **feat:** Dashboard Analytics con métricas avanzadas (tiempo respuesta, ranking operadores).
+- [x] **feat:** Sistema de polling para notificaciones en tiempo real (cada 30 segundos).
+- [x] **feat:** Toast automático para nuevos tickets.
+- [x] **style:** Mejoras en inspector (vista previa adjuntos mejorada).
 
 ### 📅 Próximos Pasos
-- [ ] Conectar la lógica de adjuntos real con los datos de n8n.
-- [ ] Implementar los formularios de alta en el drawer de ajustes.
+- [ ] Agregar gráfico de tendencia de tickets por día.
+- [ ] Métricas detalladas por empresa/cuenta.
+- [ ] Agregar keyboard shortcuts para navegación.
+- [ ] Sincronización automática desde IMAP.
 
 ---
 
 ## 🛠️ Última Modificación
-- **Fecha:** lunes, 6 de abril de 2026
-- **Detalle:** `docs: actualización de progreso para fase v0.0.9`.
+- **Fecha:** lunes, 13 de abril de 2026
+- **Detalle:** `feat: nueva versión v0.1.0 con analytics y notificaciones`.
