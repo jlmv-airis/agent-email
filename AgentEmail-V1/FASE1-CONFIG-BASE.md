@@ -1,180 +1,150 @@
-# 🔧 FASE 1: Configuración Base - Guía de Instalación
+# 🔧 FASE 1: Configuración Base
 
-## ¿Qué cambió?
+## ✨ Cambios Implementados
 
-### 1. **Configuración Centralizada** (`config.py`)
-- ✅ `SECRET_KEY` ahora se carga desde `.env` (no rota en cada reinicio)
-- ✅ Variables de ambiente centralizadas
-- ✅ Diferenciación por ambiente: `development`, `production`, `testing`
-- ✅ Validación automática de configuración crítica
+### 🎯 Config Centralizada (`config.py`)
+- ✅ `.env` integration
+- ✅ 3 profiles: dev/prod/test
+- ✅ Validation on startup
+- ✅ SECRET_KEY persistence
 
-### 2. **Logging Estructurado** (`logger_config.py`)
-- ✅ Logs en consola + archivos rotados
-- ✅ Formato JSON para integración con herramientas de monitoreo
-- ✅ Niveles de log dinámicos por ambiente
-- ✅ Archivos con rotación automática (`logs/agent-email.log`)
+### 📝 Logging (`logger_config.py`)
+- ✅ JSON format (ELK ready)
+- ✅ File + console output
+- ✅ Auto rotation
+- ✅ Dynamic levels
 
-### 3. **Requirements Pinados**
-- ✅ Todas las versiones fijas (reproducibilidad garantizada)
-- ✅ Paquetes de desarrollo incluidos (pytest, black, flake8)
-- ✅ Nueva dependencia: `python-json-logger` (logging JSON)
+### 🔒 Secrets
+- ✅ `.env` + `.env.example`
+- ✅ `.gitignore` updated
+- ✅ No credentials in VCS
 
-### 4. **Docker & Containerización**
-- ✅ Multi-stage Dockerfile optimizado
-- ✅ docker-compose.yml con:
-  - Agent Email (Flask)
-  - Redis (caching + rate limiting)
-  - PostgreSQL (opcional, para migración futura)
-- ✅ Health checks automáticos
+### 📦 Dependencies
+- ✅ `requirements.txt` pinned
+- ✅ Reproducible builds
+- ✅ Dev tools included
 
-### 5. **Archivos de Configuración**
-- ✅ `.env.example` - Template para configuración
-- ✅ `.env` - Valores de desarrollo (no versionear)
-- ✅ `.gitignore` - Excluye secretos y directorio de logs
+### 🐳 Docker
+- ✅ Multi-stage Dockerfile
+- ✅ `docker-compose.yml`
+- ✅ Flask + Redis + PostgreSQL
+- ✅ Health checks
 
 ---
 
-## 🚀 Instalación Rápida
+## 🚀 Quick Start
 
-### Paso 1: Activar venv
-```powershell
-# Windows PowerShell
-.\.venv\Scripts\Activate.ps1
-
-# Linux/Mac
-source .venv/bin/activate
+### 1️⃣ Activate venv
+```bash
+.\.venv\Scripts\Activate.ps1  # Windows
+source .venv/bin/activate      # Linux/Mac
 ```
 
-### Paso 2: Instalar nuevas dependencias
+### 2️⃣ Install dependencies
 ```bash
-pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### Paso 3: Generar SECRET_KEY seguro
+### 3️⃣ Generate SECRET_KEY
 ```bash
-python -c "import secrets; print('SECRET_KEY='+secrets.token_hex(32))"
-```
-Copiar salida y actualizar en `.env`:
-```
-SECRET_KEY=<tu-clave-aqui>
+python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
-### Paso 4: Verificar configuración
-```bash
-python -c "from backend.config import config; print('✅ Configuración válida')"
+### 4️⃣ Update `.env`
+```
+SECRET_KEY=<your-key-here>
 ```
 
-### Paso 5: Ejecutar servidor
+### 5️⃣ Run server
 ```bash
 python backend/server.py
 ```
 
-Acceder a: **http://localhost:8000**
+🔗 **http://localhost:8000**
 
 ---
 
-## 🐳 Instalación con Docker
+## 🐳 Docker Setup
 
-### Opción 1: Docker Compose (Recomendado)
+### Build
 ```bash
-# Construir imagen
 docker-compose build
-
-# Iniciar servicios (includes Redis)
-docker-compose up -d
-
-# Ver logs
-docker-compose logs -f agent-email
 ```
 
-### Opción 2: Docker Puro
+### Run
 ```bash
-# Construir imagen
-docker build -t agent-email:latest .
+docker-compose up -d
+```
 
-# Ejecutar contenedor
-docker run -p 8000:8000 \
-  -e ENVIRONMENT=development \
-  -e SECRET_KEY=your-secret-key \
-  -v $(pwd)/database:/app/database \
-  -v $(pwd)/logs:/app/logs \
-  agent-email:latest
+### Stop
+```bash
+docker-compose down
 ```
 
 ---
 
-## 📦 Estructura de Archivos Nuevos
+## 📊 Environment Variables
+
+| Var | Dev | Prod | Note |
+|-----|-----|------|------|
+| 🌍 ENVIRONMENT | development | production | - |
+| 🐛 DEBUG | False | False | Set False always |
+| 🔑 SECRET_KEY | - | **REQUIRED** | Generate new |
+| 🔌 PORT | 8000 | 8000 | - |
+| 📝 LOG_LEVEL | DEBUG | WARNING | - |
+| 🔐 CORS | localhost | domain.com | - |
+
+---
+
+## 📁 Structure
 
 ```
 .
-├── .env                    # Configuración local (NO versionear)
-├── .env.example           # Template de configuración
-├── .gitignore             # Excluye secretos y logs
-├── Dockerfile             # Multi-stage build
-├── docker-compose.yml     # Orquestación de servicios
-├── requirements.txt       # Dependencias pinadas
+├── .env                    ✔️ Config (local)
+├── .env.example           📋 Template
+├── requirements.txt       📦 Dependencies
+├── Dockerfile             🐳 Container
+├── docker-compose.yml     🐘 Orchestration
 ├── backend/
-│   ├── config.py         # ✨ NUEVO: Configuración centralizada
-│   ├── logger_config.py  # ✨ NUEVO: Logging estructurado
-│   └── server.py         # ACTUALIZADO: Usa config.py
-└── logs/                 # ✨ NUEVO: Directorio de logs
+│   ├── config.py         ⚙️  Config
+│   ├── logger_config.py  📝 Logging
+│   └── server.py         🚀 App
+└── logs/                 📂 Logs dir
 
 ```
 
 ---
 
-## 🔐 Variables de Entorno
+## ✅ Validation Checklist
 
-| Variable | Descripción | Desarrollo | Producción |
-|----------|-------------|------------|-----------|
-| `ENVIRONMENT` | Ambiente de ejecución | `development` | `production` |
-| `DEBUG` | Modo debug | `False` | `False` |
-| `SECRET_KEY` | Clave para JWT | Cambiar | **OBLIGATORIO** |
-| `HOST` | IP de escucha | `0.0.0.0` | `0.0.0.0` |
-| `PORT` | Puerto | `8000` | `8000` |
-| `LOG_LEVEL` | Nivel de logging | `DEBUG` | `WARNING` |
-| `CORS_ALLOWED_ORIGINS` | CORS whitelist | localhost | dominio.com |
+- [ ] `.env` has SECRET_KEY
+- [ ] `pip install -r requirements.txt` OK
+- [ ] `python -c "from backend.config import config; print('✅')"` works
+- [ ] Server starts: `python backend/server.py`
+- [ ] `curl http://localhost:8000/api/status` returns OK
+- [ ] `logs/agent-email.log` exists
 
 ---
 
-## ✅ Checklist de Validación
+## 🆘 Troubleshooting
 
-- [ ] `.env` creado con `SECRET_KEY` válido
-- [ ] `pip install -r requirements.txt` sin errores
-- [ ] `from backend.config import config` funciona
-- [ ] `python backend/server.py` inicia sin excepciones
-- [ ] `curl http://localhost:8000/api/status` retorna `"ok"`
-- [ ] `logs/agent-email.log` se crea automáticamente
-- [ ] Docker build completado exitosamente
-
----
-
-## 🐛 Troubleshooting
-
-### Error: "SECRET_KEY" invalido
-**Solución:** Generar nueva clave:
+### Error: "SECRET_KEY invalid"
 ```bash
 python -c "import secrets; print(secrets.token_hex(32))" >> .env
 ```
 
-### Error: Cannot find module "config"
-**Solución:** Asegurate que estés en el directorio raíz del proyecto y que `.venv` esté activo
+### Error: "Module config not found"
+```bash
+# Make sure in root directory
+# Make sure .venv is active
+```
 
-### Logs no se crean
-**Solución:** Crear manualmente `logs/` directory:
+### Logs not created
 ```bash
 mkdir logs
 ```
 
 ---
 
-## 📚 Siguiente Fase: FASE 2 (Seguridad)
-
-La Fase 2 incluye:
-- [ ] Health check endpoint robusto
-- [ ] CORS configuración estricta
-- [ ] Rate limiting con Redis
-- [ ] Headers de seguridad (Helmet)
-- [ ] Input validation mejorada
+## 🔮 Next: FASE 2 (Seguridad)
 
