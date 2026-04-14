@@ -19,6 +19,8 @@ sys.path.insert(0, str(Path(__file__).parent))
 # Importar configuración centralizada
 from config import config
 from logger_config import logger
+from security import security, validator
+from health import HealthChecker
 
 # Log de configuración cargada
 logger.info(f"🔧 Configuración cargada: ENVIRONMENT={config.ENVIRONMENT}, DEBUG={config.DEBUG}")
@@ -87,7 +89,21 @@ def admin_required(f):
     return decorated
 
 app = Flask(__name__, static_folder=FRONTEND_DIR)
-CORS(app)
+
+# Configurar CORS con whitelist
+CORS(app, resources={
+    r"/api/*": {
+        "origins": config.CORS_ALLOWED_ORIGINS,
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization", "X-API-Key"],
+        "supports_credentials": True,
+        "max_age": 3600
+    }
+})
+
+# Inicializar módulo de seguridad
+security.init_app(app)
+logger.info("✅ Security headers y CORS configurados")
 
 DB_PATH = os.path.join(DATABASE_DIR, 'agent_email.db')
 
@@ -231,15 +247,38 @@ def status():
         'version': '1.2 V1-Refactor'
     })
 
+@app.route('/api/health')
+def health():
+    """Health check endpoint para monitoreo"""
+    status_data, http_code = HealthChecker.get_health_status()
+    return jsonify(status_data), http_code
+
 # API ENDPOINTS
 @app.route('/api/auth/login', methods=['POST'])
 def auth_login():
     data = request.json
-    email = data.get('email', '').strip()
+    
+    # Validar estructura JSON
+    valid, msg = validator.validate_json_request(
+        data,
+        required_fields=['email', 'password'],
+        field_types={'email': str, 'password': str}
+    )
+    if not valid:
+        logger.warning(f"Login attempt with invalid data: {msg}")
+        return jsonify({'error': f"Datos inválidos: {msg}"}), 400
+    
+    email = data.get('email', '').strip().lower()
     password = data.get('password', '')
     
-    if not email or not password:
-        return jsonify({'error': 'Email y contraseña requeridos'}), 400
+    # Validar email
+    valid, msg = validator.validate_email(email)
+    if not valid:
+        logger.warning(f"Login attempt with invalid email: {email}")
+        return jsonify({'error': f"Email inválido: {msg}"}), 400
+    
+    if not password:
+        return jsonify({'error': 'Contraseña requerida'}), 400
     
     conn = get_db_connection()
     cur = conn.cursor()
@@ -250,11 +289,14 @@ def auth_login():
     conn.close()
     
     if not user:
+        logger.warning(f"Login failed: user not found ({email})")
         return jsonify({'error': 'Usuario no encontrado'}), 401
     
     if not check_password_hash(user['password_hash'], password):
+        logger.warning(f"Login failed: invalid password ({email})")
         return jsonify({'error': 'Contraseña incorrecta'}), 401
     
+    logger.info(f"✅ Login exitoso: {email}")
     token = create_token(dict(user))
     return jsonify({
         'token': token,
