@@ -2,30 +2,34 @@ import os
 import sqlite3
 import time
 import jwt
-import secrets
 from datetime import datetime, timedelta
 from functools import wraps
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 import logging
-from dotenv import load_dotenv
 from cryptography.fernet import Fernet
 import imap_tools
+import sys
+from pathlib import Path
 
-SECRET_KEY = secrets.token_hex(32)
-JWT_EXPIRE_HOURS = 24
+# Agregar backend al path para importar config y logger
+sys.path.insert(0, str(Path(__file__).parent))
 
-load_dotenv()
+# Importar configuración centralizada
+from config import config
+from logger_config import logger
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Log de configuración cargada
+logger.info(f"🔧 Configuración cargada: ENVIRONMENT={config.ENVIRONMENT}, DEBUG={config.DEBUG}")
 
-# Ajuste de rutas para la nueva estructura V1
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-FRONTEND_DIR = os.path.join(BASE_DIR, '../frontend')
-DATABASE_DIR = os.path.join(BASE_DIR, '../database')
-KEY_FILE = os.path.join(BASE_DIR, '.key')
+# Rutas usando config
+BASE_DIR = config.BASE_DIR
+FRONTEND_DIR = config.FRONTEND_DIR
+DATABASE_DIR = config.DATABASE_DIR
+KEY_FILE = config.ENCRYPTION_KEY_FILE
+SECRET_KEY = config.SECRET_KEY
+JWT_EXPIRE_HOURS = config.JWT_EXPIRE_HOURS
 
 def get_cipher():
     if not os.path.exists(KEY_FILE):
@@ -737,5 +741,11 @@ def sync_all_emails():
 
 if __name__ == '__main__':
     init_db()
-    port = int(os.environ.get('PORT', 8000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    logger.info(f"🚀 Iniciando Agent Email AIRIS V1")
+    logger.info(f"📍 Ambiente: {config.ENVIRONMENT}")
+    logger.info(f"🔌 http://{config.HOST}:{config.PORT}")
+    app.run(
+        host=config.HOST,
+        port=config.PORT,
+        debug=config.DEBUG
+    )

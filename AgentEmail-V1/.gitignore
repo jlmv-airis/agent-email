@@ -1,0 +1,73 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Virtual Environment
+.venv/
+venv/
+env/
+ENV/
+.Python
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+database/*.db
+
+# Logs
+logs/
+*.log
+*.pot
+
+# Secrets
+.key
+.keys/
+secrets.json
+
+# Backups
+*.bak
+*.backup
+*backup/
+Legacy-Backup/
+
+# Cache
+.cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node (if using npm)
+node_modules/
+package-lock.json
+npm-debug.log
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Project specific
+Screenshots/
+debug_sync_all4store.py
+agent_email.db

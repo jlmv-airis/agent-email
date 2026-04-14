@@ -1,6 +1,35 @@
-flask>=2.3.0
-flask-cors>=4.0.0
-psycopg2-binary>=2.9.0
-werkzeug>=2.3.0
-gunicorn>=21.0.0
-python-dotenv>=1.0.0
+# Flask Framework
+flask==2.3.3
+flask-cors==4.0.0
+werkzeug==2.3.7
+
+# Server & WSGI
+gunicorn==21.2.0
+
+# Database
+sqlite3>=1.1.1
+
+# Security & Crypto
+PyJWT==2.8.1
+cryptography==41.0.4
+
+# Email
+imap-tools==1.4.3
+
+# Environment & Config
+python-dotenv==1.0.0
+
+# Validation
+email-validator==2.1.0
+
+# Logging
+python-json-logger==2.0.7
+
+# Rate Limiting
+Flask-Limiter==3.5.0
+
+# Development Tools
+pytest==7.4.2
+pytest-cov==4.1.0
+black==23.11.0
+flake8==6.1.0

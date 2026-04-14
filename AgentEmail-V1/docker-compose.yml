@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # Aplicación Flask
+  agent-email:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agent-email-v1
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - FLASK_ENV=development
+      - DEBUG=False
+      - SECRET_KEY=${SECRET_KEY:-dev-secret-key-change-me}
+      - DATABASE_URL=sqlite:///./database/agent_email.db
+      - LOG_LEVEL=DEBUG
+    volumes:
+      - ./database:/app/database
+      - ./logs:/app/logs
+      - ./backend:/app/backend
+      - ./frontend:/app/frontend
+    networks:
+      - agent-email-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  # Redis para caching y rate limiting
+  redis:
+    image: redis:7-alpine
+    container_name: agent-email-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - agent-email-network
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # PostgreSQL (opcional, para migración futura)
+  postgres:
+    image: postgres:15-alpine
+    container_name: agent-email-postgres
+    environment:
+      POSTGRES_USER: airis_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev-password-change-me}
+      POSTGRES_DB: agent_email_db
+    ports:
+      - "5432:5432"
+    networks:
+      - agent-email-network
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airis_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    profiles:
+      - postgres  # Solo inicia si se especifica: docker-compose --profile postgres up
+
+networks:
+  agent-email-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+  postgres-data:
