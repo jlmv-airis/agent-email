@@ -21,6 +21,9 @@ from config import config
 from logger_config import logger
 from security import security, validator
 from health import HealthChecker
+from database import db_manager
+from backup_manager import backup_manager
+from init_db import init_database, backup_before_migration
 
 # Log de configuración cargada
 logger.info(f"🔧 Configuración cargada: ENVIRONMENT={config.ENVIRONMENT}, DEBUG={config.DEBUG}")
@@ -113,118 +116,9 @@ def get_db_connection():
     return conn
 
 def init_db():
-    if not os.path.exists(DATABASE_DIR):
-        os.makedirs(DATABASE_DIR)
-    
-    conn = get_db_connection()
-    cur = conn.cursor()
-    
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS usuarios (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            nombre TEXT,
-            email TEXT,
-            password_hash TEXT,
-            rol TEXT DEFAULT 'operador',
-            notas TEXT,
-            activo INTEGER DEFAULT 1,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS empresas (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nombre TEXT NOT NULL,
-            alias TEXT,
-            imap_host TEXT,
-            imap_port INTEGER DEFAULT 993,
-            email_user TEXT,
-            email_pass TEXT,
-            smtp_host TEXT,
-            smtp_port INTEGER DEFAULT 465,
-            logo_url TEXT,
-            activo INTEGER DEFAULT 1,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-    
-    cur.execute('''
-        CREATE TABLE IF NOT EXISTS hilos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            thread_id TEXT UNIQUE NOT NULL,
-            remitente TEXT,
-            asunto TEXT,
-            mensaje TEXT,
-            cuenta_empresa TEXT,
-            correo_empresa TEXT,
-            folder TEXT DEFAULT 'INBOX',
-            fecha TIMESTAMP,
-            adjuntos INTEGER DEFAULT 0,
-            archivos TEXT,
-            tamano_total TEXT,
-            estado_ticket TEXT DEFAULT 'PENDIENTE',
-            leido INTEGER DEFAULT 0,
-            asignado_a TEXT,
-            de TEXT,
-            para TEXT,
-            cc TEXT,
-            de_operador INTEGER DEFAULT 0,
-            fecha_resuelto TIMESTAMP,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    ''')
-
-    # Candado de integridad: solo permitir inserciones de hilos para cuentas activas registradas.
-    cur.execute('''
-        CREATE TRIGGER IF NOT EXISTS trg_hilos_only_active_company_email
-        BEFORE INSERT ON hilos
-        FOR EACH ROW
-        BEGIN
-            SELECT
-                CASE
-                    WHEN (
-                        SELECT COUNT(1)
-                        FROM empresas
-                        WHERE email_user = NEW.correo_empresa
-                          AND activo = 1
-                    ) = 0
-                    THEN RAISE(ABORT, 'correo_empresa no registrado o inactivo')
-                END;
-        END;
-    ''')
-    
-    # Migración rápida: Añadir columna folder si no existe
-    try:
-        cur.execute("ALTER TABLE hilos ADD COLUMN folder TEXT DEFAULT 'INBOX'")
-        logger.info("Columna 'folder' añadida a hilos")
-    except sqlite3.OperationalError:
-        pass # Ya existe
-    
-    try:
-        cur.execute("ALTER TABLE hilos ADD COLUMN de_operador INTEGER DEFAULT 0")
-    except sqlite3.OperationalError:
-        pass
-        
-    try:
-        cur.execute("ALTER TABLE hilos ADD COLUMN fecha_resuelto TIMESTAMP")
-    except sqlite3.OperationalError:
-        pass
-    
-    cur.execute("SELECT id FROM usuarios WHERE username = 'admin' LIMIT 1")
-    if not cur.fetchone():
-        password_hash = generate_password_hash('admin')
-        cur.execute('''
-            INSERT INTO usuarios (username, nombre, email, password_hash, rol, notas)
-            VALUES (?, ?, ?, ?, ?, ?)
-        ''', ('admin', 'Administrador', 'admin@airis.com', password_hash, 'admin', 'Cuenta principal'))
-        logger.info("Usuario admin creado")
-    
-    conn.commit()
-    cur.close()
-    conn.close()
-    logger.info("Base de datos SQLite inicializada correctamente")
+    """Inicializar base de datos con nueva arquitectura"""
+    init_database()  # Importado de init_db.py
+    logger.info("✅ Base de datos SQLite inicializada correctamente")
 
 # RUTAS DE ARCHIVOS ESTÁTICOS
 @app.route('/')
@@ -726,6 +620,84 @@ def delete_empresa_admin(empresa_id):
         conn.close()
         return jsonify({'status': 'ok'})
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/db-stats', methods=['GET'])
+@admin_required
+def get_db_stats():
+    """Obtener estadísticas de la base de datos"""
+    try:
+        stats = db_manager.get_database_stats()
+        return jsonify(stats)
+    except Exception as e:
+        logger.error(f"Error obteniendo estadísticas: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/db-optimize', methods=['POST'])
+@admin_required
+def optimize_database():
+    """Ejecutar optimizaciónes de BD (ANALYZE, VACUUM)"""
+    try:
+        logger.info("🔧 Iniciando optimización de BD...")
+        stats = db_manager.optimize_all()
+        return jsonify({
+            'status': 'success',
+            'message': 'Base de datos optimizada',
+            'stats': stats
+        })
+    except Exception as e:
+        logger.error(f"Error optimizando BD: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/backups', methods=['GET'])
+@admin_required
+def list_backups():
+    """Listar todos los backups disponibles"""
+    try:
+        backup_stats = backup_manager.get_backup_stats()
+        return jsonify(backup_stats)
+    except Exception as e:
+        logger.error(f"Error listando backups: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/backup/create', methods=['POST'])
+@admin_required
+def create_backup():
+    """Crear backup manual"""
+    try:
+        backup = backup_manager.create_backup(backup_type='manual')
+        if backup.get('status') == 'success':
+            return jsonify(backup), 201
+        else:
+            return jsonify(backup), 500
+    except Exception as e:
+        logger.error(f"Error creando backup: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/backup/cleanup', methods=['POST'])
+@admin_required
+def cleanup_backups():
+    """Limpiar backups antiguos"""
+    try:
+        result = backup_manager.cleanup_old_backups()
+        return jsonify(result)
+    except Exception as e:
+        logger.error(f"Error limpiando backups: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/backup/restore/<backup_filename>', methods=['POST'])
+@admin_required
+def restore_backup(backup_filename):
+    """Restaurar base de datos desde backup"""
+    try:
+        result = backup_manager.restore_backup(backup_filename)
+        if result.get('status') == 'success':
+            logger.warning(f"✅ Base de datos restaurada desde {backup_filename}")
+            return jsonify(result)
+        else:
+            return jsonify(result), 400
+    except Exception as e:
+        logger.error(f"Error restaurando backup: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/imap/sync-all', methods=['POST'])
