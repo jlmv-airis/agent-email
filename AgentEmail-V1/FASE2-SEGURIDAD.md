@@ -1,103 +1,153 @@
 # FASE 2: Seguridad - Implementación Completada
 
-## 🔒 Cambios de Seguridad
+## 🔒 Cambios Implementados
 
-### 1. **Security Module** (`security.py`)
-- ✅ Headers de seguridad automáticos:
-  - `X-Frame-Options`: Previene clickjacking
-  - `X-Content-Type-Options`: Previene MIME sniffing
-  - `Content-Security-Policy`: Política de orígenes confiables
-  - `Referrer-Policy`: Control de información de referer
-  - `Permissions-Policy`: Restringe acceso a APIs del navegador
+### 🛡️ Security Module (`security.py`)
+- 🔒 `X-Frame-Options`
+- 🚫 `X-Content-Type-Options`
+- 📋 `Content-Security-Policy`
+- 🔗 `Referrer-Policy`
+- 🔐 `Permissions-Policy`
+- ⏱️ Rate Limiting
+- ✅ Input Validators
+- 🧹 String Sanitization
 
-- ✅ Rate Limiting:
-  - Configurable por ambiente
-  - Almacenamiento en memoria (development) / Redis (production)
-  - Límites personalizables por ruta con decorador
+### 🏥 Health Check (`health.py`)
+- 📊 `/api/health` endpoint
+- 🗄️ Database connectivity
+- ⚙️ Config validation
+- 🕐 Timestamp & version
+- 📈 HTTP 200/503 codes
 
-- ✅ Input Validation mejorada:
-  - Validadores para: email, username, password, thread_id
-  - Verificación de longitud y patrones regex
-  - Sanitización de caracteres peligrosos
-  - Validación de estructura JSON
+### 🔐 CORS Configuration
+- ✅ Origin whitelist
+- ✅ Methods: GET, POST, PUT, DELETE
+- ✅ Custom headers
+- ✅ Credentials enabled
 
-### 2. **Health Check Endpoints** (`health.py`)
-- ✅ `/api/health` - Estado general de aplicación
-- ✅ Chequeos incluidos:
-  - Conectividad base de datos
-  - Validación de configuración crítica
-  - Timestamp y versión de app
-- ✅ Respuestas HTTP apropiadas (200/503)
-
-### 3. **Actualización de server.py**
-- ✅ Integración de security module
-- ✅ Headers de seguridad en todas las respuestas
-- ✅ Input validation en endpoints POST/PUT
-- ✅ Rate limiting en endpoints sensibles
-- ✅ Endpoint `/api/health` para monitoreo
+### ✔️ Input Validation
+- 📧 Email validator
+- 👤 Username validator
+- 🔑 Password validator
+- 🎫 Thread ID validator
+- 📝 JSON structure validator
+- 🛡️ XSS protection
 
 ---
 
-## 🚀 Endpoints de Seguridad
+## 📚 Headers Implementados
 
-### 1. Health Check
+| Header | Value | 🎯 |
+|--------|-------|-----|
+| `X-Frame-Options` | SAMEORIGIN | Clickjacking |
+| `X-Content-Type-Options` | nosniff | MIME sniffing |
+| `X-XSS-Protection` | 1; mode=block | XSS (legacy) |
+| `Content-Security-Policy` | ... | Resource whitelist |
+| `Referrer-Policy` | strict-origin | Referer control |
+| `Permissions-Policy` | ... | Browser APIs |
+
+---
+
+## 🚀 Endpoints
+
+### 🏥 Health Check
 ```bash
-curl -X GET http://localhost:8000/api/health
+GET /api/health
 ```
 
-**Respuesta 200 (Healthy):**
+**✅ Healthy (200)**
 ```json
 {
   "status": "healthy",
-  "timestamp": "2026-04-14T10:25:22.123456",
   "environment": "development",
   "checks": {
-    "database": {"status": "pass", "message": "OK"},
-    "configuration": {"status": "pass", "message": "OK"}
-  },
-  "version": "1.0.4"
+    "database": "pass",
+    "configuration": "pass"
+  }
 }
 ```
 
-**Respuesta 503 (Degraded):**
+**⚠️ Degraded (503)**
 ```json
 {
   "status": "degraded",
   "checks": {
-    "database": {"status": "fail", "message": "Connection timeout"}
+    "database": "fail"
   }
 }
 ```
 
 ---
 
-## 🔐 Headers de Seguridad Implementados
+## 🔍 Validators
 
-| Header | Valor | Propósito |
-|--------|-------|----------|
-| `X-Frame-Options` | SAMEORIGIN | Previene clickjacking |
-| `X-Content-Type-Options` | nosniff | Previene MIME sniffing |
-| `X-XSS-Protection` | 1; mode=block | XSS protection (legacy) |
-| `Content-Security-Policy` | ... | Whitelist de recursos |
-| `Referrer-Policy` | strict-origin-when-cross-origin | Control de referer |
-| `Permissions-Policy` | ... | Restringe APIs del navegador |
+### 📧 Email
+```python
+validator.validate_email("user@example.com")
+# ✅ True
+```
+
+### 👤 Username
+```python
+validator.validate_username("john_doe")
+# ✅ True (3-32 chars)
+```
+
+### 🔑 Password
+```python
+validator.validate_password("SecurePass@123")
+# ✅ True (production: requires upper/lower/digit/special)
+```
+
+### 🎫 Thread ID
+```python
+validator.validate_thread_id("user@example.com_12345")
+# ✅ True
+```
+
+### 📋 JSON Request
+```python
+validator.validate_json_request(
+    data,
+    required_fields=['email', 'password'],
+    field_types={'email': str, 'password': str}
+)
+# ✅ True
+```
 
 ---
 
-## 🔍 Validadores Disponibles
+## ⏱️ Rate Limiting
 
-### Email
+| Env | Setting | Value |
+|-----|---------|-------|
+| 🔨 Dev | Enabled | `False` |
+| 🚀 Prod | Enabled | `True` |
+| - | Limit | 60/min |
+| - | Storage | Memory/Redis |
+
+### Custom Limit
 ```python
-from backend.security import validator
-
-valid, msg = validator.validate_email("user@example.com")
-# valid = True, msg = "OK"
+@app.route('/api/sensitive', methods=['POST'])
+@security.require_rate_limit("10/minute")
+def sensitive_endpoint():
+    return {"status": "ok"}
 ```
 
-### Username
-```python
-valid, msg = validator.validate_username("john_doe")
-# Requiere: 3-32 caracteres, números/letras/guion/guion-bajo
+---
+
+## ✅ Checklist
+
+- [x] Server running port 8000
+- [x] `/api/health` returns 200
+- [x] `/api/status` has security headers
+- [x] Validators working correctly
+- [x] Rate limiting operational
+- [x] No auth logic changes
+
+---
+
+## 🔮 Next: FASE 4 (Observabilidad)
 ```
 
 ### Password
