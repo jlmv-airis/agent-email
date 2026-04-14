@@ -304,53 +304,56 @@
                 <button onclick="toggleCollaboratorsModal(false)" class="text-slate-400 hover:text-white text-2xl leading-none">×</button>
             </header>
             <div class="p-8 max-h-[82vh] overflow-y-auto custom-scrollbar space-y-8">
-                <section class="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-                    <div class="flex items-center justify-between mb-4">
+                <!-- SECTION 1: Colaboradores -->
+                <section>
+                    <div class="flex items-center justify-between mb-6">
                         <div>
-                            <h4 class="text-white text-sm font-bold uppercase tracking-widest">👥 Colaboradores</h4>
+                            <h4 class="text-white text-lg font-bold tracking-tight">👥 Colaboradores</h4>
+                            <p class="text-slate-400 text-xs mt-1">Gestiona operadores y administradores</p>
                         </div>
-                        <button onclick="createDefaultCollaborators()" class="px-3 py-2 rounded-lg bg-violet-500/20 border border-violet-400/30 text-violet-200 text-[10px] font-bold uppercase tracking-wider hover:bg-violet-500/30 transition-colors">
-                            Crear 3 operadores base
+                        <button onclick="createDefaultCollaborators()" class="px-4 py-2.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold uppercase tracking-wider transition-colors">
+                            + Crear 3 base
                         </button>
                     </div>
-                    <div class="grid grid-cols-5 gap-6">
+                    
+                    <div class="grid grid-cols-4 gap-4">
                         <div class="col-span-3">
-                            <div id="collaborators-list" class="rounded-2xl border border-white/10 overflow-hidden"></div>
+                            <div id="collaborators-list" class="grid gap-3"></div>
                         </div>
-                        <div class="col-span-2 space-y-4">
-                            <div class="rounded-xl border border-white/10 bg-white/[0.02] p-4">
-                                <h5 class="text-white text-xs font-bold uppercase tracking-widest mb-3">Nuevo colaborador</h5>
-                                <button id="toggle-collaborator-form-btn" type="button" onclick="toggleCreateCollaboratorForm()" class="w-full bg-violet-600/90 hover:bg-violet-500 text-white rounded-xl py-2.5 text-xs font-bold uppercase tracking-wider">
-                                    Agregar colaborador
+                        <div class="col-span-1 space-y-3">
+                            <div class="rounded-2xl border border-violet-400/30 bg-gradient-to-br from-violet-500/10 to-violet-600/10 p-5 backdrop-blur-sm">
+                                <h5 class="text-violet-200 text-sm font-bold mb-4">Nuevo</h5>
+                                <button id="toggle-collaborator-form-btn" type="button" onclick="toggleCreateCollaboratorForm()" class="w-full bg-violet-600 hover:bg-violet-500 text-white rounded-xl py-3 text-xs font-bold uppercase tracking-wider transition-colors">
+                                    Agregar
                                 </button>
-                                <form id="collaborator-form" onsubmit="createCollaborator(event)" class="hidden mt-3 space-y-3">
-                                    <input id="col-name" type="text" placeholder="Nombre" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60">
-                                    <input id="col-username" type="text" placeholder="Username" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60">
-                                    <input id="col-email" type="email" placeholder="Email" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60">
-                                    <input id="col-password" type="text" placeholder="Password inicial" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60">
-                                    <select id="col-role" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60">
+                                <form id="collaborator-form" onsubmit="createCollaborator(event)" class="hidden mt-4 space-y-3">
+                                    <input id="col-name" type="text" placeholder="Nombre" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                                    <input id="col-username" type="text" placeholder="Username" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                                    <input id="col-email" type="email" placeholder="Email" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                                    <input id="col-password" type="text" placeholder="Password" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                                    <select id="col-role" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
                                         <option value="operador" class="bg-[#1a1c1e]">Operador</option>
                                         <option value="admin" class="bg-[#1a1c1e]">Admin</option>
                                     </select>
-                                    <button type="submit" class="w-full bg-violet-600 hover:bg-violet-500 text-white rounded-xl py-3 text-sm font-bold uppercase tracking-widest transition-colors">
-                                        Crear colaborador
+                                    <button type="submit" class="w-full bg-violet-600 hover:bg-violet-500 text-white rounded-lg py-2.5 text-xs font-bold uppercase tracking-wider transition-colors">
+                                        Crear
                                     </button>
                                 </form>
                                 <p id="collaborator-feedback" class="text-xs font-semibold mt-3 text-slate-300"></p>
                             </div>
-                            <div id="collaborator-edit-panel" class="hidden rounded-xl border border-violet-400/30 bg-violet-500/10 p-4">
-                                <h5 class="text-violet-200 text-xs font-bold uppercase tracking-widest mb-3">Editar colaborador</h5>
+                            <div id="collaborator-edit-panel" class="hidden rounded-2xl border border-violet-400/50 bg-gradient-to-br from-violet-500/15 to-violet-600/15 p-5 backdrop-blur-sm">
+                                <h5 class="text-violet-200 text-sm font-bold mb-3">Editar</h5>
                                 <form id="collaborator-edit-form" onsubmit="submitCollaboratorEdit(event)" class="space-y-2">
-                                    <input id="edit-col-name" type="text" placeholder="Nombre" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
-                                    <input id="edit-col-email" type="email" placeholder="Email" required class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
-                                    <select id="edit-col-role" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
+                                    <input id="edit-col-name" type="text" placeholder="Nombre" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-violet-400/60">
+                                    <input id="edit-col-email" type="email" placeholder="Email" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-violet-400/60">
+                                    <select id="edit-col-role" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-violet-400/60">
                                         <option value="operador" class="bg-[#1a1c1e]">Operador</option>
                                         <option value="admin" class="bg-[#1a1c1e]">Admin</option>
                                     </select>
-                                    <input id="edit-col-password" type="text" placeholder="Nueva password (opcional)" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
-                                    <div class="flex gap-2 pt-1">
-                                        <button type="submit" class="flex-1 bg-violet-600 hover:bg-violet-500 text-white rounded-xl py-2 text-xs font-bold uppercase tracking-wider">Guardar</button>
-                                        <button type="button" onclick="closeCollaboratorEdit()" class="flex-1 bg-white/10 hover:bg-white/20 text-slate-200 rounded-xl py-2 text-xs font-bold uppercase tracking-wider">Cancelar</button>
+                                    <input id="edit-col-password" type="text" placeholder="Password (opt)" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-violet-400/60">
+                                    <div class="flex gap-2 pt-2">
+                                        <button type="submit" class="flex-1 bg-violet-600 hover:bg-violet-500 text-white rounded-lg py-2 text-xs font-bold uppercase tracking-wider">Guardar</button>
+                                        <button type="button" onclick="closeCollaboratorEdit()" class="flex-1 bg-white/10 hover:bg-white/20 text-slate-200 rounded-lg py-2 text-xs font-bold uppercase tracking-wider">X</button>
                                     </div>
                                 </form>
                             </div>
@@ -358,57 +361,64 @@
                     </div>
                 </section>
 
-                <section class="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-                    <div class="flex items-center justify-between mb-4">
+                <!-- SECTION 2: Empresas -->
+                <section>
+                    <div class="flex items-center justify-between mb-6">
                         <div>
-                            <h4 class="text-white text-sm font-bold uppercase tracking-widest">📧 Empresas</h4>
+                            <h4 class="text-white text-lg font-bold tracking-tight">📧 Empresas</h4>
+                            <p class="text-slate-400 text-xs mt-1">Administra cuentas de correo conectadas</p>
                         </div>
-                        <button onclick="loadCompaniesAdmin()" class="px-3 py-2 rounded-lg bg-blue-500/20 border border-blue-400/30 text-blue-200 text-[10px] font-bold uppercase tracking-wider hover:bg-blue-500/30 transition-colors">
-                            Refrescar
+                        <button onclick="loadCompaniesAdmin()" class="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider transition-colors">
+                            ↻ Refrescar
                         </button>
                     </div>
-                    <div class="space-y-4">
-                        <div id="companies-list-admin" class="rounded-2xl border border-white/10 overflow-hidden"></div>
-                        <div class="rounded-xl border border-white/10 bg-white/[0.02] p-4">
-                            <h5 class="text-white text-xs font-bold uppercase tracking-widest mb-3">Nueva cuenta</h5>
-                            <button id="toggle-company-form-btn" type="button" onclick="toggleCreateCompanyForm()" class="w-full bg-blue-600/90 hover:bg-blue-500 text-white rounded-xl py-2.5 text-xs font-bold uppercase tracking-wider mb-3">
-                                Agregar empresa
-                            </button>
-                            <form id="company-form" onsubmit="createCompany(event)" class="hidden grid grid-cols-4 gap-3">
-                                <input id="cmp-nombre" type="text" placeholder="Nombre empresa" required class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60">
-                                <input id="cmp-alias" type="text" placeholder="Alias" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60">
-                                <input id="cmp-imap-host" type="text" placeholder="IMAP host" required class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60">
-                                <input id="cmp-imap-port" type="number" placeholder="IMAP port" value="993" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60">
-                                <input id="cmp-email-user" type="email" placeholder="Correo cuenta" required class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60">
-                                <input id="cmp-email-pass" type="text" placeholder="Password correo" required class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60">
-                                <input id="cmp-smtp-host" type="text" placeholder="SMTP host (opcional)" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60">
-                                <input id="cmp-smtp-port" type="number" placeholder="SMTP port" value="465" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60">
-                                <button type="submit" class="col-span-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-3 text-sm font-bold uppercase tracking-widest transition-colors">
-                                    Crear cuenta de empresa
-                                </button>
-                            </form>
-                            <p id="company-feedback" class="text-xs font-semibold mt-3 text-slate-300"></p>
+
+                    <div class="grid grid-cols-4 gap-4">
+                        <div class="col-span-3">
+                            <div id="companies-list-admin" class="grid gap-3"></div>
                         </div>
-                        <div id="company-edit-panel" class="hidden rounded-xl border border-blue-400/30 bg-blue-500/10 p-4">
-                            <h5 class="text-blue-200 text-xs font-bold uppercase tracking-widest mb-3">Editar cuenta empresa</h5>
-                            <form id="company-edit-form" onsubmit="submitCompanyEdit(event)" class="grid grid-cols-4 gap-2">
-                                <input id="edit-cmp-nombre" type="text" placeholder="Nombre empresa" required class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
-                                <input id="edit-cmp-alias" type="text" placeholder="Alias" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
-                                <input id="edit-cmp-imap-host" type="text" placeholder="IMAP host" required class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
-                                <input id="edit-cmp-imap-port" type="number" placeholder="IMAP port" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
-                                <input id="edit-cmp-email-user" type="email" placeholder="Correo cuenta" required class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
-                                <input id="edit-cmp-email-pass" type="text" placeholder="Nueva password (opcional)" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
-                                <input id="edit-cmp-smtp-host" type="text" placeholder="SMTP host" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
-                                <input id="edit-cmp-smtp-port" type="number" placeholder="SMTP port" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
-                                <label class="col-span-4 flex items-center gap-2 text-slate-300 text-xs font-semibold mt-1">
-                                    <input id="edit-cmp-activo" type="checkbox" class="accent-blue-500" checked>
-                                    Mantener cuenta activa
-                                </label>
-                                <div class="col-span-4 flex gap-2 pt-1">
-                                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-2 text-xs font-bold uppercase tracking-wider">Guardar</button>
-                                    <button type="button" onclick="closeCompanyEdit()" class="flex-1 bg-white/10 hover:bg-white/20 text-slate-200 rounded-xl py-2 text-xs font-bold uppercase tracking-wider">Cancelar</button>
-                                </div>
-                            </form>
+                        <div class="col-span-1 space-y-3">
+                            <div class="rounded-2xl border border-blue-400/30 bg-gradient-to-br from-blue-500/10 to-blue-600/10 p-5 backdrop-blur-sm">
+                                <h5 class="text-blue-200 text-sm font-bold mb-4">Nueva</h5>
+                                <button id="toggle-company-form-btn" type="button" onclick="toggleCreateCompanyForm()" class="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-3 text-xs font-bold uppercase tracking-wider mb-3 transition-colors">
+                                    Agregar
+                                </button>
+                                <form id="company-form" onsubmit="createCompany(event)" class="hidden space-y-2">
+                                    <input id="cmp-nombre" type="text" placeholder="Nombre" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                                    <input id="cmp-alias" type="text" placeholder="Alias" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                                    <input id="cmp-imap-host" type="text" placeholder="IMAP host" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                                    <input id="cmp-imap-port" type="number" placeholder="IMAP port" value="993" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                                    <input id="cmp-email-user" type="email" placeholder="Correo" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                                    <input id="cmp-email-pass" type="text" placeholder="Password" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                                    <input id="cmp-smtp-host" type="text" placeholder="SMTP host" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                                    <input id="cmp-smtp-port" type="number" placeholder="SMTP port" value="465" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2.5 text-xs font-bold uppercase tracking-wider transition-colors">
+                                        Crear
+                                    </button>
+                                </form>
+                                <p id="company-feedback" class="text-xs font-semibold mt-3 text-slate-300"></p>
+                            </div>
+                            <div id="company-edit-panel" class="hidden rounded-2xl border border-blue-400/50 bg-gradient-to-br from-blue-500/15 to-blue-600/15 p-5 backdrop-blur-sm">
+                                <h5 class="text-blue-200 text-sm font-bold mb-3">Editar</h5>
+                                <form id="company-edit-form" onsubmit="submitCompanyEdit(event)" class="space-y-2">
+                                    <input id="edit-cmp-nombre" type="text" placeholder="Nombre" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-blue-400/60">
+                                    <input id="edit-cmp-alias" type="text" placeholder="Alias" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-blue-400/60">
+                                    <input id="edit-cmp-imap-host" type="text" placeholder="IMAP host" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-blue-400/60">
+                                    <input id="edit-cmp-imap-port" type="number" placeholder="IMAP port" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-blue-400/60">
+                                    <input id="edit-cmp-email-user" type="email" placeholder="Correo" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-blue-400/60">
+                                    <input id="edit-cmp-email-pass" type="text" placeholder="Password (opt)" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-blue-400/60">
+                                    <input id="edit-cmp-smtp-host" type="text" placeholder="SMTP host" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-blue-400/60">
+                                    <input id="edit-cmp-smtp-port" type="number" placeholder="SMTP port" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-blue-400/60">
+                                    <label class="flex items-center gap-2 text-slate-300 text-xs font-semibold py-1">
+                                        <input id="edit-cmp-activo" type="checkbox" class="accent-blue-500" checked>
+                                        Activa
+                                    </label>
+                                    <div class="flex gap-2 pt-2">
+                                        <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2 text-xs font-bold uppercase tracking-wider">Guardar</button>
+                                        <button type="button" onclick="closeCompanyEdit()" class="flex-1 bg-white/10 hover:bg-white/20 text-slate-200 rounded-lg py-2 text-xs font-bold uppercase tracking-wider">X</button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -878,25 +888,19 @@
                     list.innerHTML = '<div class="p-4 text-slate-400 text-sm">No hay colaboradores registrados.</div>';
                     return;
                 }
-                list.innerHTML = `
-                    <div class="grid grid-cols-12 bg-white/5 text-[10px] font-bold uppercase tracking-widest text-slate-400 px-4 py-2 border-b border-white/10">
-                        <div class="col-span-3">Username</div>
-                        <div class="col-span-3">Nombre</div>
-                        <div class="col-span-3">Email</div>
-                        <div class="col-span-1">Rol</div>
-                        <div class="col-span-2 text-right">Acciones</div>
-                    </div>
-                ` + data.map(u => `
-                    <div class="grid grid-cols-12 px-4 py-3 border-b border-white/5 text-sm">
-                        <div class="col-span-3 text-white font-bold">${u.username}</div>
-                        <div class="col-span-3 text-slate-200">${u.nombre || '-'}</div>
-                        <div class="col-span-3 text-slate-300 truncate">${u.email || '-'}</div>
-                        <div class="col-span-1">
-                            <span class="px-2 py-1 rounded-full text-[10px] font-black uppercase ${u.rol === 'admin' ? 'bg-blue-500/20 text-blue-300 border border-blue-400/20' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/20'}">${u.rol}</span>
+                list.innerHTML = data.map(u => `
+                    <div class="rounded-2xl border border-violet-400/20 bg-gradient-to-br from-violet-500/5 to-violet-600/5 p-4 hover:border-violet-400/40 hover:bg-gradient-to-br hover:from-violet-500/10 hover:to-violet-600/10 transition-all cursor-pointer group">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex-1">
+                                <p class="text-white font-bold text-sm">${u.username}</p>
+                                <p class="text-slate-400 text-xs">${u.nombre || 'Sin nombre'}</p>
+                            </div>
+                            <span class="px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase ${u.rol === 'admin' ? 'bg-blue-500/30 text-blue-200 border border-blue-400/30' : 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/30'}">${u.rol}</span>
                         </div>
-                        <div class="col-span-2 text-right space-x-2">
-                            <button onclick="editCollaborator(${u.id})" class="px-2 py-1 rounded bg-white/10 text-[10px] font-bold uppercase text-slate-200 hover:bg-white/20">Editar</button>
-                            <button onclick="deleteCollaborator(${u.id}, '${u.username}')" class="px-2 py-1 rounded bg-red-500/20 text-[10px] font-bold uppercase text-red-200 hover:bg-red-500/30">Desactivar</button>
+                        <p class="text-slate-400 text-xs mb-4 truncate">${u.email || '-'}</p>
+                        <div class="flex gap-2">
+                            <button onclick="editCollaborator(${u.id})" class="flex-1 px-2 py-2 rounded-lg bg-violet-600/40 hover:bg-violet-600/60 text-violet-200 text-[10px] font-bold uppercase transition-colors">Editar</button>
+                            <button onclick="deleteCollaborator(${u.id}, '${u.username}')" class="flex-1 px-2 py-2 rounded-lg bg-red-500/40 hover:bg-red-500/60 text-red-200 text-[10px] font-bold uppercase transition-colors">Desactivar</button>
                         </div>
                     </div>
                 `).join('');
@@ -1032,27 +1036,22 @@
                     list.innerHTML = '<div class="p-4 text-slate-400 text-sm">No hay cuentas registradas.</div>';
                     return;
                 }
-                list.innerHTML = `
-                    <div class="grid grid-cols-12 bg-white/5 text-[10px] font-bold uppercase tracking-widest text-slate-400 px-4 py-2 border-b border-white/10">
-                        <div class="col-span-2">Empresa</div>
-                        <div class="col-span-2">Correo</div>
-                        <div class="col-span-2">IMAP</div>
-                        <div class="col-span-2">SMTP</div>
-                        <div class="col-span-1">Estado</div>
-                        <div class="col-span-3 text-right">Acciones</div>
-                    </div>
-                ` + data.map(c => `
-                    <div class="grid grid-cols-12 px-4 py-3 border-b border-white/5 text-sm">
-                        <div class="col-span-2 text-white font-bold truncate">${c.nombre}</div>
-                        <div class="col-span-2 text-slate-300 truncate">${c.email_user}</div>
-                        <div class="col-span-2 text-slate-300 truncate">${c.imap_host}:${c.imap_port}</div>
-                        <div class="col-span-2 text-slate-300 truncate">${c.smtp_host || '-'}:${c.smtp_port || '-'}</div>
-                        <div class="col-span-1">
-                            <span class="px-2 py-1 rounded-full text-[10px] font-black uppercase ${c.activo ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/20' : 'bg-red-500/20 text-red-300 border border-red-400/20'}">${c.activo ? 'activa' : 'inactiva'}</span>
+                list.innerHTML = data.map(c => `
+                    <div class="rounded-2xl border border-blue-400/20 bg-gradient-to-br from-blue-500/5 to-blue-600/5 p-4 hover:border-blue-400/40 hover:bg-gradient-to-br hover:from-blue-500/10 hover:to-blue-600/10 transition-all cursor-pointer group">
+                        <div class="flex items-start justify-between mb-2">
+                            <div class="flex-1">
+                                <p class="text-white font-bold text-sm">${c.nombre}</p>
+                                <p class="text-slate-400 text-xs">${c.email_user}</p>
+                            </div>
+                            <span class="px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase ${c.activo ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/30' : 'bg-red-500/30 text-red-200 border border-red-400/30'}">${c.activo ? 'Activa' : 'Inactiva'}</span>
                         </div>
-                        <div class="col-span-3 text-right space-x-2">
-                            <button onclick="editCompany(${c.id})" class="px-2 py-1 rounded bg-white/10 text-[10px] font-bold uppercase text-slate-200 hover:bg-white/20">Editar</button>
-                            <button onclick="deleteCompany(${c.id})" class="px-2 py-1 rounded bg-red-500/20 text-[10px] font-bold uppercase text-red-200 hover:bg-red-500/30">Desactivar</button>
+                        <div class="text-xs text-slate-400 space-y-1 mb-4 line-clamp-2">
+                            <p>🔌 ${c.imap_host}:${c.imap_port}</p>
+                            <p>📤 ${c.smtp_host || '-'}:${c.smtp_port || '-'}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="editCompany(${c.id})" class="flex-1 px-2 py-2 rounded-lg bg-blue-600/40 hover:bg-blue-600/60 text-blue-200 text-[10px] font-bold uppercase transition-colors">Editar</button>
+                            <button onclick="deleteCompany(${c.id})" class="flex-1 px-2 py-2 rounded-lg bg-red-500/40 hover:bg-red-500/60 text-red-200 text-[10px] font-bold uppercase transition-colors">Desactivar</button>
                         </div>
                     </div>
                 `).join('');
