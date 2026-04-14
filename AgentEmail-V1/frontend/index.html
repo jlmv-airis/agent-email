@@ -312,7 +312,7 @@
                             + nuevo
                         </button>
                     </div>
-                    <div id="collaborators-list" class="grid gap-2"></div>
+                    <div id="collaborators-list" class="grid grid-cols-3 gap-4"></div>
                 </section>
 
                 <!-- SECTION 2: Empresas -->
@@ -328,7 +328,7 @@
                             </button>
                         </div>
                     </div>
-                    <div id="companies-list-admin" class="grid gap-2"></div>
+                    <div id="companies-list-admin" class="grid grid-cols-3 gap-4"></div>
                 </section>
             </div>
 
@@ -886,33 +886,33 @@
         async function loadCollaborators() {
             const list = document.getElementById('collaborators-list');
             if (!list) return;
-            list.innerHTML = '<div class="p-4 text-slate-400 text-sm">Cargando colaboradores...</div>';
+            list.innerHTML = '<div class="col-span-3 p-4 text-slate-400 text-sm">Cargando colaboradores...</div>';
             try {
                 const res = await fetch(`${API_URL}/admin/colaboradores`, { headers: {'Authorization': 'Bearer ' + token} });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'No se pudieron cargar colaboradores');
                 if (!Array.isArray(data) || data.length === 0) {
-                    list.innerHTML = '<div class="p-4 text-slate-400 text-sm">No hay colaboradores registrados.</div>';
+                    list.innerHTML = '<div class="col-span-3 p-4 text-slate-400 text-sm">No hay colaboradores registrados.</div>';
                     return;
                 }
-                list.innerHTML = data.map(u => `
-                    <div class="rounded-2xl border border-violet-400/20 bg-gradient-to-br from-violet-500/5 to-violet-600/5 p-4 hover:border-violet-400/40 transition-all flex items-start justify-between group">
-                        <div class="flex-1">
-                            <p class="text-white font-bold text-sm">${u.username}</p>
-                            <p class="text-slate-400 text-xs">${u.nombre || 'Sin nombre'}</p>
-                            <div class="flex items-center gap-2 mt-2">
-                                <span class="text-xs text-slate-400">${u.email || '-'}</span>
-                                <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase ${u.rol === 'admin' ? 'bg-blue-500/30 text-blue-200' : 'bg-emerald-500/30 text-emerald-200'}">${u.rol}</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onclick="editCollaborator(${u.id})" class="p-2 rounded-lg bg-violet-600/40 hover:bg-violet-600/60 text-violet-200 transition-colors" title="Editar">✎</button>
-                            <button onclick="deleteCollaborator(${u.id}, '${u.username}')" class="p-2 rounded-lg bg-red-500/40 hover:bg-red-500/60 text-red-200 transition-colors" title="Desactivar">🗑</button>
+                list.innerHTML = data.map(u => {
+                    const initials = ((u.nombre || u.email || '').split(' ')[0] || 'U').substring(0, 2).toUpperCase();
+                    const avatarColor = u.rol === 'admin' ? 'from-blue-500 to-blue-600' : 'from-violet-500 to-violet-600';
+                    return `
+                    <div class="rounded-2xl border border-violet-400/20 bg-gradient-to-br from-violet-500/5 to-violet-600/5 p-4 hover:border-violet-400/40 transition-all flex flex-col items-center text-center group">
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-br ${avatarColor} flex items-center justify-center text-white font-bold text-lg mb-3 shadow-lg">${initials}</div>
+                        <p class="text-white font-bold text-sm line-clamp-1 w-full">${u.nombre || u.username}</p>
+                        <p class="text-slate-400 text-xs line-clamp-1 w-full mb-2">${u.email || '-'}</p>
+                        <span class="px-2 py-0.5 rounded text-[8px] font-bold uppercase mb-3 ${u.rol === 'admin' ? 'bg-blue-500/30 text-blue-200' : 'bg-emerald-500/30 text-emerald-200'}">${u.rol}</span>
+                        <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity w-full justify-center">
+                            <button onclick="editCollaborator(${u.id})" class="p-1.5 rounded-lg bg-violet-600/50 hover:bg-violet-600/70 text-violet-200 transition-colors text-sm" title="Editar">✎</button>
+                            <button onclick="deleteCollaborator(${u.id}, '${u.username}')" class="p-1.5 rounded-lg bg-red-500/50 hover:bg-red-500/70 text-red-200 transition-colors text-sm" title="Desactivar">🗑</button>
                         </div>
                     </div>
-                `).join('');
+                    `;
+                }).join('');
             } catch (e) {
-                list.innerHTML = `<div class="p-4 text-red-400 text-sm">${e.message}</div>`;
+                list.innerHTML = `<div class="col-span-3 p-4 text-red-400 text-sm">${e.message}</div>`;
             }
         }
 
@@ -1035,34 +1035,35 @@
         async function loadCompaniesAdmin() {
             const list = document.getElementById('companies-list-admin');
             if (!list) return;
-            list.innerHTML = '<div class="p-4 text-slate-400 text-sm">Cargando cuentas...</div>';
+            list.innerHTML = '<div class="col-span-3 p-4 text-slate-400 text-sm">Cargando cuentas...</div>';
             try {
                 const res = await fetch(`${API_URL}/admin/empresas`, { headers: {'Authorization': 'Bearer ' + token} });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'No se pudo cargar empresas');
                 adminCompanies = Array.isArray(data) ? data : [];
                 if (!Array.isArray(data) || data.length === 0) {
-                    list.innerHTML = '<div class="p-4 text-slate-400 text-sm">No hay cuentas registradas.</div>';
+                    list.innerHTML = '<div class="col-span-3 p-4 text-slate-400 text-sm">No hay cuentas registradas.</div>';
                     return;
                 }
-                list.innerHTML = data.map(c => `
-                    <div class="rounded-2xl border border-blue-400/20 bg-gradient-to-br from-blue-500/5 to-blue-600/5 p-4 hover:border-blue-400/40 transition-all flex items-start justify-between group">
-                        <div class="flex-1">
-                            <p class="text-white font-bold text-sm">${c.nombre}</p>
-                            <p class="text-slate-400 text-xs mt-1">${c.email_user}</p>
-                            <div class="flex items-center gap-2 mt-2">
-                                <span class="text-xs text-slate-400">🔌 ${c.imap_host}:${c.imap_port}</span>
-                                <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase ${c.activo ? 'bg-emerald-500/30 text-emerald-200' : 'bg-red-500/30 text-red-200'}">${c.activo ? 'Activa' : 'Inactiva'}</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onclick="editCompany(${c.id})" class="p-2 rounded-lg bg-blue-600/40 hover:bg-blue-600/60 text-blue-200 transition-colors" title="Editar">✎</button>
-                            <button onclick="deleteCompany(${c.id})" class="p-2 rounded-lg bg-red-500/40 hover:bg-red-500/60 text-red-200 transition-colors" title="Desactivar">🗑</button>
+                list.innerHTML = data.map(c => {
+                    const initials = ((c.nombre || c.alias || '').substring(0, 2) || 'CO').toUpperCase();
+                    const statusColor = c.activo ? 'from-emerald-500 to-emerald-600' : 'from-slate-500 to-slate-600';
+                    return `
+                    <div class="rounded-2xl border border-blue-400/20 bg-gradient-to-br from-blue-500/5 to-blue-600/5 p-4 hover:border-blue-400/40 transition-all flex flex-col items-center text-center group">
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-br ${statusColor} flex items-center justify-center text-white font-bold text-lg mb-3 shadow-lg">${initials}</div>
+                        <p class="text-white font-bold text-sm line-clamp-1 w-full">${c.nombre}</p>
+                        <p class="text-slate-400 text-xs line-clamp-1 w-full mb-2">${c.alias ? c.alias : c.email_user}</p>
+                        <p class="text-slate-500 text-[10px] line-clamp-1 w-full mb-3">🔌 ${c.imap_host}</p>
+                        <span class="px-2 py-0.5 rounded text-[8px] font-bold uppercase mb-3 ${c.activo ? 'bg-emerald-500/30 text-emerald-200' : 'bg-red-500/30 text-red-200'}">${c.activo ? 'Activa' : 'Inactiva'}</span>
+                        <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity w-full justify-center">
+                            <button onclick="editCompany(${c.id})" class="p-1.5 rounded-lg bg-blue-600/50 hover:bg-blue-600/70 text-blue-200 transition-colors text-sm" title="Editar">✎</button>
+                            <button onclick="deleteCompany(${c.id})" class="p-1.5 rounded-lg bg-red-500/50 hover:bg-red-500/70 text-red-200 transition-colors text-sm" title="Desactivar">🗑</button>
                         </div>
                     </div>
-                `).join('');
+                    `;
+                }).join('');
             } catch (e) {
-                list.innerHTML = `<div class="p-4 text-red-400 text-sm">${e.message}</div>`;
+                list.innerHTML = `<div class="col-span-3 p-4 text-red-400 text-sm">${e.message}</div>`;
             }
         }
 
