@@ -906,7 +906,7 @@
                                 <p class="text-white font-bold text-sm leading-tight line-clamp-1">${u.nombre || u.username}</p>
                                 <button onclick="editCollaborator(${u.id})" class="w-8 h-8 p-0 flex items-center justify-center rounded-lg bg-violet-600/50 hover:bg-violet-600/70 text-violet-200 transition-colors flex-shrink-0" title="Editar">✎</button>
                             </div>
-                            <div class="flex items-center justify-between gap-5">
+                            <div class="flex items-center justify-between gap-3">
                                 <p class="text-slate-400 text-sm leading-tight line-clamp-1">${u.email || '-'}</p>
                                 <button onclick="deleteCollaborator(${u.id}, '${u.username}')" class="w-8 h-8 p-0 flex items-center justify-center rounded-lg bg-red-500/50 hover:bg-red-500/70 text-red-200 transition-colors flex-shrink-0" title="Desactivar">🗑</button>
                             </div>
@@ -1062,7 +1062,7 @@
                                 <p class="text-white font-bold text-sm leading-tight line-clamp-1">${c.nombre}</p>
                                 <button onclick="editCompany(${c.id})" class="w-8 h-8 p-0 flex items-center justify-center rounded-lg bg-blue-600/50 hover:bg-blue-600/70 text-blue-200 transition-colors flex-shrink-0" title="Editar">✎</button>
                             </div>
-                            <div class="flex items-center justify-between gap-5">
+                            <div class="flex items-center justify-between gap-3">
                                 <p class="text-slate-400 text-sm leading-tight line-clamp-1">${c.alias ? c.alias : c.email_user}</p>
                                 <button onclick="deleteCompany(${c.id})" class="w-8 h-8 p-0 flex items-center justify-center rounded-lg bg-red-500/50 hover:bg-red-500/70 text-red-200 transition-colors flex-shrink-0" title="Desactivar">🗑</button>
                             </div>
