@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Email AIRIS - Command Center Pro</title>
+    <link rel="icon" href="data:,">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            /* Spark Dark Theme Palette */
+            --spark-bg: #1a1c1e;
+            --spark-sidebar: #121416;
+            --spark-card: #25282c;
+            --spark-card-hover: #2e3238;
+            --spark-border: rgba(255,255,255,0.06);
+            --spark-text-main: #e1e1e6;
+            --spark-text-dim: #9ba1a6;
+            --spark-accent: #3478f6; /* Azul Spark */
+            --spark-accent-soft: rgba(52, 120, 246, 0.1);
+            
+            /* Inspector Light Mode (Spark behavior) */
+            --ins-bg: #ffffff;
+            --ins-text: #1d1d1f;
+            --ins-border: rgba(0,0,0,0.08);
+        }
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--spark-bg); 
+            color: var(--spark-text-main); 
+            overflow: hidden; 
+            height: 100vh; 
+            display: flex; 
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .apple-sidebar { 
+            width: 320px; 
+            background: var(--spark-sidebar); 
+            border-right: 1px solid var(--spark-border); 
+            display: flex; 
+            flex-direction: column; 
+            z-index: 40; 
+            flex-shrink: 0; 
+            position: relative;
+        }
+        
+        .sidebar-resizer { 
+            position: absolute; 
+            right: -3px; 
+            top: 0; 
+            bottom: 0; 
+            width: 6px; 
+            cursor: col-resize; 
+            z-index: 50; 
+            transition: background 0.2s;
+        }
+        .sidebar-resizer:hover { background: var(--spark-accent); opacity: 0.5; }
+
+        .sidebar-item { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 12px 20px; 
+            border-radius: 12px; 
+            margin: 2px 16px; 
+            transition: all 0.2s ease; 
+            cursor: pointer; 
+            color: var(--spark-text-dim);
+            font-weight: 600;
+        }
+        .sidebar-item:hover { background: rgba(255,255,255,0.04); color: var(--spark-text-main); }
+        .sidebar-item.active { background: var(--spark-accent-soft); color: var(--spark-accent); }
+        
+        .sidebar-subitem {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 20px 8px 44px;
+            border-radius: 10px;
+            margin: 1px 16px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            color: var(--spark-text-dim);
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .sidebar-subitem:hover { background: rgba(255,255,255,0.02); color: var(--spark-text-main); }
+        .sidebar-subitem.active { color: var(--spark-accent); font-weight: 700; background: rgba(52, 120, 246, 0.05); }
+        
+        .company-badge {
+            background: #2e3238; color: var(--spark-text-dim); min-width: 20px; height: 20px; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; padding: 0 5px;
+        }
+        .sidebar-item.active .company-badge { background: var(--spark-accent); color: white; }
+
+        .main-stage { flex: 1; display: flex; flex-direction: column; overflow: hidden; background-color: var(--spark-bg); }
+        .glass-header { 
+            background: var(--spark-bg);
+            border-bottom: 1px solid var(--spark-border); padding: 0 40px; height: 80px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .email-card { 
+            background: var(--spark-card); border-radius: 16px; transition: all 0.2s ease;
+            margin-bottom: 8px; display: grid; grid-template-columns: 50px 60px 180px 1fr 120px 120px 80px 140px;
+            align-items: center; padding: 14px 20px; border: 1px solid var(--spark-border);
+            position: relative;
+        }
+        .email-card:hover { background: var(--spark-card-hover); transform: translateY(-1px); border-color: rgba(255,255,255,0.1); }
+        .email-card.read { opacity: 0.6; }
+        
+        .avatar-circle {
+            width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 13px; color: white; text-transform: uppercase;
+        }
+
+        .header-label { font-size: 10px; font-weight: 700; color: var(--spark-text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+        .email-card-header {
+            display: grid; grid-template-columns: 50px 60px 180px 1fr 120px 120px 80px 140px; align-items: center;
+            padding: 10px 20px; margin-bottom: 4px;
+        }
+
+        .dash-card {
+            background: var(--spark-card); border: 1px solid var(--spark-border); border-radius: 20px; padding: 20px;
+            transition: all 0.3s ease; display: flex; flex-direction: column; gap: 8px;
+        }
+        .dash-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+
+        .inspector-overlay { 
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); 
+            z-index: 200; align-items: center; justify-content: center;
+        }
+        .inspector-window { 
+            width: 950px; height: 85vh; background: var(--ins-bg);
+            border-radius: 24px; border: 1px solid var(--ins-border); box-shadow: 0 40px 100px rgba(0,0,0,0.4);
+            display: flex; flex-direction: column; overflow: hidden; color: var(--ins-text);
+        }
+        .bubble-apple { max-width: 90%; padding: 20px; border-radius: 16px; font-size: 15px; line-height: 1.6; margin-bottom: 12px; }
+        .bubble-in { background: #f2f2f7; color: #1d1d1f; border: 1px solid rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body>
+
+    <!-- MAIN APP CONTENT -->
+    <div id="app" class="flex w-full h-full">
+        <aside class="apple-sidebar" id="sidebar">
+            <div class="sidebar-resizer" id="resizer"></div>
+            <div style="padding: 32px 32px 20px 32px;">
+                <h1 class="text-xl font-extrabold tracking-tight text-white italic">Agent Email <span class="text-blue-500">AIRIS</span></h1>
+                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Command Center Pro</p>
+            </div>
+            <nav class="flex-1 overflow-y-auto custom-scrollbar">
+                <div id="company-list-sidebar"></div>
+            </nav>
+            <div class="p-6 space-y-3">
+                <div id="user-profile-card" onclick="confirmLogout()" class="mx-1 p-3 rounded-xl bg-[#2e3238] border border-white/5 hover:bg-[#383d44] transition-all cursor-pointer flex items-center gap-3 group">
+                    <div id="user-avatar-small" class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white text-[12px] font-bold shadow-sm transition-transform group-hover:scale-105">
+                        ??
+                    </div>
+                    <div class="flex-1 overflow-hidden">
+                        <p id="user-name" class="text-[12px] font-bold text-white truncate">Cargando...</p>
+                        <p class="text-[9px] font-medium text-slate-400">Sesión activa</p>
+                    </div>
+                    <div class="text-slate-500 group-hover:text-red-400 transition-colors px-1">
+                        <span class="text-[9px] font-bold uppercase tracking-tighter">Salir</span>
+                    </div>
+                </div>
+                
+                <button class="w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-white/5 border border-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all group">
+                    <div class="flex items-center gap-3">
+                        <span class="text-[16px] group-hover:rotate-45 transition-transform">⚙️</span>
+                        <span class="text-[11px] font-bold uppercase tracking-widest">Configuración</span>
+                    </div>
+                </button>
+            </div>
+        </aside>
+
+        <div class="main-stage">
+            <header class="glass-header">
+                <h2 id="current-view-title" class="text-lg font-bold tracking-tight text-white">Bandeja General</h2>
+                <div class="flex items-center gap-6">
+                    <button onclick="syncAll()" id="sync-btn" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-600 text-white hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20">
+                        <span id="sync-icon" class="text-xs">🔄</span>
+                        <span class="text-[11px] font-bold uppercase tracking-widest">Sincronizar</span>
+                    </button>
+                    <input type="text" placeholder="Buscar hilos... ( / )" class="bg-white/5 border border-white/5 rounded-full px-10 py-2.5 text-sm outline-none w-72 focus:bg-white/10 focus:border-white/10 text-white transition-all">
+                </div>
+            </header>
+            <main class="flex-1 overflow-y-auto custom-scrollbar px-10 py-8">
+                <div id="admin-dashboard" class="grid grid-cols-4 gap-4 mb-8">
+                    <div class="dash-card">
+                        <div class="dash-icon bg-blue-500/10 text-blue-400">Σ</div>
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Total Hilos</p>
+                        <p id="dash-total" class="text-2xl font-bold text-white">0</p>
+                    </div>
+                    <div class="dash-card">
+                        <div class="dash-icon bg-amber-500/10 text-amber-400">!</div>
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Pendientes</p>
+                        <p id="dash-pending" class="text-2xl font-bold text-white">0</p>
+                    </div>
+                    <div class="dash-card">
+                        <div class="dash-icon bg-indigo-500/10 text-indigo-400">👤</div>
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Asignados</p>
+                        <p id="dash-assigned" class="text-2xl font-bold text-white">0</p>
+                    </div>
+                    <div class="dash-card">
+                        <div class="dash-icon bg-emerald-500/10 text-emerald-400">✓</div>
+                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Resueltos</p>
+                        <p id="dash-resolved" class="text-2xl font-bold text-white">0%</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4 mb-8">
+                    <div class="dash-card col-span-2 overflow-hidden">
+                        <div class="flex items-center justify-between mb-2">
+                            <div>
+                                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Analítica</p>
+                                <h3 class="text-lg font-bold text-white">Tendencia</h3>
+                            </div>
+                        </div>
+                        <div class="h-[240px] w-full"><canvas id="trendChart"></canvas></div>
+                    </div>
+                    <div class="dash-card overflow-hidden">
+                        <div class="mb-2">
+                            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Distribución</p>
+                            <h3 class="text-lg font-bold text-white">Empresas</h3>
+                        </div>
+                        <div class="h-[240px] w-full flex items-center justify-center"><canvas id="companyChart"></canvas></div>
+                    </div>
+                </div>
+
+                <div id="thread-list"></div>
+            </main>
+        </div>
+    </div>
+
+    <!-- INSPECTOR LIGHT MODE -->
+    <div id="inspector-overlay" class="inspector-overlay">
+        <div class="inspector-window">
+            <header class="px-10 py-6 border-b flex justify-between items-start bg-white">
+                <div class="flex items-start gap-4">
+                    <div id="ins-avatar-large" class="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-md"></div>
+                    <div>
+                        <h3 id="ins-subject" class="text-lg font-extrabold text-slate-900 leading-tight"></h3>
+                        <p class="text-[13px] text-slate-500 mt-1">De: <span id="ins-from" class="font-semibold text-blue-600"></span></p>
+                    </div>
+                </div>
+                <button onclick="closeInspector()" class="text-slate-400 hover:text-slate-900 text-xl font-light p-1">✕</button>
+            </header>
+            <div id="ins-body" class="flex-1 overflow-y-auto p-10 custom-scrollbar space-y-6 bg-[#f9f9fb]"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+        let hilos = [], operators = [], empresas = [], activeCompany = null, activeFolder = 'INBOX', currentTid = null;
+        let trendChart = null, companyChart = null;
+        let token = localStorage.getItem('token');
+
+        const getAvatarColor = (n) => { const colors = ['#FF9500', '#FF2D55', '#5856D6', '#34C759', '#007AFF', '#AF52DE']; return colors[Math.abs(n.length) % colors.length]; };
+
+        function setTheme(t) { 
+            document.body.classList.toggle('dark-mode', t === 'dark'); 
+            localStorage.setItem('theme', t); 
+            if(trendChart) updateChartTheme();
+        }
+
+        function updateChartTheme() {
+            const isDark = document.body.classList.contains('dark-mode');
+            const color = isDark ? '#ffffff' : '#1d1d1f';
+            [trendChart, companyChart].forEach(chart => {
+                if(!chart) return;
+                if(chart.options.scales && chart.options.scales.x) {
+                    chart.options.scales.x.ticks.color = color;
+                    chart.options.scales.y.ticks.color = color;
+                }
+                chart.options.plugins.legend.labels.color = color;
+                chart.update();
+            });
+        }
+
+        window.onload = async () => { 
+            setTheme(localStorage.getItem('theme') || 'light');
+            if (token) {
+                await verifyToken();
+            } else {
+                window.location.replace('login.html');
+            }
+        };
+
+        async function verifyToken() {
+            try {
+                const res = await fetch(API_URL + '/auth/verify', { headers: {'Authorization': 'Bearer ' + token} });
+                if (!res.ok) { logout(); return; }
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const name = user.nombre || user.email || 'Usuario';
+                document.getElementById('user-name').textContent = name;
+                document.getElementById('user-avatar-small').textContent = name.substring(0, 2).toUpperCase();
+                initApp();
+            } catch(e) { logout(); }
+        }
+
+        function confirmLogout() {
+            if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+                logout();
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token'); localStorage.removeItem('user'); token = null;
+            window.location.replace('login.html');
+        }
+
+        async function initApp() {
+            initCharts();
+            setupKeyboardShortcuts();
+            setupResizer();
+            await loadEmpresas(); 
+            await loadData(); 
+            await loadOperators();
+            setInterval(loadData, 30000);
+        }
+
+        function setupResizer() {
+            const sidebar = document.getElementById('sidebar');
+            const resizer = document.getElementById('resizer');
+            let isResizing = false;
+
+            resizer.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+                const newWidth = e.clientX;
+                if (newWidth > 200 && newWidth < 600) {
+                    sidebar.style.width = `${newWidth}px`;
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isResizing) {
+                    isResizing = false;
+                    document.body.style.cursor = 'default';
+                    document.body.style.userSelect = 'auto';
+                }
+            });
+        }
+
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+                    if (e.key === 'Escape') document.activeElement.blur();
+                    return;
+                }
+                switch (e.key) {
+                    case 'j': navigateThreads(1); break;
+                    case 'k': navigateThreads(-1); break;
+                    case 'o':
+                    case 'Enter': if (currentSelectedIdx !== -1) { const rows = document.querySelectorAll('.email-card'); if (rows[currentSelectedIdx]) rows[currentSelectedIdx].click(); } break;
+                    case 'Escape': closeInspector(); break;
+                    case '/': e.preventDefault(); document.querySelector('input[placeholder*="Buscar"]').focus(); break;
+                }
+            });
+        }
+
+        let currentSelectedIdx = -1;
+        function navigateThreads(direction) {
+            const rows = document.querySelectorAll('.email-card');
+            if (rows.length === 0) return;
+            if (currentSelectedIdx !== -1) rows[currentSelectedIdx].classList.remove('ring-2', 'ring-blue-500', 'ring-inset');
+            currentSelectedIdx += direction;
+            if (currentSelectedIdx < 0) currentSelectedIdx = 0;
+            if (currentSelectedIdx >= rows.length) currentSelectedIdx = rows.length - 1;
+            const selected = rows[currentSelectedIdx];
+            selected.classList.add('ring-2', 'ring-blue-500', 'ring-inset');
+            selected.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+
+        function initCharts() {
+            const isDark = document.body.classList.contains('dark-mode');
+            const textColor = isDark ? '#ffffff' : '#1d1d1f';
+            const ctxTrend = document.getElementById('trendChart').getContext('2d');
+            trendChart = new Chart(ctxTrend, {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'Tickets Recibidos', data: [], borderColor: '#007aff', backgroundColor: 'rgba(0, 122, 255, 0.1)', borderWidth: 3, tension: 0.4, fill: true, pointBackgroundColor: '#007aff', pointRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '700' } } } }, scales: { x: { grid: { display: false }, ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '600' } } }, y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '600' }, stepSize: 1 } } } }
+            });
+            const ctxCompany = document.getElementById('companyChart').getContext('2d');
+            companyChart = new Chart(ctxCompany, {
+                type: 'doughnut',
+                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#FF9500', '#FF2D55', '#5856D6', '#34C759', '#007AFF', '#AF52DE', '#FFCC00'], borderWidth: 0, hoverOffset: 10 }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '700', size: 10 }, usePointStyle: true, padding: 20 } } } }
+            });
+        }
+
+        async function loadData() {
+            try { 
+                const res = await fetch(`${API_URL}/hilos`, { headers: {'Authorization': 'Bearer ' + token} });
+                hilos = await res.json(); 
+            } catch (e) { hilos = []; }
+            renderSidebar(); renderThreads(); updateStats(); updateCharts();
+        }
+
+        function updateCharts() {
+            if(!trendChart || !companyChart) return;
+            const last7Days = [];
+            for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); last7Days.push(d.toISOString().split('T')[0]); }
+            trendChart.data.labels = last7Days.map(date => { const d = new Date(date + 'T00:00:00'); return d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' }); });
+            trendChart.data.datasets[0].data = last7Days.map(date => hilos.filter(h => h.fecha && h.fecha.startsWith(date)).length);
+            trendChart.update();
+            const companyCounts = {};
+            hilos.forEach(h => { const company = h.cuenta_empresa || 'System'; companyCounts[company] = (companyCounts[company] || 0) + 1; });
+            companyChart.data.labels = Object.keys(companyCounts);
+            companyChart.data.datasets[0].data = Object.values(companyCounts);
+            companyChart.update();
+        }
+
+        function updateStats() {
+            const total = hilos.length, pending = hilos.filter(h => h.estado_ticket === 'PENDIENTE').length;
+            const assigned = hilos.filter(h => h.estado_ticket === 'ASIGNADO').length;
+            const resolvedCount = hilos.filter(h => h.estado_ticket === 'CERRADO').length;
+            document.getElementById('dash-total').innerText = total;
+            document.getElementById('dash-pending').innerText = pending;
+            document.getElementById('dash-assigned').innerText = assigned;
+            document.getElementById('dash-resolved').innerText = total > 0 ? Math.round((resolvedCount / total) * 100) + '%' : '0%';
+        }
+
+        function renderSidebar() {
+            const container = document.getElementById('company-list-sidebar');
+            if(!container) return;
+            let html = `
+                <div class="sidebar-item ${activeCompany === null ? 'active' : ''}" onclick="selectCompany(null)">
+                    <div class="flex items-center gap-3"><span>📬</span><span class="font-extrabold text-sm uppercase">Bandeja General</span></div>
+                    <span class="company-badge">${hilos.length}</span>
+                </div>
+                <div style="padding: 24px 0 12px 40px;"><p class="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Mis Cuentas</p></div>
+            `;
+            html += empresas.map(e => {
+                const count = hilos.filter(h => h.cuenta_empresa === e.nombre).length;
+                const isActive = activeCompany === e.nombre;
+                let subHtml = '';
+                if (isActive) {
+                    const folders = [
+                        { id: 'INBOX', label: 'Entrada', icon: '📥' },
+                        { id: 'SENT', label: 'Enviados', icon: '📤' },
+                        { id: 'TRASH', label: 'Eliminados', icon: '🗑️' },
+                        { id: 'SPAM', label: 'Spam', icon: '🚫' }
+                    ];
+                    subHtml = folders.map(f => {
+                        const fCount = hilos.filter(h => h.cuenta_empresa === e.nombre && (h.folder || 'INBOX') === f.id).length;
+                        return `
+                        <div class="sidebar-subitem ${activeFolder === f.id ? 'active' : ''}" onclick="selectFolder('${f.id}')">
+                            <div class="flex items-center gap-2"><span>${f.icon}</span><span>${f.label}</span></div>
+                            <span>${fCount}</span>
+                        </div>`;
+                    }).join('');
+                }
+                return `
+                <div class="sidebar-item ${isActive ? 'active' : ''}" onclick="selectCompany('${e.nombre}')">
+                    <span class="truncate font-extrabold text-sm">${e.nombre}</span>
+                    <span class="company-badge">${count}</span>
+                </div>
+                ${subHtml}`;
+            }).join('');
+            container.innerHTML = html;
+        }
+
+        function selectCompany(c) { 
+            activeCompany = c; 
+            activeFolder = 'INBOX';
+            document.getElementById('current-view-title').innerText = c ? c : 'Bandeja General'; 
+            renderSidebar(); 
+            renderThreads(); 
+        }
+
+        function selectFolder(f) {
+            activeFolder = f;
+            renderSidebar();
+            renderThreads();
+        }
+
+        function toggleSubmenu(c) { selectCompany(c); }
+
+        function renderThreads() {
+            const container = document.getElementById('thread-list');
+            if(!container) return;
+            let filtered = hilos;
+            if (activeCompany) {
+                filtered = hilos.filter(h => h.cuenta_empresa === activeCompany && (h.folder || 'INBOX') === activeFolder);
+            }
+            container.innerHTML = `
+                <div class="email-card-header">
+                    <div class="flex items-center px-4"><input type="checkbox" class="w-4 h-4 rounded border-white/10 bg-white/5"></div>
+                    <div class="header-label text-center">Info</div>
+                    <div class="header-label px-4 text-left">Empresa</div>
+                    <div class="header-label px-8 text-left">Asunto / Mensaje</div>
+                    <div class="header-label px-4">Estado</div>
+                    <div class="header-label px-4">Asignación</div>
+                    <div class="header-label text-center">Adj.</div>
+                    <div class="header-label text-right pr-4">Fecha</div>
+                </div>` + filtered.map(m => {
+                const cfg = {'PENDIENTE': { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' }, 'ASIGNADO': { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' }, 'CERRADO': { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' }}[m.estado_ticket] || { bg: 'bg-slate-500/10', text: 'text-slate-400', border: 'border-slate-500/20' };
+                return `
+                <div class="email-card ${m.leido ? 'read' : ''} group" onclick="openInspector('${m.thread_id}')">
+                    <div class="flex items-center px-4" onclick="event.stopPropagation()"><input type="checkbox" class="w-4 h-4 rounded border-white/10 bg-white/5"></div>
+                    <div class="flex justify-center"><div class="avatar-circle" style="background:${getAvatarColor(m.remitente)}">${m.remitente[0].toUpperCase()}</div></div>
+                    <div class="px-4"><p class="text-[11px] font-bold text-white uppercase truncate tracking-wider">${m.cuenta_empresa || 'System'}</p></div>
+                    <div class="px-8 border-l border-white/5 overflow-hidden text-left">
+                        <p class="text-[14px] font-bold text-white truncate mb-0.5">${m.asunto || '(Sin Asunto)'}</p>
+                        <p class="text-[12px] font-medium text-slate-400 truncate">${(m.mensaje || '').replace(/<[^>]*>?/gm, '')}</p>
+                    </div>
+                    <div class="px-4"><span class="px-3 py-1.5 rounded-full text-[9px] font-black uppercase ${cfg.bg} ${cfg.text} border ${cfg.border}">${m.estado_ticket}</span></div>
+                    <div class="px-4"><select onclick="event.stopPropagation()" class="w-full bg-transparent text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:text-white transition-colors"><option value="" class="bg-[#1a1c1e]">--</option>${operators.map(op => `<option value="${op.username}" class="bg-[#1a1c1e]" ${m.asignado_a === op.username ? 'selected' : ''}>${op.username.toUpperCase()}</option>`).join('')}</select></div>
+                    <div class="text-center text-slate-500">${m.adjuntos ? '📎' : '—'}</div>
+                    <div class="text-right pl-4 text-[11px] font-bold text-slate-300">${new Date(m.fecha).toLocaleDateString()}</div>
+                </div>`;
+            }).join('');
+        }
+
+        async function syncAll() {
+            const btn = document.getElementById('sync-btn'), icon = document.getElementById('sync-icon');
+            btn.disabled = true; btn.classList.add('opacity-50'); icon.classList.add('animate-spin');
+            try { await fetch(`${API_URL}/imap/sync-all`, { method: 'POST', headers: {'Authorization': 'Bearer ' + token} }); await loadData(); } catch (e) {} finally { btn.disabled = false; btn.classList.remove('opacity-50'); icon.classList.remove('animate-spin'); }
+        }
+
+        function openInspector(tid) { currentTid = tid; const m = hilos.find(h => h.thread_id === tid); if (!m) return; document.getElementById('inspector-overlay').style.display = 'flex'; document.getElementById('ins-subject').innerText = m.asunto; document.getElementById('ins-from').innerText = m.remitente; document.getElementById('ins-body').innerHTML = `<div class="bubble-apple bubble-in">${m.mensaje}</div>`; }
+        function closeInspector() { document.getElementById('inspector-overlay').style.display = 'none'; }
+        async function loadOperators() { const res = await fetch(`${API_URL}/operadores`, { headers: {'Authorization': 'Bearer ' + token} }); operators = await res.json(); renderThreads(); }
+        async function loadEmpresas() { const res = await fetch(`${API_URL}/empresas`, { headers: {'Authorization': 'Bearer ' + token} }); empresas = await res.json(); renderSidebar(); }
+    </script>
+</body>
+</html>
