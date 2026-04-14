@@ -73,6 +73,15 @@ def token_required(f):
         return f(*args, **kwargs)
     return decorated
 
+def admin_required(f):
+    @wraps(f)
+    @token_required
+    def decorated(*args, **kwargs):
+        if request.user.get('rol') != 'admin':
+            return jsonify({'error': 'Acceso solo para administradores'}), 403
+        return f(*args, **kwargs)
+    return decorated
+
 app = Flask(__name__, static_folder=FRONTEND_DIR)
 CORS(app)
 
@@ -145,6 +154,25 @@ def init_db():
             fecha_resuelto TIMESTAMP,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
+    ''')
+
+    # Candado de integridad: solo permitir inserciones de hilos para cuentas activas registradas.
+    cur.execute('''
+        CREATE TRIGGER IF NOT EXISTS trg_hilos_only_active_company_email
+        BEFORE INSERT ON hilos
+        FOR EACH ROW
+        BEGIN
+            SELECT
+                CASE
+                    WHEN (
+                        SELECT COUNT(1)
+                        FROM empresas
+                        WHERE email_user = NEW.correo_empresa
+                          AND activo = 1
+                    ) = 0
+                    THEN RAISE(ABORT, 'correo_empresa no registrado o inactivo')
+                END;
+        END;
     ''')
     
     # Migración rápida: Añadir columna folder si no existe
@@ -242,6 +270,42 @@ def auth_verify():
         return jsonify({'error': 'Token inválido'}), 401
     return jsonify({'valid': True, 'user': user_data})
 
+@app.route('/api/stats', methods=['GET'])
+def get_stats():
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Total hoy (24h)
+        hace_24h = (datetime.now() - timedelta(hours=24)).strftime('%Y-%m-%d %H:%M:%S')
+        cur.execute("SELECT COUNT(*) FROM hilos WHERE fecha >= ?", (hace_24h,))
+        total_hoy = cur.fetchone()[0]
+        
+        # Pendientes
+        cur.execute("SELECT COUNT(*) FROM hilos WHERE estado_ticket = 'PENDIENTE'")
+        pendientes = cur.fetchone()[0]
+        
+        # Resueltos (hoy)
+        hoy_str = datetime.now().strftime('%Y-%m-%d')
+        cur.execute("SELECT COUNT(*) FROM hilos WHERE estado_ticket = 'CERRADO' AND (fecha_resuelto LIKE ? OR created_at LIKE ?)", (hoy_str+'%', hoy_str+'%'))
+        resueltos = cur.fetchone()[0]
+        
+        # Asignados
+        cur.execute("SELECT COUNT(*) FROM hilos WHERE estado_ticket = 'ASIGNADO'")
+        asignados = cur.fetchone()[0]
+
+        cur.close()
+        conn.close()
+        
+        return jsonify({
+            'total_hoy': total_hoy,
+            'pendientes': pendientes,
+            'resueltos_hoy': resueltos,
+            'asignados': asignados
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/hilos', methods=['GET'])
 def get_hilos():
     try:
@@ -252,6 +316,59 @@ def get_hilos():
         cur.close()
         conn.close()
         return jsonify(hilos)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/hilos/update', methods=['PUT'])
+@token_required
+def update_hilo():
+    try:
+        data = request.json
+        tid = data.get('thread_id')
+        estado = data.get('estado')
+        asignado_a = data.get('asignado_a')
+        
+        if not tid:
+            return jsonify({'error': 'thread_id requerido'}), 400
+            
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        updates = []
+        params = []
+        
+        if estado:
+            updates.append("estado_ticket = ?")
+            params.append(estado)
+            if estado == 'CERRADO':
+                updates.append("fecha_resuelto = ?")
+                params.append(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        
+        if asignado_a is not None:
+            if asignado_a != "":
+                cur.execute(
+                    "SELECT id FROM usuarios WHERE username = ? AND activo = 1 LIMIT 1",
+                    (asignado_a,)
+                )
+                if not cur.fetchone():
+                    return jsonify({'error': 'Operador no valido o inactivo'}), 400
+            updates.append("asignado_a = ?")
+            params.append(asignado_a)
+            if asignado_a != "":
+                updates.append("estado_ticket = 'ASIGNADO'")
+        
+        if not updates:
+            return jsonify({'error': 'Nada que actualizar'}), 400
+            
+        params.append(tid)
+        query = f"UPDATE hilos SET {', '.join(updates)} WHERE thread_id = ?"
+        cur.execute(query, params)
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return jsonify({'status': 'ok', 'message': 'Ticket actualizado'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -271,11 +388,12 @@ def get_empresas():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/operadores', methods=['GET'])
+@token_required
 def get_operadores():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute('SELECT username, nombre, email FROM usuarios WHERE activo = 1')
+        cur.execute("SELECT username, nombre, email, rol FROM usuarios WHERE activo = 1 AND rol IN ('admin', 'operador') ORDER BY username")
         ops = [dict(row) for row in cur.fetchall()]
         cur.close()
         conn.close()
@@ -283,11 +401,339 @@ def get_operadores():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/admin/colaboradores', methods=['GET'])
+@admin_required
+def get_colaboradores():
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT id, username, nombre, email, rol, activo, created_at
+            FROM usuarios
+            WHERE rol IN ('admin', 'operador')
+            ORDER BY created_at DESC
+        """)
+        colaboradores = [dict(row) for row in cur.fetchall()]
+        cur.close()
+        conn.close()
+        return jsonify(colaboradores)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/colaboradores', methods=['POST'])
+@admin_required
+def create_colaborador():
+    try:
+        data = request.json or {}
+        username = (data.get('username') or '').strip().lower()
+        nombre = (data.get('nombre') or '').strip()
+        email = (data.get('email') or '').strip().lower()
+        password = data.get('password') or ''
+        rol = (data.get('rol') or 'operador').strip().lower()
+
+        if not username or not email or not password:
+            return jsonify({'error': 'username, email y password son obligatorios'}), 400
+        if rol not in ('operador', 'admin'):
+            return jsonify({'error': 'rol invalido'}), 400
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT id FROM usuarios WHERE username = ? LIMIT 1", (username,))
+        if cur.fetchone():
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'El username ya existe'}), 400
+        cur.execute("SELECT id FROM usuarios WHERE email = ? LIMIT 1", (email,))
+        if cur.fetchone():
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'El email ya esta registrado'}), 400
+
+        password_hash = generate_password_hash(password)
+        cur.execute("""
+            INSERT INTO usuarios (username, nombre, email, password_hash, rol, notas, activo)
+            VALUES (?, ?, ?, ?, ?, ?, 1)
+        """, (username, nombre or username, email, password_hash, rol, 'Creado desde panel admin'))
+        new_id = cur.lastrowid
+        conn.commit()
+
+        cur.execute("SELECT id, username, nombre, email, rol, activo, created_at FROM usuarios WHERE id = ?", (new_id,))
+        created = dict(cur.fetchone())
+        cur.close()
+        conn.close()
+        return jsonify({'status': 'ok', 'colaborador': created}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/colaboradores/<int:user_id>', methods=['PUT'])
+@admin_required
+def update_colaborador(user_id):
+    try:
+        data = request.json or {}
+        nombre = (data.get('nombre') or '').strip()
+        email = (data.get('email') or '').strip().lower()
+        rol = (data.get('rol') or 'operador').strip().lower()
+        activo = 1 if data.get('activo', True) else 0
+        password = data.get('password') or ''
+
+        if rol not in ('operador', 'admin'):
+            return jsonify({'error': 'rol invalido'}), 400
+        if not email:
+            return jsonify({'error': 'email es obligatorio'}), 400
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT id, username FROM usuarios WHERE id = ? LIMIT 1", (user_id,))
+        existing = cur.fetchone()
+        if not existing:
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'Colaborador no encontrado'}), 404
+
+        cur.execute("SELECT id FROM usuarios WHERE email = ? AND id != ? LIMIT 1", (email, user_id))
+        if cur.fetchone():
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'El email ya esta registrado'}), 400
+
+        if password:
+            password_hash = generate_password_hash(password)
+            cur.execute("""
+                UPDATE usuarios
+                SET nombre = ?, email = ?, rol = ?, activo = ?, password_hash = ?
+                WHERE id = ?
+            """, (nombre or existing['username'], email, rol, activo, password_hash, user_id))
+        else:
+            cur.execute("""
+                UPDATE usuarios
+                SET nombre = ?, email = ?, rol = ?, activo = ?
+                WHERE id = ?
+            """, (nombre or existing['username'], email, rol, activo, user_id))
+
+        conn.commit()
+        cur.execute("SELECT id, username, nombre, email, rol, activo, created_at FROM usuarios WHERE id = ?", (user_id,))
+        updated = dict(cur.fetchone())
+        cur.close()
+        conn.close()
+        return jsonify({'status': 'ok', 'colaborador': updated})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/colaboradores/<int:user_id>', methods=['DELETE'])
+@admin_required
+def delete_colaborador(user_id):
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT id, username FROM usuarios WHERE id = ? LIMIT 1", (user_id,))
+        existing = cur.fetchone()
+        if not existing:
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'Colaborador no encontrado'}), 404
+        if existing['username'] == 'admin':
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'No se puede desactivar la cuenta admin principal'}), 400
+
+        cur.execute("UPDATE usuarios SET activo = 0 WHERE id = ?", (user_id,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'status': 'ok'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/empresas', methods=['GET'])
+@admin_required
+def get_empresas_admin():
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT id, nombre, alias, imap_host, imap_port, email_user, smtp_host, smtp_port, activo, created_at
+            FROM empresas
+            ORDER BY created_at DESC
+        """)
+        empresas_admin = [dict(row) for row in cur.fetchall()]
+        cur.close()
+        conn.close()
+        return jsonify(empresas_admin)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/empresas', methods=['POST'])
+@admin_required
+def create_empresa_admin():
+    try:
+        data = request.json or {}
+        nombre = (data.get('nombre') or '').strip()
+        alias = (data.get('alias') or '').strip()
+        imap_host = (data.get('imap_host') or '').strip()
+        imap_port = int(data.get('imap_port') or 993)
+        email_user = (data.get('email_user') or '').strip().lower()
+        email_pass = data.get('email_pass') or ''
+        smtp_host = (data.get('smtp_host') or '').strip()
+        smtp_port = int(data.get('smtp_port') or 465)
+
+        if not nombre or not imap_host or not email_user or not email_pass:
+            return jsonify({'error': 'nombre, imap_host, email_user y email_pass son obligatorios'}), 400
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT id FROM empresas WHERE email_user = ? LIMIT 1", (email_user,))
+        if cur.fetchone():
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'La cuenta de correo ya existe'}), 400
+
+        encrypted_pass = encrypt_password(email_pass)
+        cur.execute("""
+            INSERT INTO empresas (nombre, alias, imap_host, imap_port, email_user, email_pass, smtp_host, smtp_port, activo)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
+        """, (nombre, alias, imap_host, imap_port, email_user, encrypted_pass, smtp_host, smtp_port))
+        new_id = cur.lastrowid
+        conn.commit()
+        cur.execute("""
+            SELECT id, nombre, alias, imap_host, imap_port, email_user, smtp_host, smtp_port, activo, created_at
+            FROM empresas WHERE id = ?
+        """, (new_id,))
+        created = dict(cur.fetchone())
+        cur.close()
+        conn.close()
+        return jsonify({'status': 'ok', 'empresa': created}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/empresas/<int:empresa_id>', methods=['PUT'])
+@admin_required
+def update_empresa_admin(empresa_id):
+    try:
+        data = request.json or {}
+        nombre = (data.get('nombre') or '').strip()
+        alias = (data.get('alias') or '').strip()
+        imap_host = (data.get('imap_host') or '').strip()
+        imap_port = int(data.get('imap_port') or 993)
+        email_user = (data.get('email_user') or '').strip().lower()
+        email_pass = data.get('email_pass') or ''
+        smtp_host = (data.get('smtp_host') or '').strip()
+        smtp_port = int(data.get('smtp_port') or 465)
+        activo = 1 if data.get('activo', True) else 0
+
+        if not nombre or not imap_host or not email_user:
+            return jsonify({'error': 'nombre, imap_host y email_user son obligatorios'}), 400
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT id FROM empresas WHERE id = ? LIMIT 1", (empresa_id,))
+        if not cur.fetchone():
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'Empresa no encontrada'}), 404
+
+        cur.execute("SELECT id FROM empresas WHERE email_user = ? AND id != ? LIMIT 1", (email_user, empresa_id))
+        if cur.fetchone():
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'La cuenta de correo ya existe'}), 400
+
+        if email_pass:
+            encrypted_pass = encrypt_password(email_pass)
+            cur.execute("""
+                UPDATE empresas
+                SET nombre = ?, alias = ?, imap_host = ?, imap_port = ?, email_user = ?, email_pass = ?, smtp_host = ?, smtp_port = ?, activo = ?
+                WHERE id = ?
+            """, (nombre, alias, imap_host, imap_port, email_user, encrypted_pass, smtp_host, smtp_port, activo, empresa_id))
+        else:
+            cur.execute("""
+                UPDATE empresas
+                SET nombre = ?, alias = ?, imap_host = ?, imap_port = ?, email_user = ?, smtp_host = ?, smtp_port = ?, activo = ?
+                WHERE id = ?
+            """, (nombre, alias, imap_host, imap_port, email_user, smtp_host, smtp_port, activo, empresa_id))
+
+        conn.commit()
+        cur.execute("""
+            SELECT id, nombre, alias, imap_host, imap_port, email_user, smtp_host, smtp_port, activo, created_at
+            FROM empresas WHERE id = ?
+        """, (empresa_id,))
+        updated = dict(cur.fetchone())
+        cur.close()
+        conn.close()
+        return jsonify({'status': 'ok', 'empresa': updated})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/empresas/<int:empresa_id>', methods=['DELETE'])
+@admin_required
+def delete_empresa_admin(empresa_id):
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT id FROM empresas WHERE id = ? LIMIT 1", (empresa_id,))
+        if not cur.fetchone():
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'Empresa no encontrada'}), 404
+        cur.execute("UPDATE empresas SET activo = 0 WHERE id = ?", (empresa_id,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'status': 'ok'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/imap/sync-all', methods=['POST'])
 @token_required
 def sync_all_emails():
-    # Simulación de éxito para validación local rápida
-    return jsonify({'results': [{'empresa': 'System', 'synced': 0, 'success': True}]})
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM empresas WHERE activo = 1")
+        empresas = [dict(row) for row in cur.fetchall()]
+        
+        results = []
+        for emp in empresas:
+            logger.info(f"Sincronizando {emp['nombre']}...")
+            try:
+                # Desencriptar contraseña
+                password = decrypt_password(emp['email_pass'])
+                
+                # Conexión IMAP
+                with imap_tools.MailBox(emp['imap_host'], port=emp['imap_port']).login(emp['email_user'], password, initial_folder='INBOX') as mailbox:
+                    synced_count = 0
+                    # Obtener los últimos 100 correos
+                    for msg in mailbox.fetch(limit=100, reverse=True):
+                        # Generar un thread_id único concatenando el email para evitar colisiones entre cuentas
+                        raw_id = msg.uid or msg.message_id
+                        tid = f"{emp['email_user']}_{raw_id}"
+                        
+                        # Insertar o ignorar si ya existe
+                        cur.execute('''
+                            INSERT OR IGNORE INTO hilos (
+                                thread_id, remitente, asunto, mensaje, cuenta_empresa, 
+                                correo_empresa, folder, fecha, adjuntos, estado_ticket
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        ''', (
+                            tid, msg.from_, msg.subject, msg.html or msg.text, 
+                            emp['nombre'], emp['email_user'], 'INBOX', 
+                            msg.date.strftime('%Y-%m-%d %H:%M:%S'), 
+                            1 if msg.attachments else 0, 'PENDIENTE'
+                        ))
+                        if cur.rowcount > 0:
+                            synced_count += 1
+                    
+                results.append({'empresa': emp['nombre'], 'synced': synced_count, 'success': True})
+            except Exception as e:
+                logger.error(f"Error sincronizando {emp['nombre']}: {e}")
+                results.append({'empresa': emp['nombre'], 'error': str(e), 'success': False})
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'results': results, 'status': 'completed'})
+    except Exception as e:
+        logger.error(f"Error general en sync_all: {e}")
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     init_db()

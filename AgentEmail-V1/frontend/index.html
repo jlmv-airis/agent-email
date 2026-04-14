@@ -170,7 +170,7 @@
                     </div>
                 </div>
                 
-                <button class="w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-white/5 border border-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all group">
+                <button id="settings-btn" onclick="toggleCollaboratorsModal(true)" class="hidden w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-white/5 border border-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all group">
                     <div class="flex items-center gap-3">
                         <span class="text-[16px] group-hover:rotate-45 transition-transform">⚙️</span>
                         <span class="text-[11px] font-bold uppercase tracking-widest">Configuración</span>
@@ -181,13 +181,43 @@
 
         <div class="main-stage">
             <header class="glass-header">
-                <h2 id="current-view-title" class="text-lg font-bold tracking-tight text-white">Bandeja General</h2>
-                <div class="flex items-center gap-6">
+                <div class="flex flex-col">
+                    <h2 id="current-view-title" class="text-lg font-bold tracking-tight text-white leading-none">Bandeja General</h2>
+                    <p id="filter-status-indicator" class="text-[9px] font-bold text-blue-400 uppercase mt-1 tracking-widest">Todos los estados</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <!-- Filtros rápidos -->
+                    <div class="flex items-center bg-white/5 border border-white/5 rounded-full px-4 py-1.5 gap-3">
+                        <select id="filter-company" onchange="applyFilters()" class="bg-transparent text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:text-white transition-colors">
+                            <option value="ALL" class="bg-[#1a1c1e]">TODAS LAS EMPRESAS</option>
+                        </select>
+                        <div class="w-px h-4 bg-white/10"></div>
+                        <select id="filter-status" onchange="applyFilters()" class="bg-transparent text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:text-white transition-colors">
+                            <option value="ALL" class="bg-[#1a1c1e]">TODOS LOS ESTADOS</option>
+                            <option value="PENDIENTE" class="bg-[#1a1c1e]">PENDIENTES</option>
+                            <option value="ASIGNADO" class="bg-[#1a1c1e]">EN PROCESO</option>
+                            <option value="CERRADO" class="bg-[#1a1c1e]">RESUELTOS</option>
+                        </select>
+                        <div class="w-px h-4 bg-white/10"></div>
+                        <select id="filter-operator" onchange="applyFilters()" class="bg-transparent text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:text-white transition-colors">
+                            <option value="ALL" class="bg-[#1a1c1e]">TODOS LOS OPERADORES</option>
+                            <!-- Se poblará dinámicamente -->
+                        </select>
+                    </div>
+
+                    <button id="manage-collab-btn" onclick="toggleCollaboratorsModal(true)" class="hidden flex items-center gap-2 px-5 py-2.5 rounded-full bg-violet-600 text-white hover:bg-violet-500 transition-all shadow-lg shadow-violet-900/20">
+                        <span class="text-xs">👥</span>
+                        <span class="text-[11px] font-bold uppercase tracking-widest">Colaboradores</span>
+                    </button>
+
                     <button onclick="syncAll()" id="sync-btn" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-600 text-white hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20">
                         <span id="sync-icon" class="text-xs">🔄</span>
                         <span class="text-[11px] font-bold uppercase tracking-widest">Sincronizar</span>
                     </button>
-                    <input type="text" placeholder="Buscar hilos... ( / )" class="bg-white/5 border border-white/5 rounded-full px-10 py-2.5 text-sm outline-none w-72 focus:bg-white/10 focus:border-white/10 text-white transition-all">
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs">🔍</span>
+                        <input id="global-search" oninput="debounceApplyFilters()" type="text" placeholder="Buscar hilos..." class="bg-white/5 border border-white/5 rounded-full pl-10 pr-4 py-2.5 text-sm outline-none w-64 focus:bg-white/10 focus:border-white/10 text-white transition-all">
+                    </div>
                 </div>
             </header>
             <main class="flex-1 overflow-y-auto custom-scrollbar px-10 py-8">
@@ -221,6 +251,10 @@
                                 <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Analítica</p>
                                 <h3 class="text-lg font-bold text-white">Tendencia</h3>
                             </div>
+                            <select id="trend-mode" onchange="onTrendModeChange()" class="bg-white/5 border border-white/10 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-300 outline-none cursor-pointer">
+                                <option value="daily" class="bg-[#1a1c1e]">7 días</option>
+                                <option value="hourly" class="bg-[#1a1c1e]">Hoy por hora</option>
+                            </select>
                         </div>
                         <div class="h-[240px] w-full"><canvas id="trendChart"></canvas></div>
                     </div>
@@ -249,9 +283,139 @@
                         <p class="text-[13px] text-slate-500 mt-1">De: <span id="ins-from" class="font-semibold text-blue-600"></span></p>
                     </div>
                 </div>
-                <button onclick="closeInspector()" class="text-slate-400 hover:text-slate-900 text-xl font-light p-1">✕</button>
+                <div class="flex items-center gap-3">
+                    <button onclick="updateStatus('PENDIENTE')" class="px-4 py-2 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 text-[11px] font-extrabold uppercase hover:bg-amber-100 transition-colors">Reabrir</button>
+                    <button onclick="updateStatus('ASIGNADO')" class="px-4 py-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 text-[11px] font-extrabold uppercase hover:bg-blue-100 transition-colors">En Proceso</button>
+                    <button onclick="updateStatus('CERRADO')" class="px-4 py-2 rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700 text-[11px] font-extrabold uppercase hover:bg-emerald-100 transition-colors">Resolver</button>
+                    <div class="w-px h-8 bg-slate-200 mx-2"></div>
+                    <button onclick="closeInspector()" class="text-slate-400 hover:text-slate-900 text-xl font-light p-1">✕</button>
+                </div>
             </header>
             <div id="ins-body" class="flex-1 overflow-y-auto p-10 custom-scrollbar space-y-6 bg-[#f9f9fb]"></div>
+        </div>
+    </div>
+
+    <div id="collaborators-modal" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm">
+        <div class="max-w-6xl mx-auto mt-8 rounded-3xl border border-white/10 bg-[#111315] shadow-2xl overflow-hidden">
+            <header class="px-8 py-5 border-b border-white/10 flex items-center justify-between">
+                <div>
+                    <h3 class="text-white text-xl font-extrabold tracking-tight">Configuración (CRUD)</h3>
+                    <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mt-1">Colaboradores y cuentas de empresa</p>
+                </div>
+                <button onclick="toggleCollaboratorsModal(false)" class="text-slate-400 hover:text-white text-2xl leading-none">×</button>
+            </header>
+            <div class="p-8 max-h-[82vh] overflow-y-auto custom-scrollbar space-y-8">
+                <section class="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h4 class="text-white text-sm font-bold uppercase tracking-widest">Módulo Colaboradores</h4>
+                            <p class="text-slate-400 text-[11px]">Crear, editar y desactivar usuarios operativos.</p>
+                        </div>
+                        <button onclick="createDefaultCollaborators()" class="px-3 py-2 rounded-lg bg-violet-500/20 border border-violet-400/30 text-violet-200 text-[10px] font-bold uppercase tracking-wider hover:bg-violet-500/30 transition-colors">
+                            Crear 3 operadores base
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-5 gap-6">
+                        <div class="col-span-3">
+                            <div id="collaborators-list" class="rounded-2xl border border-white/10 overflow-hidden"></div>
+                        </div>
+                        <div class="col-span-2 space-y-4">
+                            <div class="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+                                <h5 class="text-white text-xs font-bold uppercase tracking-widest mb-3">Nuevo colaborador</h5>
+                                <button id="toggle-collaborator-form-btn" type="button" onclick="toggleCreateCollaboratorForm()" class="w-full bg-violet-600/90 hover:bg-violet-500 text-white rounded-xl py-2.5 text-xs font-bold uppercase tracking-wider">
+                                    Agregar colaborador
+                                </button>
+                                <form id="collaborator-form" onsubmit="createCollaborator(event)" class="hidden mt-3 space-y-3">
+                                    <input id="col-name" type="text" placeholder="Nombre" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60">
+                                    <input id="col-username" type="text" placeholder="Username" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60">
+                                    <input id="col-email" type="email" placeholder="Email" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60">
+                                    <input id="col-password" type="text" placeholder="Password inicial" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60">
+                                    <select id="col-role" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60">
+                                        <option value="operador" class="bg-[#1a1c1e]">Operador</option>
+                                        <option value="admin" class="bg-[#1a1c1e]">Admin</option>
+                                    </select>
+                                    <button type="submit" class="w-full bg-violet-600 hover:bg-violet-500 text-white rounded-xl py-3 text-sm font-bold uppercase tracking-widest transition-colors">
+                                        Crear colaborador
+                                    </button>
+                                </form>
+                                <p id="collaborator-feedback" class="text-xs font-semibold mt-3 text-slate-300"></p>
+                            </div>
+                            <div id="collaborator-edit-panel" class="hidden rounded-xl border border-violet-400/30 bg-violet-500/10 p-4">
+                                <h5 class="text-violet-200 text-xs font-bold uppercase tracking-widest mb-3">Editar colaborador</h5>
+                                <form id="collaborator-edit-form" onsubmit="submitCollaboratorEdit(event)" class="space-y-2">
+                                    <input id="edit-col-name" type="text" placeholder="Nombre" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
+                                    <input id="edit-col-email" type="email" placeholder="Email" required class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
+                                    <select id="edit-col-role" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
+                                        <option value="operador" class="bg-[#1a1c1e]">Operador</option>
+                                        <option value="admin" class="bg-[#1a1c1e]">Admin</option>
+                                    </select>
+                                    <input id="edit-col-password" type="text" placeholder="Nueva password (opcional)" class="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
+                                    <div class="flex gap-2 pt-1">
+                                        <button type="submit" class="flex-1 bg-violet-600 hover:bg-violet-500 text-white rounded-xl py-2 text-xs font-bold uppercase tracking-wider">Guardar</button>
+                                        <button type="button" onclick="closeCollaboratorEdit()" class="flex-1 bg-white/10 hover:bg-white/20 text-slate-200 rounded-xl py-2 text-xs font-bold uppercase tracking-wider">Cancelar</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h4 class="text-white text-sm font-bold uppercase tracking-widest">Módulo Cuentas de Empresa</h4>
+                            <p class="text-slate-400 text-[11px]">Administrar buzones IMAP/SMTP conectados al sistema.</p>
+                        </div>
+                        <button onclick="loadCompaniesAdmin()" class="px-3 py-2 rounded-lg bg-blue-500/20 border border-blue-400/30 text-blue-200 text-[10px] font-bold uppercase tracking-wider hover:bg-blue-500/30 transition-colors">
+                            Refrescar
+                        </button>
+                    </div>
+                    <div class="space-y-4">
+                        <div id="companies-list-admin" class="rounded-2xl border border-white/10 overflow-hidden"></div>
+                        <div class="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+                            <h5 class="text-white text-xs font-bold uppercase tracking-widest mb-3">Nueva cuenta</h5>
+                            <button id="toggle-company-form-btn" type="button" onclick="toggleCreateCompanyForm()" class="w-full bg-blue-600/90 hover:bg-blue-500 text-white rounded-xl py-2.5 text-xs font-bold uppercase tracking-wider mb-3">
+                                Agregar empresa
+                            </button>
+                            <form id="company-form" onsubmit="createCompany(event)" class="hidden grid grid-cols-4 gap-3">
+                                <input id="cmp-nombre" type="text" placeholder="Nombre empresa" required class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60">
+                                <input id="cmp-alias" type="text" placeholder="Alias" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60">
+                                <input id="cmp-imap-host" type="text" placeholder="IMAP host" required class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60">
+                                <input id="cmp-imap-port" type="number" placeholder="IMAP port" value="993" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60">
+                                <input id="cmp-email-user" type="email" placeholder="Correo cuenta" required class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60">
+                                <input id="cmp-email-pass" type="text" placeholder="Password correo" required class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60">
+                                <input id="cmp-smtp-host" type="text" placeholder="SMTP host (opcional)" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60">
+                                <input id="cmp-smtp-port" type="number" placeholder="SMTP port" value="465" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60">
+                                <button type="submit" class="col-span-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-3 text-sm font-bold uppercase tracking-widest transition-colors">
+                                    Crear cuenta de empresa
+                                </button>
+                            </form>
+                            <p id="company-feedback" class="text-xs font-semibold mt-3 text-slate-300"></p>
+                        </div>
+                        <div id="company-edit-panel" class="hidden rounded-xl border border-blue-400/30 bg-blue-500/10 p-4">
+                            <h5 class="text-blue-200 text-xs font-bold uppercase tracking-widest mb-3">Editar cuenta empresa</h5>
+                            <form id="company-edit-form" onsubmit="submitCompanyEdit(event)" class="grid grid-cols-4 gap-2">
+                                <input id="edit-cmp-nombre" type="text" placeholder="Nombre empresa" required class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
+                                <input id="edit-cmp-alias" type="text" placeholder="Alias" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
+                                <input id="edit-cmp-imap-host" type="text" placeholder="IMAP host" required class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
+                                <input id="edit-cmp-imap-port" type="number" placeholder="IMAP port" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
+                                <input id="edit-cmp-email-user" type="email" placeholder="Correo cuenta" required class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
+                                <input id="edit-cmp-email-pass" type="text" placeholder="Nueva password (opcional)" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
+                                <input id="edit-cmp-smtp-host" type="text" placeholder="SMTP host" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
+                                <input id="edit-cmp-smtp-port" type="number" placeholder="SMTP port" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
+                                <label class="col-span-4 flex items-center gap-2 text-slate-300 text-xs font-semibold mt-1">
+                                    <input id="edit-cmp-activo" type="checkbox" class="accent-blue-500" checked>
+                                    Mantener cuenta activa
+                                </label>
+                                <div class="col-span-4 flex gap-2 pt-1">
+                                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-2 text-xs font-bold uppercase tracking-wider">Guardar</button>
+                                    <button type="button" onclick="closeCompanyEdit()" class="flex-1 bg-white/10 hover:bg-white/20 text-slate-200 rounded-xl py-2 text-xs font-bold uppercase tracking-wider">Cancelar</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+            </div>
         </div>
     </div>
 
@@ -260,6 +424,12 @@
         let hilos = [], operators = [], empresas = [], activeCompany = null, activeFolder = 'INBOX', currentTid = null;
         let trendChart = null, companyChart = null;
         let token = localStorage.getItem('token');
+        let currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+        let adminCompanies = [];
+        let selectedCollaboratorId = null;
+        let selectedCompanyId = null;
+        let searchDebounceTimer = null;
+        const FILTERS_STORAGE_KEY = 'agentEmailFiltersV104';
 
         const getAvatarColor = (n) => { const colors = ['#FF9500', '#FF2D55', '#5856D6', '#34C759', '#007AFF', '#AF52DE']; return colors[Math.abs(n.length) % colors.length]; };
 
@@ -297,9 +467,16 @@
                 const res = await fetch(API_URL + '/auth/verify', { headers: {'Authorization': 'Bearer ' + token} });
                 if (!res.ok) { logout(); return; }
                 const user = JSON.parse(localStorage.getItem('user') || '{}');
+                currentUser = user;
                 const name = user.nombre || user.email || 'Usuario';
                 document.getElementById('user-name').textContent = name;
                 document.getElementById('user-avatar-small').textContent = name.substring(0, 2).toUpperCase();
+                if ((user.rol || '').toLowerCase() === 'admin') {
+                    const btn = document.getElementById('manage-collab-btn');
+                    if (btn) btn.classList.remove('hidden');
+                    const settingsBtn = document.getElementById('settings-btn');
+                    if (settingsBtn) settingsBtn.classList.remove('hidden');
+                }
                 initApp();
             } catch(e) { logout(); }
         }
@@ -322,6 +499,8 @@
             await loadEmpresas(); 
             await loadData(); 
             await loadOperators();
+            restoreFilterState();
+            applyFilters();
             setInterval(loadData, 30000);
         }
 
@@ -410,26 +589,76 @@
 
         function updateCharts() {
             if(!trendChart || !companyChart) return;
-            const last7Days = [];
-            for (let i = 6; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); last7Days.push(d.toISOString().split('T')[0]); }
-            trendChart.data.labels = last7Days.map(date => { const d = new Date(date + 'T00:00:00'); return d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' }); });
-            trendChart.data.datasets[0].data = last7Days.map(date => hilos.filter(h => h.fecha && h.fecha.startsWith(date)).length);
+            const trendMode = document.getElementById('trend-mode') ? document.getElementById('trend-mode').value : 'daily';
+            const filtered = getFilteredHilos();
+
+            if (trendMode === 'hourly') {
+                const labels = Array.from({ length: 24 }, (_, h) => `${String(h).padStart(2, '0')}:00`);
+                const hourCounts = new Array(24).fill(0);
+                const today = new Date().toISOString().split('T')[0];
+                filtered.forEach(h => {
+                    if (!h.fecha || !h.fecha.startsWith(today)) return;
+                    const dt = new Date(h.fecha);
+                    if (!Number.isNaN(dt.getTime())) hourCounts[dt.getHours()] += 1;
+                });
+                trendChart.data.labels = labels;
+                trendChart.data.datasets[0].label = 'Tickets Hoy (por hora)';
+                trendChart.data.datasets[0].data = hourCounts;
+            } else {
+                const last7Days = [];
+                for (let i = 6; i >= 0; i--) {
+                    const d = new Date();
+                    d.setDate(d.getDate() - i);
+                    last7Days.push(d.toISOString().split('T')[0]);
+                }
+                trendChart.data.labels = last7Days.map(date => {
+                    const d = new Date(date + 'T00:00:00');
+                    return d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' });
+                });
+                trendChart.data.datasets[0].label = 'Tickets Recibidos (7 días)';
+                trendChart.data.datasets[0].data = last7Days.map(date => filtered.filter(h => h.fecha && h.fecha.startsWith(date)).length);
+            }
             trendChart.update();
+
             const companyCounts = {};
-            hilos.forEach(h => { const company = h.cuenta_empresa || 'System'; companyCounts[company] = (companyCounts[company] || 0) + 1; });
+            filtered.forEach(h => { const company = h.cuenta_empresa || 'System'; companyCounts[company] = (companyCounts[company] || 0) + 1; });
             companyChart.data.labels = Object.keys(companyCounts);
             companyChart.data.datasets[0].data = Object.values(companyCounts);
             companyChart.update();
         }
 
-        function updateStats() {
-            const total = hilos.length, pending = hilos.filter(h => h.estado_ticket === 'PENDIENTE').length;
-            const assigned = hilos.filter(h => h.estado_ticket === 'ASIGNADO').length;
-            const resolvedCount = hilos.filter(h => h.estado_ticket === 'CERRADO').length;
-            document.getElementById('dash-total').innerText = total;
-            document.getElementById('dash-pending').innerText = pending;
-            document.getElementById('dash-assigned').innerText = assigned;
-            document.getElementById('dash-resolved').innerText = total > 0 ? Math.round((resolvedCount / total) * 100) + '%' : '0%';
+        async function updateStats() {
+            try {
+                const res = await fetch(`${API_URL}/stats`, { 
+                    headers: {'Authorization': 'Bearer ' + token} 
+                });
+                const stats = await res.json();
+
+                const filtered = getFilteredHilos();
+                const usingOnlySidebarScope = activeCompany || activeFolder !== 'INBOX';
+
+                // Si no hay filtros globales ni de sidebar, usamos stats del backend (globales).
+                if (isNoGlobalFilterApplied() && !usingOnlySidebarScope) {
+                    document.getElementById('dash-total').innerText = stats.total_hoy || 0;
+                    document.getElementById('dash-pending').innerText = stats.pendientes || 0;
+                    document.getElementById('dash-assigned').innerText = stats.asignados || 0;
+                    const totalGlobal = hilos.length;
+                    const resolvedGlobal = hilos.filter(h => h.estado_ticket === 'CERRADO').length;
+                    document.getElementById('dash-resolved').innerText = totalGlobal > 0 ? Math.round((resolvedGlobal / totalGlobal) * 100) + '%' : '0%';
+                } else {
+                    // Bajo filtros, mostramos KPIs del subconjunto visible.
+                    const total = filtered.length;
+                    const pending = filtered.filter(h => h.estado_ticket === 'PENDIENTE').length;
+                    const assigned = filtered.filter(h => h.estado_ticket === 'ASIGNADO').length;
+                    const resolved = filtered.filter(h => h.estado_ticket === 'CERRADO').length;
+                    document.getElementById('dash-total').innerText = total;
+                    document.getElementById('dash-pending').innerText = pending;
+                    document.getElementById('dash-assigned').innerText = assigned;
+                    document.getElementById('dash-resolved').innerText = total > 0 ? Math.round((resolved / total) * 100) + '%' : '0%';
+                }
+            } catch (e) {
+                console.error("Error cargando stats:", e);
+            }
         }
 
         function renderSidebar() {
@@ -491,10 +720,8 @@
         function renderThreads() {
             const container = document.getElementById('thread-list');
             if(!container) return;
-            let filtered = hilos;
-            if (activeCompany) {
-                filtered = hilos.filter(h => h.cuenta_empresa === activeCompany && (h.folder || 'INBOX') === activeFolder);
-            }
+            const filtered = getFilteredHilos();
+
             container.innerHTML = `
                 <div class="email-card-header">
                     <div class="flex items-center px-4"><input type="checkbox" class="w-4 h-4 rounded border-white/10 bg-white/5"></div>
@@ -517,7 +744,7 @@
                         <p class="text-[12px] font-medium text-slate-400 truncate">${(m.mensaje || '').replace(/<[^>]*>?/gm, '')}</p>
                     </div>
                     <div class="px-4"><span class="px-3 py-1.5 rounded-full text-[9px] font-black uppercase ${cfg.bg} ${cfg.text} border ${cfg.border}">${m.estado_ticket}</span></div>
-                    <div class="px-4"><select onclick="event.stopPropagation()" class="w-full bg-transparent text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:text-white transition-colors"><option value="" class="bg-[#1a1c1e]">--</option>${operators.map(op => `<option value="${op.username}" class="bg-[#1a1c1e]" ${m.asignado_a === op.username ? 'selected' : ''}>${op.username.toUpperCase()}</option>`).join('')}</select></div>
+                    <div class="px-4"><select onchange="assignTicket('${m.thread_id}', this.value)" onclick="event.stopPropagation()" class="w-full bg-transparent text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:text-white transition-colors"><option value="" class="bg-[#1a1c1e]">--</option>${operators.map(op => `<option value="${op.username}" class="bg-[#1a1c1e]" ${m.asignado_a === op.username ? 'selected' : ''}>${op.username.toUpperCase()}</option>`).join('')}</select></div>
                     <div class="text-center text-slate-500">${m.adjuntos ? '📎' : '—'}</div>
                     <div class="text-right pl-4 text-[11px] font-bold text-slate-300">${new Date(m.fecha).toLocaleDateString()}</div>
                 </div>`;
@@ -532,8 +759,535 @@
 
         function openInspector(tid) { currentTid = tid; const m = hilos.find(h => h.thread_id === tid); if (!m) return; document.getElementById('inspector-overlay').style.display = 'flex'; document.getElementById('ins-subject').innerText = m.asunto; document.getElementById('ins-from').innerText = m.remitente; document.getElementById('ins-body').innerHTML = `<div class="bubble-apple bubble-in">${m.mensaje}</div>`; }
         function closeInspector() { document.getElementById('inspector-overlay').style.display = 'none'; }
-        async function loadOperators() { const res = await fetch(`${API_URL}/operadores`, { headers: {'Authorization': 'Bearer ' + token} }); operators = await res.json(); renderThreads(); }
-        async function loadEmpresas() { const res = await fetch(`${API_URL}/empresas`, { headers: {'Authorization': 'Bearer ' + token} }); empresas = await res.json(); renderSidebar(); }
+        async function updateStatus(estado) {
+            if (!currentTid) return;
+            try {
+                const res = await fetch(`${API_URL}/hilos/update`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({
+                        thread_id: currentTid,
+                        estado: estado
+                    })
+                });
+                if (res.ok) {
+                    await loadData();
+                    closeInspector();
+                } else {
+                    const err = await res.json();
+                    alert("Error: " + (err.error || "No se pudo actualizar el estado"));
+                }
+            } catch (e) {
+                console.error("Error en updateStatus:", e);
+            }
+        }
+        async function assignTicket(tid, username) {
+            try {
+                const res = await fetch(`${API_URL}/hilos/update`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({
+                        thread_id: tid,
+                        asignado_a: username
+                    })
+                });
+                if (res.ok) {
+                    await loadData();
+                } else {
+                    const err = await res.json();
+                    alert("Error: " + (err.error || "No se pudo asignar el ticket"));
+                }
+            } catch (e) {
+                console.error("Error en assignTicket:", e);
+            }
+        }
+
+        async function loadOperators() { 
+            const res = await fetch(`${API_URL}/operadores`, { headers: {'Authorization': 'Bearer ' + token} }); 
+            operators = await res.json(); 
+            
+            // Poblar select de filtros
+            const filterOp = document.getElementById('filter-operator');
+            if(filterOp) {
+                filterOp.innerHTML = '<option value="ALL" class="bg-[#1a1c1e]">TODOS LOS OPERADORES</option>' + 
+                    operators.map(op => `<option value="${op.username}" class="bg-[#1a1c1e]">${op.username.toUpperCase()}</option>`).join('');
+            }
+            renderThreads(); 
+        }
+
+        function toggleCreateCollaboratorForm() {
+            const form = document.getElementById('collaborator-form');
+            const btn = document.getElementById('toggle-collaborator-form-btn');
+            if (!form || !btn) return;
+            const willOpen = form.classList.contains('hidden');
+            form.classList.toggle('hidden', !willOpen);
+            btn.textContent = willOpen ? 'Ocultar formulario' : 'Agregar colaborador';
+        }
+
+        function closeCreateCollaboratorForm() {
+            const form = document.getElementById('collaborator-form');
+            const btn = document.getElementById('toggle-collaborator-form-btn');
+            if (!form || !btn) return;
+            form.classList.add('hidden');
+            btn.textContent = 'Agregar colaborador';
+        }
+
+        function toggleCreateCompanyForm() {
+            const form = document.getElementById('company-form');
+            const btn = document.getElementById('toggle-company-form-btn');
+            if (!form || !btn) return;
+            const willOpen = form.classList.contains('hidden');
+            form.classList.toggle('hidden', !willOpen);
+            btn.textContent = willOpen ? 'Ocultar formulario' : 'Agregar empresa';
+        }
+
+        function closeCreateCompanyForm() {
+            const form = document.getElementById('company-form');
+            const btn = document.getElementById('toggle-company-form-btn');
+            if (!form || !btn) return;
+            form.classList.add('hidden');
+            btn.textContent = 'Agregar empresa';
+        }
+
+        function toggleCollaboratorsModal(open) {
+            if (open && (currentUser.rol || '').toLowerCase() !== 'admin') {
+                alert('Solo un admin puede abrir configuración.');
+                return;
+            }
+            const modal = document.getElementById('collaborators-modal');
+            if (!modal) return;
+            modal.classList.toggle('hidden', !open);
+            if (open) {
+                loadCollaborators();
+                loadCompaniesAdmin();
+            }
+        }
+
+        async function loadCollaborators() {
+            const list = document.getElementById('collaborators-list');
+            if (!list) return;
+            list.innerHTML = '<div class="p-4 text-slate-400 text-sm">Cargando colaboradores...</div>';
+            try {
+                const res = await fetch(`${API_URL}/admin/colaboradores`, { headers: {'Authorization': 'Bearer ' + token} });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'No se pudieron cargar colaboradores');
+                if (!Array.isArray(data) || data.length === 0) {
+                    list.innerHTML = '<div class="p-4 text-slate-400 text-sm">No hay colaboradores registrados.</div>';
+                    return;
+                }
+                list.innerHTML = `
+                    <div class="grid grid-cols-12 bg-white/5 text-[10px] font-bold uppercase tracking-widest text-slate-400 px-4 py-2 border-b border-white/10">
+                        <div class="col-span-3">Username</div>
+                        <div class="col-span-3">Nombre</div>
+                        <div class="col-span-3">Email</div>
+                        <div class="col-span-1">Rol</div>
+                        <div class="col-span-2 text-right">Acciones</div>
+                    </div>
+                ` + data.map(u => `
+                    <div class="grid grid-cols-12 px-4 py-3 border-b border-white/5 text-sm">
+                        <div class="col-span-3 text-white font-bold">${u.username}</div>
+                        <div class="col-span-3 text-slate-200">${u.nombre || '-'}</div>
+                        <div class="col-span-3 text-slate-300 truncate">${u.email || '-'}</div>
+                        <div class="col-span-1">
+                            <span class="px-2 py-1 rounded-full text-[10px] font-black uppercase ${u.rol === 'admin' ? 'bg-blue-500/20 text-blue-300 border border-blue-400/20' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/20'}">${u.rol}</span>
+                        </div>
+                        <div class="col-span-2 text-right space-x-2">
+                            <button onclick="editCollaborator(${u.id})" class="px-2 py-1 rounded bg-white/10 text-[10px] font-bold uppercase text-slate-200 hover:bg-white/20">Editar</button>
+                            <button onclick="deleteCollaborator(${u.id}, '${u.username}')" class="px-2 py-1 rounded bg-red-500/20 text-[10px] font-bold uppercase text-red-200 hover:bg-red-500/30">Desactivar</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                list.innerHTML = `<div class="p-4 text-red-400 text-sm">${e.message}</div>`;
+            }
+        }
+
+        async function createCollaborator(event) {
+            event.preventDefault();
+            const feedback = document.getElementById('collaborator-feedback');
+            const payload = {
+                nombre: document.getElementById('col-name').value.trim(),
+                username: document.getElementById('col-username').value.trim(),
+                email: document.getElementById('col-email').value.trim(),
+                password: document.getElementById('col-password').value.trim(),
+                rol: document.getElementById('col-role').value
+            };
+            feedback.textContent = 'Creando colaborador...';
+            feedback.className = 'text-xs font-semibold mt-3 text-slate-300';
+            try {
+                const res = await fetch(`${API_URL}/admin/colaboradores`, {
+                    method: 'POST',
+                    headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'No se pudo crear');
+                document.getElementById('collaborator-form').reset();
+                closeCreateCollaboratorForm();
+                feedback.textContent = `Creado: ${data.colaborador.username}`;
+                feedback.className = 'text-xs font-semibold mt-3 text-emerald-300';
+                await loadCollaborators();
+                await loadOperators();
+                applyFilters();
+            } catch (e) {
+                feedback.textContent = e.message;
+                feedback.className = 'text-xs font-semibold mt-3 text-red-300';
+            }
+        }
+
+        async function createDefaultCollaborators() {
+            const defaults = [
+                { nombre: 'Operador Uno', username: 'operador1', email: 'operador1@airis.com', password: 'operador123', rol: 'operador' },
+                { nombre: 'Operador Dos', username: 'operador2', email: 'operador2@airis.com', password: 'operador123', rol: 'operador' },
+                { nombre: 'Operador Tres', username: 'operador3', email: 'operador3@airis.com', password: 'operador123', rol: 'operador' }
+            ];
+            const feedback = document.getElementById('collaborator-feedback');
+            feedback.textContent = 'Creando colaboradores base...';
+            feedback.className = 'text-xs font-semibold mt-3 text-slate-300';
+            let created = 0;
+            for (const c of defaults) {
+                try {
+                    const res = await fetch(`${API_URL}/admin/colaboradores`, {
+                        method: 'POST',
+                        headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
+                        body: JSON.stringify(c)
+                    });
+                    if (res.ok) created += 1;
+                } catch (_) {}
+            }
+            await loadCollaborators();
+            await loadOperators();
+            applyFilters();
+            feedback.textContent = `Operación completada. Nuevos creados: ${created} (existentes se omitieron).`;
+            feedback.className = 'text-xs font-semibold mt-3 text-emerald-300';
+        }
+
+        async function editCollaborator(userId) {
+            const res = await fetch(`${API_URL}/admin/colaboradores`, { headers: {'Authorization': 'Bearer ' + token} });
+            const users = await res.json();
+            if (!res.ok) { alert('No se pudieron cargar colaboradores'); return; }
+            const user = users.find(u => u.id === userId);
+            if (!user) return;
+            selectedCollaboratorId = userId;
+            document.getElementById('edit-col-name').value = user.nombre || '';
+            document.getElementById('edit-col-email').value = user.email || '';
+            document.getElementById('edit-col-role').value = user.rol || 'operador';
+            document.getElementById('edit-col-password').value = '';
+            document.getElementById('collaborator-edit-panel').classList.remove('hidden');
+        }
+
+        function closeCollaboratorEdit() {
+            selectedCollaboratorId = null;
+            document.getElementById('collaborator-edit-panel').classList.add('hidden');
+        }
+
+        async function submitCollaboratorEdit(event) {
+            event.preventDefault();
+            if (!selectedCollaboratorId) return;
+            const payload = {
+                nombre: document.getElementById('edit-col-name').value.trim(),
+                email: document.getElementById('edit-col-email').value.trim(),
+                rol: document.getElementById('edit-col-role').value,
+                password: document.getElementById('edit-col-password').value.trim()
+            };
+            const res = await fetch(`${API_URL}/admin/colaboradores/${selectedCollaboratorId}`, {
+                method: 'PUT',
+                headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!res.ok) { alert(data.error || 'No se pudo actualizar colaborador'); return; }
+            closeCollaboratorEdit();
+            await loadCollaborators();
+            await loadOperators();
+            applyFilters();
+        }
+
+        async function deleteCollaborator(userId, username) {
+            if (!confirm(`¿Desactivar colaborador ${username}?`)) return;
+            const res = await fetch(`${API_URL}/admin/colaboradores/${userId}`, {
+                method: 'DELETE',
+                headers: {'Authorization': 'Bearer ' + token}
+            });
+            const data = await res.json();
+            if (!res.ok) { alert(data.error || 'No se pudo desactivar'); return; }
+            await loadCollaborators();
+            await loadOperators();
+            applyFilters();
+        }
+
+        async function loadCompaniesAdmin() {
+            const list = document.getElementById('companies-list-admin');
+            if (!list) return;
+            list.innerHTML = '<div class="p-4 text-slate-400 text-sm">Cargando cuentas...</div>';
+            try {
+                const res = await fetch(`${API_URL}/admin/empresas`, { headers: {'Authorization': 'Bearer ' + token} });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'No se pudo cargar empresas');
+                adminCompanies = Array.isArray(data) ? data : [];
+                if (!Array.isArray(data) || data.length === 0) {
+                    list.innerHTML = '<div class="p-4 text-slate-400 text-sm">No hay cuentas registradas.</div>';
+                    return;
+                }
+                list.innerHTML = `
+                    <div class="grid grid-cols-12 bg-white/5 text-[10px] font-bold uppercase tracking-widest text-slate-400 px-4 py-2 border-b border-white/10">
+                        <div class="col-span-2">Empresa</div>
+                        <div class="col-span-2">Correo</div>
+                        <div class="col-span-2">IMAP</div>
+                        <div class="col-span-2">SMTP</div>
+                        <div class="col-span-1">Estado</div>
+                        <div class="col-span-3 text-right">Acciones</div>
+                    </div>
+                ` + data.map(c => `
+                    <div class="grid grid-cols-12 px-4 py-3 border-b border-white/5 text-sm">
+                        <div class="col-span-2 text-white font-bold truncate">${c.nombre}</div>
+                        <div class="col-span-2 text-slate-300 truncate">${c.email_user}</div>
+                        <div class="col-span-2 text-slate-300 truncate">${c.imap_host}:${c.imap_port}</div>
+                        <div class="col-span-2 text-slate-300 truncate">${c.smtp_host || '-'}:${c.smtp_port || '-'}</div>
+                        <div class="col-span-1">
+                            <span class="px-2 py-1 rounded-full text-[10px] font-black uppercase ${c.activo ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/20' : 'bg-red-500/20 text-red-300 border border-red-400/20'}">${c.activo ? 'activa' : 'inactiva'}</span>
+                        </div>
+                        <div class="col-span-3 text-right space-x-2">
+                            <button onclick="editCompany(${c.id})" class="px-2 py-1 rounded bg-white/10 text-[10px] font-bold uppercase text-slate-200 hover:bg-white/20">Editar</button>
+                            <button onclick="deleteCompany(${c.id})" class="px-2 py-1 rounded bg-red-500/20 text-[10px] font-bold uppercase text-red-200 hover:bg-red-500/30">Desactivar</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                list.innerHTML = `<div class="p-4 text-red-400 text-sm">${e.message}</div>`;
+            }
+        }
+
+        async function createCompany(event) {
+            event.preventDefault();
+            const feedback = document.getElementById('company-feedback');
+            const payload = {
+                nombre: document.getElementById('cmp-nombre').value.trim(),
+                alias: document.getElementById('cmp-alias').value.trim(),
+                imap_host: document.getElementById('cmp-imap-host').value.trim(),
+                imap_port: Number(document.getElementById('cmp-imap-port').value || 993),
+                email_user: document.getElementById('cmp-email-user').value.trim(),
+                email_pass: document.getElementById('cmp-email-pass').value.trim(),
+                smtp_host: document.getElementById('cmp-smtp-host').value.trim(),
+                smtp_port: Number(document.getElementById('cmp-smtp-port').value || 465)
+            };
+            feedback.textContent = 'Creando cuenta...';
+            feedback.className = 'text-xs font-semibold mt-3 text-slate-300';
+            const res = await fetch(`${API_URL}/admin/empresas`, {
+                method: 'POST',
+                headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                feedback.textContent = data.error || 'No se pudo crear cuenta';
+                feedback.className = 'text-xs font-semibold mt-3 text-red-300';
+                return;
+            }
+            document.getElementById('company-form').reset();
+            closeCreateCompanyForm();
+            feedback.textContent = `Cuenta creada: ${data.empresa.nombre}`;
+            feedback.className = 'text-xs font-semibold mt-3 text-emerald-300';
+            await loadCompaniesAdmin();
+            await loadEmpresas();
+        }
+
+        async function editCompany(id) {
+            const company = adminCompanies.find(c => c.id === id);
+            if (!company) return;
+            selectedCompanyId = id;
+            document.getElementById('edit-cmp-nombre').value = company.nombre || '';
+            document.getElementById('edit-cmp-alias').value = company.alias || '';
+            document.getElementById('edit-cmp-imap-host').value = company.imap_host || '';
+            document.getElementById('edit-cmp-imap-port').value = company.imap_port || 993;
+            document.getElementById('edit-cmp-email-user').value = company.email_user || '';
+            document.getElementById('edit-cmp-email-pass').value = '';
+            document.getElementById('edit-cmp-smtp-host').value = company.smtp_host || '';
+            document.getElementById('edit-cmp-smtp-port').value = company.smtp_port || 465;
+            document.getElementById('edit-cmp-activo').checked = !!company.activo;
+            document.getElementById('company-edit-panel').classList.remove('hidden');
+        }
+
+        function closeCompanyEdit() {
+            selectedCompanyId = null;
+            document.getElementById('company-edit-panel').classList.add('hidden');
+        }
+
+        async function submitCompanyEdit(event) {
+            event.preventDefault();
+            if (!selectedCompanyId) return;
+            const payload = {
+                nombre: document.getElementById('edit-cmp-nombre').value.trim(),
+                alias: document.getElementById('edit-cmp-alias').value.trim(),
+                imap_host: document.getElementById('edit-cmp-imap-host').value.trim(),
+                imap_port: Number(document.getElementById('edit-cmp-imap-port').value || 993),
+                email_user: document.getElementById('edit-cmp-email-user').value.trim(),
+                smtp_host: document.getElementById('edit-cmp-smtp-host').value.trim(),
+                smtp_port: Number(document.getElementById('edit-cmp-smtp-port').value || 465),
+                activo: document.getElementById('edit-cmp-activo').checked
+            };
+            const newPass = document.getElementById('edit-cmp-email-pass').value.trim();
+            if (newPass) payload.email_pass = newPass;
+            const res = await fetch(`${API_URL}/admin/empresas/${selectedCompanyId}`, {
+                method: 'PUT',
+                headers: {'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!res.ok) { alert(data.error || 'No se pudo actualizar empresa'); return; }
+            closeCompanyEdit();
+            await loadCompaniesAdmin();
+            await loadEmpresas();
+        }
+
+        async function deleteCompany(id) {
+            const company = adminCompanies.find(c => c.id === id);
+            if (!company) return;
+            if (!confirm(`¿Desactivar cuenta de empresa ${company.nombre}?`)) return;
+            const res = await fetch(`${API_URL}/admin/empresas/${id}`, {
+                method: 'DELETE',
+                headers: {'Authorization': 'Bearer ' + token}
+            });
+            const data = await res.json();
+            if (!res.ok) { alert(data.error || 'No se pudo desactivar empresa'); return; }
+            await loadCompaniesAdmin();
+            await loadEmpresas();
+        }
+
+        function getFilteredHilos() {
+            const companyFilter = document.getElementById('filter-company') ? document.getElementById('filter-company').value : 'ALL';
+            const statusFilter = document.getElementById('filter-status') ? document.getElementById('filter-status').value : 'ALL';
+            const operatorFilter = document.getElementById('filter-operator') ? document.getElementById('filter-operator').value : 'ALL';
+            const searchQuery = document.getElementById('global-search') ? document.getElementById('global-search').value.toLowerCase().trim() : '';
+
+            let filtered = hilos;
+
+            // Scope del sidebar (empresa + carpeta).
+            if (activeCompany) {
+                filtered = filtered.filter(h => h.cuenta_empresa === activeCompany && (h.folder || 'INBOX') === activeFolder);
+            }
+
+            // Filtro global de empresa desde header.
+            if (companyFilter !== 'ALL') {
+                filtered = filtered.filter(h => h.cuenta_empresa === companyFilter);
+            }
+
+            if (statusFilter !== 'ALL') {
+                filtered = filtered.filter(h => h.estado_ticket === statusFilter);
+            }
+
+            if (operatorFilter !== 'ALL') {
+                filtered = filtered.filter(h => h.asignado_a === operatorFilter);
+            }
+
+            if (searchQuery) {
+                filtered = filtered.filter(h =>
+                    (h.asunto || '').toLowerCase().includes(searchQuery) ||
+                    (h.remitente || '').toLowerCase().includes(searchQuery) ||
+                    (h.mensaje || '').toLowerCase().includes(searchQuery)
+                );
+            }
+
+            return filtered;
+        }
+
+        function isNoGlobalFilterApplied() {
+            const companyFilter = document.getElementById('filter-company') ? document.getElementById('filter-company').value : 'ALL';
+            const statusFilter = document.getElementById('filter-status') ? document.getElementById('filter-status').value : 'ALL';
+            const operatorFilter = document.getElementById('filter-operator') ? document.getElementById('filter-operator').value : 'ALL';
+            const searchQuery = document.getElementById('global-search') ? document.getElementById('global-search').value.trim() : '';
+            return companyFilter === 'ALL' && statusFilter === 'ALL' && operatorFilter === 'ALL' && !searchQuery;
+        }
+
+        function applyFilters() {
+            saveFilterState();
+            renderThreads();
+            updateStats();
+            updateCharts();
+            const company = document.getElementById('filter-company').value;
+            const status = document.getElementById('filter-status').value;
+            const op = document.getElementById('filter-operator').value;
+            const search = document.getElementById('global-search').value;
+            let text = status === 'ALL' ? 'Todos los estados' : status;
+            if(company !== 'ALL') text = `${company} • ${text}`;
+            if(op !== 'ALL') text += ` • ${op}`;
+            if(search) text += ` • Buscando: "${search}"`;
+            const indicator = document.getElementById('filter-status-indicator');
+            if(indicator) indicator.innerText = text;
+        }
+        function debounceApplyFilters() {
+            clearTimeout(searchDebounceTimer);
+            searchDebounceTimer = setTimeout(() => applyFilters(), 250);
+        }
+
+        function getCurrentFilterState() {
+            return {
+                company: document.getElementById('filter-company') ? document.getElementById('filter-company').value : 'ALL',
+                status: document.getElementById('filter-status') ? document.getElementById('filter-status').value : 'ALL',
+                operator: document.getElementById('filter-operator') ? document.getElementById('filter-operator').value : 'ALL',
+                search: document.getElementById('global-search') ? document.getElementById('global-search').value : '',
+                trendMode: document.getElementById('trend-mode') ? document.getElementById('trend-mode').value : 'daily'
+            };
+        }
+
+        function saveFilterState() {
+            try {
+                localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(getCurrentFilterState()));
+            } catch (e) {}
+        }
+
+        function restoreFilterState() {
+            try {
+                const raw = localStorage.getItem(FILTERS_STORAGE_KEY);
+                if (!raw) return;
+                const state = JSON.parse(raw);
+
+                const filterCompany = document.getElementById('filter-company');
+                const filterStatus = document.getElementById('filter-status');
+                const filterOperator = document.getElementById('filter-operator');
+                const globalSearch = document.getElementById('global-search');
+                const trendMode = document.getElementById('trend-mode');
+
+                if (filterCompany && state.company && [...filterCompany.options].some(o => o.value === state.company)) {
+                    filterCompany.value = state.company;
+                }
+                if (filterStatus && state.status && [...filterStatus.options].some(o => o.value === state.status)) {
+                    filterStatus.value = state.status;
+                }
+                if (filterOperator && state.operator && [...filterOperator.options].some(o => o.value === state.operator)) {
+                    filterOperator.value = state.operator;
+                }
+                if (globalSearch && typeof state.search === 'string') {
+                    globalSearch.value = state.search;
+                }
+                if (trendMode && state.trendMode && [...trendMode.options].some(o => o.value === state.trendMode)) {
+                    trendMode.value = state.trendMode;
+                }
+            } catch (e) {}
+        }
+
+        function onTrendModeChange() {
+            saveFilterState();
+            updateCharts();
+        }
+
+        async function loadEmpresas() {
+            const res = await fetch(`${API_URL}/empresas`, { headers: {'Authorization': 'Bearer ' + token} });
+            empresas = await res.json();
+            const filterCompany = document.getElementById('filter-company');
+            if (filterCompany) {
+                filterCompany.innerHTML = '<option value="ALL" class="bg-[#1a1c1e]">TODAS LAS EMPRESAS</option>' +
+                    empresas.map(e => `<option value="${e.nombre}" class="bg-[#1a1c1e]">${e.nombre.toUpperCase()}</option>`).join('');
+            }
+            renderSidebar();
+        }
+
     </script>
 </body>
 </html>
