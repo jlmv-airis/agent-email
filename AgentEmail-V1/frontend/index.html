@@ -761,7 +761,7 @@
                     </div>
                     <div class="px-4"><span class="px-3 py-1.5 rounded-full text-[9px] font-black uppercase ${cfg.bg} ${cfg.text} border ${cfg.border}">${m.estado_ticket}</span></div>
                     <div class="px-4"><select onchange="assignTicket('${m.thread_id}', this.value)" onclick="event.stopPropagation()" class="w-full bg-transparent text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:text-white transition-colors"><option value="" class="bg-[#1a1c1e]">--</option>${operators.map(op => `<option value="${op.username}" class="bg-[#1a1c1e]" ${m.asignado_a === op.username ? 'selected' : ''}>${op.username.toUpperCase()}</option>`).join('')}</select></div>
-                    <div class="text-center text-slate-500">${m.adjuntos ? '📎' : '—'}</div>
+                    <div class="text-center text-slate-300 font-bold text-xs">${m.adjuntos > 0 ? `📎 ${m.adjuntos}` : '—'}</div>
                     <div class="text-right pl-4 text-[11px] font-bold text-slate-300">${new Date(m.fecha).toLocaleDateString()}</div>
                 </div>`;
             }).join('');
@@ -773,7 +773,104 @@
             try { await fetch(`${API_URL}/imap/sync-all`, { method: 'POST', headers: {'Authorization': 'Bearer ' + token} }); await loadData(); } catch (e) {} finally { btn.disabled = false; btn.classList.remove('opacity-50'); icon.classList.remove('animate-spin'); }
         }
 
-        function openInspector(tid) { currentTid = tid; const m = hilos.find(h => h.thread_id === tid); if (!m) return; document.getElementById('inspector-overlay').style.display = 'flex'; document.getElementById('ins-subject').innerText = m.asunto; document.getElementById('ins-from').innerText = m.remitente; document.getElementById('ins-body').innerHTML = `<div class="bubble-apple bubble-in">${m.mensaje}</div>`; }
+        async function openInspector(tid) {
+            currentTid = tid;
+            const m = hilos.find(h => h.thread_id === tid);
+            if (!m) return;
+            document.getElementById('inspector-overlay').style.display = 'flex';
+            document.getElementById('ins-subject').innerText = m.asunto;
+            document.getElementById('ins-from').innerText = m.remitente;
+            
+            let attachmentsHTML = '';
+            if (m.archivos) {
+                try {
+                    const attachments = JSON.parse(m.archivos);
+                    if (Array.isArray(attachments) && attachments.length > 0) {
+                        attachmentsHTML = '<div class="border-t pt-4 mt-4"><h4 class="font-bold text-sm mb-2">Archivos Adjuntos:</h4>';
+                        attachments.forEach(att => {
+                            const sizeMB = (att.size / (1024*1024)).toFixed(2);
+                            attachmentsHTML += `<div class="flex items-center justify-between p-2 rounded-lg bg-gray-100">
+                                <div>
+                                    <a href="${API_URL}/attachment/${tid}/${att.filename}" target="_blank" class="text-blue-600 font-semibold">${att.filename}</a>
+                                    <p class="text-xs text-gray-500">${sizeMB} MB</p>
+                                </div>
+                                <a href="${API_URL}/attachment/${tid}/${att.filename}" target="_blank" class="px-3 py-1 rounded-md bg-blue-500 text-white text-xs font-bold">Descargar</a>
+                            </div>`;
+                        });
+                        attachmentsHTML += '</div>';
+                    }
+                } catch(e) {
+                    console.error("Error parsing attachments JSON", e);
+                }
+            }
+
+            let historyHTML = '';
+            try {
+                const res = await fetch(`${API_URL}/hilos/${tid}/historial`, { headers: {'Authorization': 'Bearer ' + token} });
+                const history = await res.json();
+                if (Array.isArray(history) && history.length > 0) {
+                    historyHTML = '<div class="border-t pt-4 mt-4"><h4 class="font-bold text-sm mb-2">Historial del Ticket:</h4><ul class="space-y-2">';
+                    history.forEach(item => {
+                        const cambios = JSON.parse(item.cambios);
+                        let cambioStr = '';
+                        if(cambios.estado_ticket) {
+                            cambioStr += `Estado: ${cambios.estado_ticket.old} -> ${cambios.estado_ticket.new}`;
+                        }
+                        if(cambios.asignado_a) {
+                            cambioStr += ` Asignado a: ${cambios.asignado_a.old || 'nadie'} -> ${cambios.asignado_a.new || 'nadie'}`;
+                        }
+                        historyHTML += `<li class="text-xs text-gray-600">${new Date(item.timestamp).toLocaleString()} - ${item.username || 'Sistema'} - ${cambioStr}</li>`;
+                    });
+                    historyHTML += '</ul></div>';
+                }
+            } catch(e) {
+                console.error("Error fetching history", e);
+            }
+
+            document.getElementById('ins-body').innerHTML = `<div class="bubble-apple bubble-in">${sanitizeHTML(m.mensaje)}</div>${attachmentsHTML}${historyHTML}`;
+        }
+
+        function sanitizeHTML(str) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(str, 'text/html');
+            const allowedTags = ['P', 'B', 'I', 'U', 'A', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'DIV', 'SPAN', 'IMG', 'UL', 'OL', 'LI', 'BR', 'HR', 'TABLE', 'THEAD', 'TBODY', 'TR', 'TH', 'TD', 'BLOCKQUOTE'];
+            const allowedAttrs = ['href', 'src', 'alt', 'title', 'style', 'class', 'id'];
+
+            function sanitizeNode(node) {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    return;
+                }
+                if (node.nodeType !== Node.ELEMENT_NODE || !allowedTags.includes(node.tagName)) {
+                    node.parentNode.removeChild(node);
+                    return;
+                }
+
+                const attributes = Array.from(node.attributes);
+                for (const attr of attributes) {
+                    if (!allowedAttrs.includes(attr.name.toLowerCase()) || (attr.name.toLowerCase() === 'href' && (attr.value.startsWith('javascript:') || !attr.value.startsWith('http')))) {
+                        node.removeAttribute(attr.name);
+                    }
+                    if (attr.name.toLowerCase() === 'style') {
+                        // Basic style attribute sanitization
+                        const styleRules = attr.value.split(';').filter(rule => {
+                            const [prop] = rule.split(':');
+                            const allowedProps = ['color', 'background-color', 'font-weight', 'font-style', 'text-decoration', 'width', 'height', 'text-align'];
+                            return prop && allowedProps.includes(prop.trim().toLowerCase());
+                        });
+                        node.setAttribute('style', styleRules.join(';'));
+                    }
+                }
+
+                const children = Array.from(node.children);
+                for (const child of children) {
+                    sanitizeNode(child);
+                }
+            }
+
+            Array.from(doc.body.children).forEach(child => sanitizeNode(child));
+            return doc.body.innerHTML;
+        }
+
         function closeInspector() { document.getElementById('inspector-overlay').style.display = 'none'; }
         async function updateStatus(estado) {
             if (!currentTid) return;

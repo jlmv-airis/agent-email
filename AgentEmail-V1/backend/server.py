@@ -4,6 +4,7 @@ import time
 import jwt
 from datetime import datetime, timedelta
 from functools import wraps
+import json
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -35,6 +36,8 @@ DATABASE_DIR = config.DATABASE_DIR
 KEY_FILE = config.ENCRYPTION_KEY_FILE
 SECRET_KEY = config.SECRET_KEY
 JWT_EXPIRE_HOURS = config.JWT_EXPIRE_HOURS
+ATTACHMENT_DIR = os.path.join(BASE_DIR, 'attachments')
+os.makedirs(ATTACHMENT_DIR, exist_ok=True)
 
 def get_cipher():
     if not os.path.exists(KEY_FILE):
@@ -259,6 +262,27 @@ def get_hilos():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/hilos/<thread_id>/historial', methods=['GET'])
+@token_required
+def get_hilo_historial(thread_id):
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute('''
+            SELECT a.timestamp, a.accion, a.cambios, u.username 
+            FROM auditoria a 
+            JOIN hilos h ON a.registro_id = h.id
+            LEFT JOIN usuarios u ON a.usuario_id = u.id
+            WHERE h.thread_id = ? AND a.tabla = 'hilos'
+            ORDER BY a.timestamp DESC
+        ''', (thread_id,))
+        historial = [dict(row) for row in cur.fetchall()]
+        cur.close()
+        conn.close()
+        return jsonify(historial)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/hilos/update', methods=['PUT'])
 @token_required
 def update_hilo():
@@ -274,17 +298,25 @@ def update_hilo():
         conn = get_db_connection()
         cur = conn.cursor()
         
+        # Get current state for audit
+        cur.execute('SELECT id, estado_ticket, asignado_a FROM hilos WHERE thread_id = ?', (tid,))
+        current_hilo = cur.fetchone()
+        if not current_hilo:
+            return jsonify({'error': 'Hilo no encontrado'}), 404
+
         updates = []
         params = []
+        cambios = {}
         
-        if estado:
+        if estado and estado != current_hilo['estado_ticket']:
             updates.append("estado_ticket = ?")
             params.append(estado)
+            cambios['estado_ticket'] = {'old': current_hilo['estado_ticket'], 'new': estado}
             if estado == 'CERRADO':
                 updates.append("fecha_resuelto = ?")
                 params.append(datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         
-        if asignado_a is not None:
+        if asignado_a is not None and asignado_a != current_hilo['asignado_a']:
             if asignado_a != "":
                 cur.execute(
                     "SELECT id FROM usuarios WHERE username = ? AND activo = 1 LIMIT 1",
@@ -294,7 +326,8 @@ def update_hilo():
                     return jsonify({'error': 'Operador no valido o inactivo'}), 400
             updates.append("asignado_a = ?")
             params.append(asignado_a)
-            if asignado_a != "":
+            cambios['asignado_a'] = {'old': current_hilo['asignado_a'], 'new': asignado_a}
+            if asignado_a != "" and 'estado_ticket' not in cambios:
                 updates.append("estado_ticket = 'ASIGNADO'")
         
         if not updates:
@@ -304,6 +337,18 @@ def update_hilo():
         query = f"UPDATE hilos SET {', '.join(updates)} WHERE thread_id = ?"
         cur.execute(query, params)
         
+        # Audit log
+        if cambios:
+            cur.execute('''
+                INSERT INTO auditoria (usuario_id, tabla, accion, registro_id, cambios, ip_address)
+                VALUES (?, 'hilos', 'update', ?, ?, ?)
+            ''', (
+                request.user.get('id'), 
+                current_hilo['id'], 
+                json.dumps(cambios),
+                request.remote_addr
+            ))
+
         conn.commit()
         cur.close()
         conn.close()
@@ -341,8 +386,61 @@ def get_operadores():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+def audit_log(action):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            # Execute the function
+            response = f(*args, **kwargs)
+            
+            # Log the action
+            try:
+                user_id = request.user.get('id') if hasattr(request, 'user') else None
+                
+                # Prepare details
+                details = {
+                    'endpoint': request.path,
+                    'method': request.method,
+                    'params': kwargs,
+                }
+
+                # Try to get response data, but handle non-json responses
+                try:
+                    response_data = response.get_json()
+                except Exception:
+                    response_data = None
+                
+                cambios = {
+                    'request_data': request.get_json(silent=True) or {},
+                    'response_data': response_data
+                }
+
+                conn = get_db_connection()
+                cur = conn.cursor()
+                cur.execute('''
+                    INSERT INTO auditoria (usuario_id, tabla, accion, registro_id, cambios, ip_address)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', (
+                    user_id,
+                    'admin',
+                    action,
+                    None,
+                    json.dumps(cambios),
+                    request.remote_addr
+                ))
+                conn.commit()
+                cur.close()
+                conn.close()
+            except Exception as e:
+                logger.error(f"Error en auditoria: {e}")
+
+            return response
+        return wrapper
+    return decorator
+
 @app.route('/api/admin/colaboradores', methods=['GET'])
 @admin_required
+@audit_log('get_colaboradores')
 def get_colaboradores():
     try:
         conn = get_db_connection()
@@ -362,6 +460,7 @@ def get_colaboradores():
 
 @app.route('/api/admin/colaboradores', methods=['POST'])
 @admin_required
+@audit_log('create_colaborador')
 def create_colaborador():
     try:
         data = request.json or {}
@@ -407,6 +506,7 @@ def create_colaborador():
 
 @app.route('/api/admin/colaboradores/<int:user_id>', methods=['PUT'])
 @admin_required
+@audit_log('update_colaborador')
 def update_colaborador(user_id):
     try:
         data = request.json or {}
@@ -461,6 +561,7 @@ def update_colaborador(user_id):
 
 @app.route('/api/admin/colaboradores/<int:user_id>', methods=['DELETE'])
 @admin_required
+@audit_log('delete_colaborador')
 def delete_colaborador(user_id):
     try:
         conn = get_db_connection()
@@ -486,6 +587,7 @@ def delete_colaborador(user_id):
 
 @app.route('/api/admin/empresas', methods=['GET'])
 @admin_required
+@audit_log('get_empresas_admin')
 def get_empresas_admin():
     try:
         conn = get_db_connection()
@@ -504,6 +606,7 @@ def get_empresas_admin():
 
 @app.route('/api/admin/empresas', methods=['POST'])
 @admin_required
+@audit_log('create_empresa_admin')
 def create_empresa_admin():
     try:
         data = request.json or {}
@@ -547,6 +650,7 @@ def create_empresa_admin():
 
 @app.route('/api/admin/empresas/<int:empresa_id>', methods=['PUT'])
 @admin_required
+@audit_log('update_empresa_admin')
 def update_empresa_admin(empresa_id):
     try:
         data = request.json or {}
@@ -605,6 +709,7 @@ def update_empresa_admin(empresa_id):
 
 @app.route('/api/admin/empresas/<int:empresa_id>', methods=['DELETE'])
 @admin_required
+@audit_log('delete_empresa_admin')
 def delete_empresa_admin(empresa_id):
     try:
         conn = get_db_connection()
@@ -624,6 +729,7 @@ def delete_empresa_admin(empresa_id):
 
 @app.route('/api/admin/db-stats', methods=['GET'])
 @admin_required
+@audit_log('get_db_stats')
 def get_db_stats():
     """Obtener estadísticas de la base de datos"""
     try:
@@ -635,6 +741,7 @@ def get_db_stats():
 
 @app.route('/api/admin/db-optimize', methods=['POST'])
 @admin_required
+@audit_log('optimize_database')
 def optimize_database():
     """Ejecutar optimizaciónes de BD (ANALYZE, VACUUM)"""
     try:
@@ -651,6 +758,7 @@ def optimize_database():
 
 @app.route('/api/admin/backups', methods=['GET'])
 @admin_required
+@audit_log('list_backups')
 def list_backups():
     """Listar todos los backups disponibles"""
     try:
@@ -662,6 +770,7 @@ def list_backups():
 
 @app.route('/api/admin/backup/create', methods=['POST'])
 @admin_required
+@audit_log('create_backup')
 def create_backup():
     """Crear backup manual"""
     try:
@@ -676,6 +785,7 @@ def create_backup():
 
 @app.route('/api/admin/backup/cleanup', methods=['POST'])
 @admin_required
+@audit_log('cleanup_backups')
 def cleanup_backups():
     """Limpiar backups antiguos"""
     try:
@@ -687,6 +797,7 @@ def cleanup_backups():
 
 @app.route('/api/admin/backup/restore/<backup_filename>', methods=['POST'])
 @admin_required
+@audit_log('restore_backup')
 def restore_backup(backup_filename):
     """Restaurar base de datos desde backup"""
     try:
@@ -699,6 +810,20 @@ def restore_backup(backup_filename):
     except Exception as e:
         logger.error(f"Error restaurando backup: {e}")
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/attachment/<path:thread_id>/<path:filename>')
+@token_required
+def get_attachment(thread_id, filename):
+    # Basic security check
+    if '..' in thread_id or '..' in filename:
+        return jsonify({'error': 'Ruta invalida'}), 400
+    
+    attachment_path = os.path.join(ATTACHMENT_DIR, thread_id, filename)
+    
+    if not os.path.exists(attachment_path):
+        return jsonify({'error': 'Adjunto no encontrado'}), 404
+        
+    return send_file(attachment_path)
 
 @app.route('/api/imap/sync-all', methods=['POST'])
 @token_required
@@ -725,17 +850,40 @@ def sync_all_emails():
                         raw_id = msg.uid or msg.message_id
                         tid = f"{emp['email_user']}_{raw_id}"
                         
+                        archivos_json = None
+                        if msg.attachments:
+                            attachment_metas = []
+                            thread_attachment_dir = os.path.join(ATTACHMENT_DIR, tid)
+                            os.makedirs(thread_attachment_dir, exist_ok=True)
+                            
+                            for att in msg.attachments:
+                                # Sanitize filename
+                                filename = "".join(c for c in att.filename if c.isalnum() or c in ('.', '_', '-')).rstrip()
+                                if not filename:
+                                    filename = f"attachment_{int(time.time())}"
+
+                                filepath = os.path.join(thread_attachment_dir, filename)
+                                with open(filepath, 'wb') as f:
+                                    f.write(att.payload)
+                                attachment_metas.append({
+                                    'filename': filename,
+                                    'content_type': att.content_type,
+                                    'size': len(att.payload)
+                                })
+                            archivos_json = json.dumps(attachment_metas)
+
                         # Insertar o ignorar si ya existe
                         cur.execute('''
                             INSERT OR IGNORE INTO hilos (
                                 thread_id, remitente, asunto, mensaje, cuenta_empresa, 
-                                correo_empresa, folder, fecha, adjuntos, estado_ticket
-                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                correo_empresa, folder, fecha, adjuntos, archivos, estado_ticket
+                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                         ''', (
                             tid, msg.from_, msg.subject, msg.html or msg.text, 
                             emp['nombre'], emp['email_user'], 'INBOX', 
                             msg.date.strftime('%Y-%m-%d %H:%M:%S'), 
-                            1 if msg.attachments else 0, 'PENDIENTE'
+                            len(msg.attachments) if msg.attachments else 0, 
+                            archivos_json, 'PENDIENTE'
                         ))
                         if cur.rowcount > 0:
                             synced_count += 1

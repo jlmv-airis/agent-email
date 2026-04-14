@@ -28,11 +28,11 @@ Documento operativo para ejecutar mejoras del producto sin perder foco en estabi
 - [x] Endpoint `PUT /api/hilos/update`.
 
 ### Pendiente
-- [ ] Graficos de actividad (hora/dia) en dashboard.
-- [ ] Filtros por empresa, operador y estado.
-- [ ] Busqueda global por remitente/asunto/contenido.
-- [ ] Inspector Pro: HTML, adjuntos, historial de cambios.
-- [ ] Logs administrativos en backend.
+- [x] Graficos de actividad (hora/dia) en dashboard.
+- [x] Filtros por empresa, operador y estado.
+- [x] Busqueda global por remitente/asunto/contenido.
+- [x] Inspector Pro: HTML, adjuntos, historial de cambios.
+- [x] Logs administrativos en backend.
 - [ ] Pruebas de concurrencia, persistencia y responsive.
 
 ---
@@ -43,12 +43,12 @@ Documento operativo para ejecutar mejoras del producto sin perder foco en estabi
 **Prioridad:** Alta  
 **Meta:** Permitir analisis rapido y filtrado real de tickets.
 
-- [ ] Implementar grafico de volumen por hora y por dia (Chart.js).
-- [ ] Agregar filtros combinables:
-  - [ ] Empresa.
-  - [ ] Operador asignado.
-  - [ ] Estado del ticket.
-- [ ] Agregar buscador global con debounce (cliente) y soporte backend si es necesario.
+- [x] Implementar grafico de volumen por hora y por dia (Chart.js).
+- [x] Agregar filtros combinables:
+  - [x] Empresa.
+  - [x] Operador asignado.
+  - [x] Estado del ticket.
+- [x] Agregar buscador global con debounce (cliente) y soporte backend si es necesario.
 
 **Criterios de aceptacion:**
 - El dashboard refleja cambios de filtros sin recargar pagina.
@@ -59,12 +59,12 @@ Documento operativo para ejecutar mejoras del producto sin perder foco en estabi
 **Prioridad:** Alta  
 **Meta:** Mejorar la calidad de atencion y auditoria.
 
-- [ ] Renderizado seguro de correo HTML en el panel de detalle.
-- [ ] Visualizacion de adjuntos (nombre, tamano, enlace/accion).
-- [ ] Historial de ticket:
-  - [ ] Cambio de estado.
-  - [ ] Cambio de asignacion.
-  - [ ] Usuario/fecha de accion.
+- [x] Renderizado seguro de correo HTML en el panel de detalle.
+- [x] Visualizacion de adjuntos (nombre, tamano, enlace/accion).
+- [x] Historial de ticket:
+  - [x] Cambio de estado.
+  - [x] Cambio de asignacion.
+  - [x] Usuario/fecha de accion.
 
 **Criterios de aceptacion:**
 - El operador puede leer correctamente correos HTML complejos.
@@ -75,9 +75,9 @@ Documento operativo para ejecutar mejoras del producto sin perder foco en estabi
 **Prioridad:** Media  
 **Meta:** Asegurar soporte tecnico y analisis de incidentes.
 
-- [ ] Estandarizar logs de acciones administrativas en backend.
-- [ ] Registrar al menos: endpoint, usuario, accion, resultado, timestamp.
-- [ ] Validar errores esperados con respuestas consistentes (400/401/500).
+- [x] Estandarizar logs de acciones administrativas en backend.
+- [x] Registrar al menos: endpoint, usuario, accion, resultado, timestamp.
+- [x] Validar errores esperados con respuestas consistentes (400/401/500).
 
 **Criterios de aceptacion:**
 - Los logs permiten reconstruir una accion de punta a punta.

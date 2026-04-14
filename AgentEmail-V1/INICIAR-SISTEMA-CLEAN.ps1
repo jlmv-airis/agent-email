@@ -47,6 +47,7 @@ $venvPython = Join-Path $venvDir "Scripts\python.exe"
 $requirementsFile = Join-Path $projectRoot "requirements.txt"
 $appPort = $Port
 
+Write-Host ""
 Write-Host "=========================================="
 Write-Host "  AGENT EMAIL AIRIS V1 - INICIO LOCAL"
 Write-Host "=========================================="
@@ -58,7 +59,6 @@ Assert-Command -CommandName "python"
 
 Set-Location $projectRoot
 
-# Crear carpeta de logs si no existe
 if (-not (Test-Path $logsDir)) {
     Write-Step "Creando directorio de logs"
     New-Item -ItemType Directory -Path $logsDir | Out-Null
@@ -77,22 +77,19 @@ if (-not $SkipInstall) {
     Write-Step "Actualizando pip"
     & $venvPython -m pip install --upgrade pip --quiet
 
-    Write-Step "Instalando dependencias desde requirements.txt y extras"
+    Write-Step "Instalando dependencias desde requirements.txt"
     if (Test-Path $requirementsFile) {
         & $venvPython -m pip install -r $requirementsFile --quiet
-    } else {
-        Write-Host "Aviso: no existe requirements.txt" -ForegroundColor Yellow
     }
 
-    # Instalar paquetes adicionales necesarios
-    Write-Step "Instalando paquetes adicionales requeridos"
-    & $venvPython -m pip install python-json-logger flask-limiter pytest pytest-cov --quiet
+    Write-Step "Instalando paquetes adicionales"
+    & $venvPython -m pip install python-json-logger flask-limiter --quiet
 } else {
-    Write-Host "⚡ SkipInstall activo: se omite instalacion de paquetes" -ForegroundColor Yellow
+    Write-Host "[INFO] SkipInstall activo - saltando instalacion de paquetes" -ForegroundColor Yellow
 }
 
 if (-not (Test-Path $backendDir)) {
-    throw "❌ No se encontro la carpeta backend en '$projectRoot'."
+    throw "No se encontro la carpeta backend en '$projectRoot'."
 }
 
 $portOwner = Get-PortOwnerInfo -Port $appPort
@@ -103,13 +100,13 @@ if ($portOwner) {
     if ($response -eq 's') {
         $newPort = Read-Host "Ingresa el nuevo puerto (1-65535)"
         $appPort = [int]$newPort
-        $env:PORT = "$appPort"
     } else {
         throw "[ERROR] No es posible continuar con el puerto $appPort en uso."
     }
-} else {
-    $env:PORT = "$appPort"
 }
+
+$env:PORT = "$appPort"
+$env:PYTHONUNBUFFERED = "1"
 
 Write-Host ""
 Write-Host "================================================" -ForegroundColor Cyan
@@ -117,10 +114,7 @@ Write-Step "Iniciando servicios..."
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host ""
 
-# Iniciar servidor Flask en background
 Write-Step "Iniciando servidor Flask en puerto $appPort"
-$env:PORT = "$appPort"
-$env:PYTHONUNBUFFERED = "1"
 $serverProcess = Start-Process -FilePath $venvPython `
     -ArgumentList "server.py" `
     -WorkingDirectory $backendDir `
@@ -133,7 +127,6 @@ if ($null -eq $serverProcess) {
 
 Write-Host "[OK] Proceso Flask iniciado (PID: $($serverProcess.Id))" -ForegroundColor Green
 
-# Esperar a que el servidor esta listo
 Write-Step "Esperando a que el servidor este listo (esto puede tomar 5-10 segundos)..."
 $maxAttempts = 15
 $attempt = 0
@@ -147,7 +140,7 @@ while ($attempt -lt $maxAttempts) {
             break
         }
     } catch {
-        # Servidor aún no está listo
+        # Servidor aun no esta listo
     }
     
     Start-Sleep -Seconds 1
@@ -168,7 +161,7 @@ if ($serverReady) {
     Write-Host ""
     Write-Host "[URL] http://localhost:$appPort" -ForegroundColor Cyan
     Write-Host "[CREDS] admin@airis.com / admin123" -ForegroundColor Cyan
-    Write-Host "[INFO] Logs: $logsDir\agent-email.log" -ForegroundColor Cyan
+    Write-Host "[LOGS] $logsDir\agent-email.log" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "[INFO] Informacion:" -ForegroundColor Yellow
     Write-Host "       El servidor esta ejecutandose en background" -ForegroundColor Gray
