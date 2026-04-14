@@ -307,116 +307,130 @@
                 <!-- SECTION 1: Colaboradores -->
                 <section>
                     <div class="flex items-center justify-between mb-6">
-                        <div>
-                            <h4 class="text-white text-lg font-bold tracking-tight">👥 Colaboradores</h4>
-                        </div>
+                        <h4 class="text-white text-lg font-bold tracking-tight">👥 Colaboradores</h4>
+                        <button id="toggle-collaborator-form-btn" type="button" onclick="toggleCreateCollaboratorForm()" class="px-3 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold transition-colors">
+                            + nuevo
+                        </button>
                     </div>
-                    
-                    <div class="grid grid-cols-4 gap-4">
-                        <div class="col-span-3">
-                            <div id="collaborators-list" class="grid gap-2"></div>
-                        </div>
-                        <div class="col-span-1 space-y-3">
-                            <div class="rounded-2xl border border-violet-400/30 bg-gradient-to-br from-violet-500/10 to-violet-600/10 p-5 backdrop-blur-sm">
-                                <h5 class="text-violet-200 text-sm font-bold mb-4">Nuevo</h5>
-                                <button id="toggle-collaborator-form-btn" type="button" onclick="toggleCreateCollaboratorForm()" class="w-full bg-violet-600 hover:bg-violet-500 text-white rounded-xl py-3 text-xs font-bold uppercase tracking-wider transition-colors">
-                                    Agregar
-                                </button>
-                                <form id="collaborator-form" onsubmit="createCollaborator(event)" class="hidden mt-4 space-y-3">
-                                    <input id="col-name" type="text" placeholder="Nombre" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
-                                    <input id="col-username" type="text" placeholder="Username" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
-                                    <input id="col-email" type="email" placeholder="Email" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
-                                    <input id="col-password" type="text" placeholder="Password" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
-                                    <select id="col-role" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
-                                        <option value="operador" class="bg-[#1a1c1e]">Operador</option>
-                                        <option value="admin" class="bg-[#1a1c1e]">Admin</option>
-                                    </select>
-                                    <button type="submit" class="w-full bg-violet-600 hover:bg-violet-500 text-white rounded-lg py-2.5 text-xs font-bold uppercase tracking-wider transition-colors">
-                                        Crear
-                                    </button>
-                                </form>
-                                <p id="collaborator-feedback" class="text-xs font-semibold mt-3 text-slate-300"></p>
-                            </div>
-                            <div id="collaborator-edit-panel" class="hidden rounded-2xl border border-violet-400/50 bg-gradient-to-br from-violet-500/15 to-violet-600/15 p-5 backdrop-blur-sm">
-                                <h5 class="text-violet-200 text-sm font-bold mb-3">Editar</h5>
-                                <form id="collaborator-edit-form" onsubmit="submitCollaboratorEdit(event)" class="space-y-2">
-                                    <input id="edit-col-name" type="text" placeholder="Nombre" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-violet-400/60">
-                                    <input id="edit-col-email" type="email" placeholder="Email" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-violet-400/60">
-                                    <select id="edit-col-role" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-violet-400/60">
-                                        <option value="operador" class="bg-[#1a1c1e]">Operador</option>
-                                        <option value="admin" class="bg-[#1a1c1e]">Admin</option>
-                                    </select>
-                                    <input id="edit-col-password" type="text" placeholder="Password (opt)" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-violet-400/60">
-                                    <div class="flex gap-2 pt-2">
-                                        <button type="submit" class="flex-1 bg-violet-600 hover:bg-violet-500 text-white rounded-lg py-2 text-xs font-bold uppercase tracking-wider">Guardar</button>
-                                        <button type="button" onclick="closeCollaboratorEdit()" class="flex-1 bg-white/10 hover:bg-white/20 text-slate-200 rounded-lg py-2 text-xs font-bold uppercase tracking-wider">X</button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
+                    <div id="collaborators-list" class="grid gap-2"></div>
                 </section>
 
                 <!-- SECTION 2: Empresas -->
                 <section>
                     <div class="flex items-center justify-between mb-6">
-                        <div>
-                            <h4 class="text-white text-lg font-bold tracking-tight">📧 Empresas</h4>
-                        </div>
-                        <button onclick="loadCompaniesAdmin()" class="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold uppercase tracking-wider transition-colors">
-                            ↻ Refrescar
-                        </button>
-                    </div>
-
-                    <div class="grid grid-cols-4 gap-4">
-                        <div class="col-span-3">
-                            <div id="companies-list-admin" class="grid gap-2"></div>
-                        </div>
-                        <div class="col-span-1 space-y-3">
-                            <div class="rounded-2xl border border-blue-400/30 bg-gradient-to-br from-blue-500/10 to-blue-600/10 p-5 backdrop-blur-sm">
-                                <h5 class="text-blue-200 text-sm font-bold mb-4">Nueva</h5>
-                                <button id="toggle-company-form-btn" type="button" onclick="toggleCreateCompanyForm()" class="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-3 text-xs font-bold uppercase tracking-wider mb-3 transition-colors">
-                                    Agregar
-                                </button>
-                                <form id="company-form" onsubmit="createCompany(event)" class="hidden space-y-2">
-                                    <input id="cmp-nombre" type="text" placeholder="Nombre" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                                    <input id="cmp-alias" type="text" placeholder="Alias" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                                    <input id="cmp-imap-host" type="text" placeholder="IMAP host" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                                    <input id="cmp-imap-port" type="number" placeholder="IMAP port" value="993" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                                    <input id="cmp-email-user" type="email" placeholder="Correo" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                                    <input id="cmp-email-pass" type="text" placeholder="Password" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                                    <input id="cmp-smtp-host" type="text" placeholder="SMTP host" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                                    <input id="cmp-smtp-port" type="number" placeholder="SMTP port" value="465" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2.5 text-xs font-bold uppercase tracking-wider transition-colors">
-                                        Crear
-                                    </button>
-                                </form>
-                                <p id="company-feedback" class="text-xs font-semibold mt-3 text-slate-300"></p>
-                            </div>
-                            <div id="company-edit-panel" class="hidden rounded-2xl border border-blue-400/50 bg-gradient-to-br from-blue-500/15 to-blue-600/15 p-5 backdrop-blur-sm">
-                                <h5 class="text-blue-200 text-sm font-bold mb-3">Editar</h5>
-                                <form id="company-edit-form" onsubmit="submitCompanyEdit(event)" class="space-y-2">
-                                    <input id="edit-cmp-nombre" type="text" placeholder="Nombre" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-blue-400/60">
-                                    <input id="edit-cmp-alias" type="text" placeholder="Alias" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-blue-400/60">
-                                    <input id="edit-cmp-imap-host" type="text" placeholder="IMAP host" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-blue-400/60">
-                                    <input id="edit-cmp-imap-port" type="number" placeholder="IMAP port" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-blue-400/60">
-                                    <input id="edit-cmp-email-user" type="email" placeholder="Correo" required class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-blue-400/60">
-                                    <input id="edit-cmp-email-pass" type="text" placeholder="Password (opt)" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-blue-400/60">
-                                    <input id="edit-cmp-smtp-host" type="text" placeholder="SMTP host" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-blue-400/60">
-                                    <input id="edit-cmp-smtp-port" type="number" placeholder="SMTP port" class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-blue-400/60">
-                                    <label class="flex items-center gap-2 text-slate-300 text-xs font-semibold py-1">
-                                        <input id="edit-cmp-activo" type="checkbox" class="accent-blue-500" checked>
-                                        Activa
-                                    </label>
-                                    <div class="flex gap-2 pt-2">
-                                        <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2 text-xs font-bold uppercase tracking-wider">Guardar</button>
-                                        <button type="button" onclick="closeCompanyEdit()" class="flex-1 bg-white/10 hover:bg-white/20 text-slate-200 rounded-lg py-2 text-xs font-bold uppercase tracking-wider">X</button>
-                                    </div>
-                                </form>
-                            </div>
+                        <h4 class="text-white text-lg font-bold tracking-tight">📧 Empresas</h4>
+                        <div class="flex items-center gap-3">
+                            <button id="toggle-company-form-btn" type="button" onclick="toggleCreateCompanyForm()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold transition-colors">
+                                + nuevo
+                            </button>
+                            <button onclick="loadCompaniesAdmin()" class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 text-sm font-bold transition-colors">
+                                ↻
+                            </button>
                         </div>
                     </div>
+                    <div id="companies-list-admin" class="grid gap-2"></div>
                 </section>
+            </div>
+
+            <!-- MODAL: Nueva Colaborador -->
+            <div id="modal-col-create" class="hidden fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                <div class="bg-[#1a1c1e] border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl">
+                    <h3 class="text-white text-lg font-bold mb-6">👥 Nuevo Colaborador</h3>
+                    <form id="collaborator-form" onsubmit="createCollaborator(event)" class="space-y-4">
+                        <input id="col-name" type="text" placeholder="Nombre" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                        <input id="col-username" type="text" placeholder="Username" required class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                        <input id="col-email" type="email" placeholder="Email" required class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                        <input id="col-password" type="text" placeholder="Password" required class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                        <select id="col-role" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                            <option value="operador" class="bg-[#1a1c1e]">Operador</option>
+                            <option value="admin" class="bg-[#1a1c1e]">Admin</option>
+                        </select>
+                        <p id="collaborator-feedback" class="text-xs font-semibold text-slate-300 min-h-5"></p>
+                        <div class="flex gap-3 pt-4">
+                            <button type="submit" class="flex-1 bg-violet-600 hover:bg-violet-500 text-white rounded-lg py-3 text-sm font-bold uppercase tracking-wider transition-colors">
+                                Crear
+                            </button>
+                            <button type="button" onclick="toggleCreateCollaboratorForm()" class="flex-1 bg-white/10 hover:bg-white/20 text-slate-200 rounded-lg py-3 text-sm font-bold uppercase tracking-wider transition-colors">
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- MODAL: Editar Colaborador -->
+            <div id="modal-col-edit" class="hidden fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                <div class="bg-[#1a1c1e] border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl">
+                    <h3 class="text-white text-lg font-bold mb-6">✏️ Editar Colaborador</h3>
+                    <form id="collaborator-edit-form" onsubmit="submitCollaboratorEdit(event)" class="space-y-4">
+                        <input id="edit-col-name" type="text" placeholder="Nombre" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                        <input id="edit-col-email" type="email" placeholder="Email" required class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                        <select id="edit-col-role" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                            <option value="operador" class="bg-[#1a1c1e]">Operador</option>
+                            <option value="admin" class="bg-[#1a1c1e]">Admin</option>
+                        </select>
+                        <input id="edit-col-password" type="text" placeholder="Password (opcional)" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                        <div class="flex gap-3 pt-4">
+                            <button type="submit" class="flex-1 bg-violet-600 hover:bg-violet-500 text-white rounded-lg py-3 text-sm font-bold uppercase tracking-wider transition-colors">
+                                Guardar
+                            </button>
+                            <button type="button" onclick="closeCollaboratorEdit()" class="flex-1 bg-white/10 hover:bg-white/20 text-slate-200 rounded-lg py-3 text-sm font-bold uppercase tracking-wider transition-colors">
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- MODAL: Nueva Empresa -->
+            <div id="modal-cmp-create" class="hidden fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                <div class="bg-[#1a1c1e] border border-white/10 rounded-3xl p-8 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
+                    <h3 class="text-white text-lg font-bold mb-6">📧 Nueva Empresa</h3>
+                    <form id="company-form" onsubmit="createCompany(event)" class="grid grid-cols-2 gap-4">
+                        <input id="cmp-nombre" type="text" placeholder="Nombre" required class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="cmp-alias" type="text" placeholder="Alias" class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="cmp-imap-host" type="text" placeholder="IMAP host" required class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="cmp-imap-port" type="number" placeholder="IMAP port" value="993" class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="cmp-email-user" type="email" placeholder="Correo" required class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="cmp-email-pass" type="text" placeholder="Password" required class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="cmp-smtp-host" type="text" placeholder="SMTP host" class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="cmp-smtp-port" type="number" placeholder="SMTP port" value="465" class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <p id="company-feedback" class="col-span-2 text-xs font-semibold text-slate-300 min-h-5"></p>
+                        <button type="submit" class="col-span-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-3 text-sm font-bold uppercase tracking-wider transition-colors">
+                            Crear
+                        </button>
+                        <button type="button" onclick="toggleCreateCompanyForm()" class="col-span-2 bg-white/10 hover:bg-white/20 text-slate-200 rounded-lg py-3 text-sm font-bold uppercase tracking-wider transition-colors">
+                            Cancelar
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- MODAL: Editar Empresa -->
+            <div id="modal-cmp-edit" class="hidden fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                <div class="bg-[#1a1c1e] border border-white/10 rounded-3xl p-8 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
+                    <h3 class="text-white text-lg font-bold mb-6">✏️ Editar Empresa</h3>
+                    <form id="company-edit-form" onsubmit="submitCompanyEdit(event)" class="grid grid-cols-2 gap-4">
+                        <input id="edit-cmp-nombre" type="text" placeholder="Nombre" required class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="edit-cmp-alias" type="text" placeholder="Alias" class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="edit-cmp-imap-host" type="text" placeholder="IMAP host" required class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="edit-cmp-imap-port" type="number" placeholder="IMAP port" class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="edit-cmp-email-user" type="email" placeholder="Correo" required class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="edit-cmp-email-pass" type="text" placeholder="Password (opcional)" class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="edit-cmp-smtp-host" type="text" placeholder="SMTP host" class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="edit-cmp-smtp-port" type="number" placeholder="SMTP port" class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <label class="col-span-2 flex items-center gap-2 text-slate-300 text-sm font-semibold">
+                            <input id="edit-cmp-activo" type="checkbox" class="accent-blue-500" checked>
+                            Mantener cuenta activa
+                        </label>
+                        <button type="submit" class="col-span-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-3 text-sm font-bold uppercase tracking-wider transition-colors">
+                            Guardar
+                        </button>
+                        <button type="button" onclick="closeCompanyEdit()" class="col-span-2 bg-white/10 hover:bg-white/20 text-slate-200 rounded-lg py-3 text-sm font-bold uppercase tracking-wider transition-colors">
+                            Cancelar
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -824,37 +838,35 @@
         }
 
         function toggleCreateCollaboratorForm() {
-            const form = document.getElementById('collaborator-form');
-            const btn = document.getElementById('toggle-collaborator-form-btn');
-            if (!form || !btn) return;
-            const willOpen = form.classList.contains('hidden');
-            form.classList.toggle('hidden', !willOpen);
-            btn.textContent = willOpen ? 'Ocultar formulario' : 'Agregar colaborador';
+            const modal = document.getElementById('modal-col-create');
+            if (!modal) return;
+            const isHidden = modal.classList.contains('hidden');
+            modal.classList.toggle('hidden', !isHidden);
+            if (isHidden) {
+                document.getElementById('collaborator-form').reset();
+                document.getElementById('collaborator-feedback').textContent = '';
+            }
         }
 
         function closeCreateCollaboratorForm() {
-            const form = document.getElementById('collaborator-form');
-            const btn = document.getElementById('toggle-collaborator-form-btn');
-            if (!form || !btn) return;
-            form.classList.add('hidden');
-            btn.textContent = 'Agregar colaborador';
+            const modal = document.getElementById('modal-col-create');
+            if (modal) modal.classList.add('hidden');
         }
 
         function toggleCreateCompanyForm() {
-            const form = document.getElementById('company-form');
-            const btn = document.getElementById('toggle-company-form-btn');
-            if (!form || !btn) return;
-            const willOpen = form.classList.contains('hidden');
-            form.classList.toggle('hidden', !willOpen);
-            btn.textContent = willOpen ? 'Ocultar formulario' : 'Agregar empresa';
+            const modal = document.getElementById('modal-cmp-create');
+            if (!modal) return;
+            const isHidden = modal.classList.contains('hidden');
+            modal.classList.toggle('hidden', !isHidden);
+            if (isHidden) {
+                document.getElementById('company-form').reset();
+                document.getElementById('company-feedback').textContent = '';
+            }
         }
 
         function closeCreateCompanyForm() {
-            const form = document.getElementById('company-form');
-            const btn = document.getElementById('toggle-company-form-btn');
-            if (!form || !btn) return;
-            form.classList.add('hidden');
-            btn.textContent = 'Agregar empresa';
+            const modal = document.getElementById('modal-cmp-create');
+            if (modal) modal.classList.add('hidden');
         }
 
         function toggleCollaboratorsModal(open) {
@@ -975,12 +987,14 @@
             document.getElementById('edit-col-email').value = user.email || '';
             document.getElementById('edit-col-role').value = user.rol || 'operador';
             document.getElementById('edit-col-password').value = '';
-            document.getElementById('collaborator-edit-panel').classList.remove('hidden');
+            const modal = document.getElementById('modal-col-edit');
+            if (modal) modal.classList.remove('hidden');
         }
 
         function closeCollaboratorEdit() {
             selectedCollaboratorId = null;
-            document.getElementById('collaborator-edit-panel').classList.add('hidden');
+            const modal = document.getElementById('modal-col-edit');
+            if (modal) modal.classList.add('hidden');
         }
 
         async function submitCollaboratorEdit(event) {
@@ -1099,12 +1113,14 @@
             document.getElementById('edit-cmp-smtp-host').value = company.smtp_host || '';
             document.getElementById('edit-cmp-smtp-port').value = company.smtp_port || 465;
             document.getElementById('edit-cmp-activo').checked = !!company.activo;
-            document.getElementById('company-edit-panel').classList.remove('hidden');
+            const modal = document.getElementById('modal-cmp-edit');
+            if (modal) modal.classList.remove('hidden');
         }
 
         function closeCompanyEdit() {
             selectedCompanyId = null;
-            document.getElementById('company-edit-panel').classList.add('hidden');
+            const modal = document.getElementById('modal-cmp-edit');
+            if (modal) modal.classList.add('hidden');
         }
 
         async function submitCompanyEdit(event) {
