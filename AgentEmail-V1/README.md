@@ -3,7 +3,7 @@
 Este es el sistema SaaS unificado de gestión de correos electrónicos. Se ha refactorizado para eliminar dependencias externas (como n8n) y utilizar una arquitectura limpia de **Python (Flask) + SQLite**.
 
 ## 📌 Estado Actual del Proyecto
-- **Fase:** v0.1.0 (Analytics y Notificaciones) - **REFACTORIZADA V1**.
+- **Versión:** v1.0.6 (Control Center Pro) - **REMASTERIZADA**.
 - **Acceso:** [http://localhost:8000](http://localhost:8000) (Se requiere login).
 - **Flujo:** Login ➔ Redirección a Dashboard (index.html).
 
@@ -17,28 +17,23 @@ Este es el sistema SaaS unificado de gestión de correos electrónicos. Se ha re
 - **Email:** `admin@airis.com`
 - **Contraseña:** `admin123` (Verificada)
 
-## ✅ Hitos Alcanzados (V1)
-- [x] **Refactorización completa:** Eliminado n8n, API 100% nativa en Python (Flask).
-- [x] **Sistema de Login:** Autenticación JWT verificada y operativa.
-- [x] **Estructura V1:** Organización de carpetas (backend, frontend, database, docs) consolidada.
-- [x] **Dashboard:** Gráficos y métricas funcionales con Chart.js.
-- [x] **Carga de Datos:** Visualización de cuentas webmail y hilos de correo restaurada y verificada.
-- [x] **Optimización:** Limpieza de errores de consola (TypeError null) y redirección automática de sesión.
-- [x] **UI Sidebar:** Refinado con CSS estándar para asegurar alineación (padding-left: 40px) y márgenes elegantes, superando limitaciones de Tailwind CDN.
-- [x] **Interactividad:** Lógica de redimensionamiento (Resizer) funcional, permitiendo ajustar el ancho del panel dinámicamente.
-- [x] **Estabilidad Frontend:** Eliminación total de lógica de login heredada en `index.html`, erradicando los errores `TypeError` de consola.
-- [x] **Checkpoint V1.1:** Interfaz "Apple Pro" validada visualmente mediante capturas y funcionalmente mediante navegación.
-- [x] **Gestión de Buzones:** Implementada la visualización de carpetas (Entrada, Enviados, Eliminados, Spam) al hacer clic en una empresa del sidebar.
-- [x] **Tema Spark Dark Mode:** Transformación visual completa al estilo Spark (Antracita/Azul Spark) con legibilidad optimizada en hilos.
-- [x] **Perfil de Usuario Apple Style:** Nueva tarjeta de perfil interactiva con avatar dinámico y confirmación de cierre de sesión segura.
-- [x] **UI Inspector:** Contraste mejorado manteniendo el modo claro para la lectura de correos dentro de la interfaz oscura.
+## ✅ Hitos Alcanzados (Versión 1.0.6)
+- [x] **Dashboard Unificado:** Título de encabezado fijo y reubicación dinámica de títulos de vista para mayor claridad estructural.
+- [x] **Métricas Pro Compactas:** Widgets de KPIs rediseñados en una sola línea con iconografía SVG vectorial y efectos de iluminación.
+- [x] **Centro de Herramientas Avanzado:** Unificación de búsqueda global de ancho completo, filtros inteligentes y botones de acción en un solo bloque funcional.
+- [x] **Filtros Temporales y Etiquetas:** Implementación de filtrado por rango de fecha (Hoy, Ayer, 7 días) y sistema inicial de categorización por etiquetas.
+- [x] **Sistema de Notificaciones (Toasts):** Implementación de avisos visuales discretos y elegantes (Verde Esmeralda / Rojo) para retroalimentación de procesos en tiempo real.
+- [x] **Optimización de Gráficas:** Mejora de contraste en Chart.js con textos y ejes en blanco hueso, eliminando la invisibilidad en modo oscuro.
+- [x] **Precisión Temporal:** Visualización de hora destacada (blanco puro) debajo de la fecha en la lista de correos.
+- [x] **Refactorización de Interfaz:** Limpieza del header superior para un aspecto más minimalista y profesional.
+- [x] **Limpieza de Entorno:** Eliminación de contenedores heredados de n8n para liberar recursos del sistema.
 
-## 🚀 Próximos Pasos (Instrucciones para la IA)
-1. **Delegación de Tickets:** Implementar la lógica del backend para el endpoint de asignación de operadores (actualmente solo visual).
-2. **Exportación:** Implementar la descarga de reportes en PDF o Excel desde el Dashboard de analíticas.
-3. **Plantillas:** Sistema de respuestas rápidas (Templates) integrado en el inspector de correos.
-4. **Notificaciones:** Sistema de avisos visuales (Toasts) al recibir nuevos correos.
+## 🚀 Próximos Pasos (V1.0.7)
+1. **Sistema de Etiquetas Dinámico:** Detección automática de etiquetas (Urgente, Soporte, etc.) basada en el contenido y visualización de badges de colores.
+2. **Delegación de Tickets:** Implementar la lógica del backend para el endpoint de asignación de operadores.
+3. **Exportación:** Implementar la descarga de reportes en PDF o Excel desde el Dashboard.
+4. **Modo Oscuro/Claro:** Garantizar consistencia absoluta en el tema visual.
 
 ---
-**Última actualización:** lunes, 13 de abril de 2026.
+**Última actualización:** miércoles, 15 de abril de 2026.
 **Objetivo:** Mantener el código en `index.html` como la única fuente de verdad para el panel administrativo.
