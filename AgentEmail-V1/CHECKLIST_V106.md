@@ -13,8 +13,10 @@ Este archivo registra el progreso de las personalizaciones del panel general en 
 
 ### 1. Interfaz del Panel General (Frontend)
 - [x] **Personalización de Identidad:** Mantenida según preferencia del usuario (Agent Email AIRIS).
-- [x] **Optimización de Widgets:** Iconos SVG, indicadores en vivo y diseño premium implementados.
-- [ ] **Filtros Avanzados:** Implementar filtros por fecha, remitente y etiquetas en la vista principal.
+- [x] **Optimización de Widgets:** Iconos SVG, indicadores en vivo y diseño premium compacto implementados.
+- [x] **Visualización de Tiempo:** Añadida hora en formato destacado debajo de la fecha en cada correo.
+- [x] **Filtros Avanzados:** Implementado filtro por fecha (Hoy, Ayer, 7 días) y reubicación de la sección de filtros sobre la bandeja general.
+- [ ] **Sistema de Etiquetas:** Implementar badges visuales y filtros por etiquetas (Urgente, Soporte, etc.).
 - [ ] **Modo Oscuro/Claro:** Asegurar la consistencia visual entre temas.
 
 ### 2. Funciones de Backend (API)

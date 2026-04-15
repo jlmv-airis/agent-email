@@ -186,25 +186,6 @@
                     <p id="filter-status-indicator" class="text-[9px] font-bold text-blue-400 uppercase mt-1 tracking-widest">Todos los estados</p>
                 </div>
                 <div class="flex items-center gap-4">
-                    <!-- Filtros rápidos -->
-                    <div class="flex items-center bg-white/5 border border-white/5 rounded-full px-4 py-1.5 gap-3">
-                        <select id="filter-company" onchange="applyFilters()" class="bg-transparent text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:text-white transition-colors">
-                            <option value="ALL" class="bg-[#1a1c1e]">TODAS LAS EMPRESAS</option>
-                        </select>
-                        <div class="w-px h-4 bg-white/10"></div>
-                        <select id="filter-status" onchange="applyFilters()" class="bg-transparent text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:text-white transition-colors">
-                            <option value="ALL" class="bg-[#1a1c1e]">TODOS LOS ESTADOS</option>
-                            <option value="PENDIENTE" class="bg-[#1a1c1e]">PENDIENTES</option>
-                            <option value="ASIGNADO" class="bg-[#1a1c1e]">EN PROCESO</option>
-                            <option value="CERRADO" class="bg-[#1a1c1e]">RESUELTOS</option>
-                        </select>
-                        <div class="w-px h-4 bg-white/10"></div>
-                        <select id="filter-operator" onchange="applyFilters()" class="bg-transparent text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:text-white transition-colors">
-                            <option value="ALL" class="bg-[#1a1c1e]">TODOS LOS OPERADORES</option>
-                            <!-- Se poblará dinámicamente -->
-                        </select>
-                    </div>
-
                     <button id="manage-collab-btn" onclick="toggleCollaboratorsModal(true)" class="hidden flex items-center gap-2 px-5 py-2.5 rounded-full bg-violet-600 text-white hover:bg-violet-500 transition-all shadow-lg shadow-violet-900/20">
                         <span class="text-xs">👥</span>
                         <span class="text-[11px] font-bold uppercase tracking-widest">Colaboradores</span>
@@ -221,6 +202,7 @@
                 </div>
             </header>
             <main class="flex-1 overflow-y-auto custom-scrollbar px-10 py-8">
+                <!-- Dashboard Widgets ... -->
                 <div id="admin-dashboard" class="grid grid-cols-4 gap-3 mb-6">
                     <!-- Total Hilos -->
                     <div class="dash-card group hover:border-blue-500/30 transition-all duration-300 !py-3 !px-4">
@@ -295,6 +277,47 @@
                             <h3 class="text-lg font-bold text-white">Cuentas / Empresas</h3>
                         </div>
                         <div class="h-[240px] w-full flex items-center justify-center"><canvas id="companyChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- SECCIÓN DE FILTROS AVANZADOS -->
+                <div class="flex items-center justify-between mb-4 bg-white/5 border border-white/5 rounded-2xl p-4">
+                    <div class="flex items-center gap-6">
+                        <div class="flex flex-col">
+                            <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 ml-1">Empresa</label>
+                            <select id="filter-company" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
+                                <option value="ALL" class="bg-[#1a1c1e]">TODAS LAS EMPRESAS</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 ml-1">Estado</label>
+                            <select id="filter-status" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
+                                <option value="ALL" class="bg-[#1a1c1e]">TODOS LOS ESTADOS</option>
+                                <option value="PENDIENTE" class="bg-[#1a1c1e]">PENDIENTES</option>
+                                <option value="ASIGNADO" class="bg-[#1a1c1e]">EN PROCESO</option>
+                                <option value="CERRADO" class="bg-[#1a1c1e]">RESUELTOS</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 ml-1">Fecha</label>
+                            <select id="filter-date" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
+                                <option value="ALL" class="bg-[#1a1c1e]">CUALQUIER FECHA</option>
+                                <option value="TODAY" class="bg-[#1a1c1e]">HOY</option>
+                                <option value="YESTERDAY" class="bg-[#1a1c1e]">AYER</option>
+                                <option value="LAST7" class="bg-[#1a1c1e]">ÚLTIMOS 7 DÍAS</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col">
+                            <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 ml-1">Operador</label>
+                            <select id="filter-operator" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
+                                <option value="ALL" class="bg-[#1a1c1e]">TODOS LOS OPERADORES</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 self-end pb-1">
+                        <button onclick="resetFilters()" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all">
+                            Limpiar Filtros
+                        </button>
                     </div>
                 </div>
 
@@ -805,7 +828,10 @@
                     <div class="px-4"><span class="px-3 py-1.5 rounded-full text-[9px] font-black uppercase ${cfg.bg} ${cfg.text} border ${cfg.border}">${m.estado_ticket}</span></div>
                     <div class="px-4"><select onchange="assignTicket('${m.thread_id}', this.value)" onclick="event.stopPropagation()" class="w-full bg-transparent text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:text-white transition-colors"><option value="" class="bg-[#1a1c1e]">--</option>${operators.map(op => `<option value="${op.username}" class="bg-[#1a1c1e]" ${m.asignado_a === op.username ? 'selected' : ''}>${op.username.toUpperCase()}</option>`).join('')}</select></div>
                     <div class="text-center text-slate-500">${m.adjuntos ? '📎' : '—'}</div>
-                    <div class="text-right pl-4 text-[11px] font-bold text-slate-300">${new Date(m.fecha).toLocaleDateString()}</div>
+                    <div class="text-right pl-4 flex flex-col justify-center">
+                        <p class="text-[11px] font-bold text-slate-400 leading-tight">${new Date(m.fecha).toLocaleDateString()}</p>
+                        <p class="text-[11px] font-bold text-white leading-tight mt-0.5">${new Date(m.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                    </div>
                 </div>`;
             }).join('');
         }
@@ -1222,6 +1248,7 @@
         function getFilteredHilos() {
             const companyFilter = document.getElementById('filter-company') ? document.getElementById('filter-company').value : 'ALL';
             const statusFilter = document.getElementById('filter-status') ? document.getElementById('filter-status').value : 'ALL';
+            const dateFilter = document.getElementById('filter-date') ? document.getElementById('filter-date').value : 'ALL';
             const operatorFilter = document.getElementById('filter-operator') ? document.getElementById('filter-operator').value : 'ALL';
             const searchQuery = document.getElementById('global-search') ? document.getElementById('global-search').value.toLowerCase().trim() : '';
 
@@ -1245,6 +1272,26 @@
                 filtered = filtered.filter(h => h.asignado_a === operatorFilter);
             }
 
+            // Filtro por Fecha
+            if (dateFilter !== 'ALL') {
+                const now = new Date();
+                const todayStr = now.toISOString().split('T')[0];
+                
+                if (dateFilter === 'TODAY') {
+                    filtered = filtered.filter(h => h.fecha && h.fecha.startsWith(todayStr));
+                } else if (dateFilter === 'YESTERDAY') {
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    const yesterdayStr = yesterday.toISOString().split('T')[0];
+                    filtered = filtered.filter(h => h.fecha && h.fecha.startsWith(yesterdayStr));
+                } else if (dateFilter === 'LAST7') {
+                    const last7 = new Date();
+                    last7.setDate(last7.getDate() - 7);
+                    // Comparamos timestamps para los últimos 7 días
+                    filtered = filtered.filter(h => h.fecha && new Date(h.fecha) >= last7);
+                }
+            }
+
             if (searchQuery) {
                 filtered = filtered.filter(h =>
                     (h.asunto || '').toLowerCase().includes(searchQuery) ||
@@ -1259,9 +1306,10 @@
         function isNoGlobalFilterApplied() {
             const companyFilter = document.getElementById('filter-company') ? document.getElementById('filter-company').value : 'ALL';
             const statusFilter = document.getElementById('filter-status') ? document.getElementById('filter-status').value : 'ALL';
+            const dateFilter = document.getElementById('filter-date') ? document.getElementById('filter-date').value : 'ALL';
             const operatorFilter = document.getElementById('filter-operator') ? document.getElementById('filter-operator').value : 'ALL';
             const searchQuery = document.getElementById('global-search') ? document.getElementById('global-search').value.trim() : '';
-            return companyFilter === 'ALL' && statusFilter === 'ALL' && operatorFilter === 'ALL' && !searchQuery;
+            return companyFilter === 'ALL' && statusFilter === 'ALL' && dateFilter === 'ALL' && operatorFilter === 'ALL' && !searchQuery;
         }
 
         function applyFilters() {
@@ -1271,12 +1319,21 @@
             updateCharts();
             const company = document.getElementById('filter-company').value;
             const status = document.getElementById('filter-status').value;
+            const date = document.getElementById('filter-date').value;
             const op = document.getElementById('filter-operator').value;
             const search = document.getElementById('global-search').value;
+            
             let text = status === 'ALL' ? 'Todos los estados' : status;
             if(company !== 'ALL') text = `${company} • ${text}`;
+            
+            if(date !== 'ALL') {
+                const dateLabels = { 'TODAY': 'Hoy', 'YESTERDAY': 'Ayer', 'LAST7': 'Últimos 7 días' };
+                text += ` • ${dateLabels[date] || date}`;
+            }
+            
             if(op !== 'ALL') text += ` • ${op}`;
             if(search) text += ` • Buscando: "${search}"`;
+            
             const indicator = document.getElementById('filter-status-indicator');
             if(indicator) indicator.innerText = text;
         }
@@ -1289,6 +1346,7 @@
             return {
                 company: document.getElementById('filter-company') ? document.getElementById('filter-company').value : 'ALL',
                 status: document.getElementById('filter-status') ? document.getElementById('filter-status').value : 'ALL',
+                date: document.getElementById('filter-date') ? document.getElementById('filter-date').value : 'ALL',
                 operator: document.getElementById('filter-operator') ? document.getElementById('filter-operator').value : 'ALL',
                 search: document.getElementById('global-search') ? document.getElementById('global-search').value : '',
                 trendMode: document.getElementById('trend-mode') ? document.getElementById('trend-mode').value : 'daily'
@@ -1309,6 +1367,7 @@
 
                 const filterCompany = document.getElementById('filter-company');
                 const filterStatus = document.getElementById('filter-status');
+                const filterDate = document.getElementById('filter-date');
                 const filterOperator = document.getElementById('filter-operator');
                 const globalSearch = document.getElementById('global-search');
                 const trendMode = document.getElementById('trend-mode');
@@ -1318,6 +1377,9 @@
                 }
                 if (filterStatus && state.status && [...filterStatus.options].some(o => o.value === state.status)) {
                     filterStatus.value = state.status;
+                }
+                if (filterDate && state.date && [...filterDate.options].some(o => o.value === state.date)) {
+                    filterDate.value = state.date;
                 }
                 if (filterOperator && state.operator && [...filterOperator.options].some(o => o.value === state.operator)) {
                     filterOperator.value = state.operator;
