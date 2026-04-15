@@ -1,34 +1,50 @@
-# Checklist de Mejoras - Rama V1.0.7
+# Checklist de Mejoras y Recomendaciones - Rama V1.0.7
 
-Este archivo registra el progreso de las personalizaciones en la rama `V1.0.7`.
-
-## 📋 Estado del Proyecto
-- **Rama:** `V1.0.7`
+## 📋 Estado Actual
+- **Versión:** V1.0.7 (Fase de Personalización y Backend)
+- **Desarrollador:** Jorge Meneses
 - **Última Actualización:** 2026-04-15
-- **Objetivo:** Identidad del desarrollador, Etiquetas Dinámicas y Mejoras de Backend.
 
 ---
 
-## 🛠️ Tareas Pendientes
+## 🛠️ Tareas Pendientes (Plan Actual)
 
-### 1. Interfaz y Personalización
-- [x] **Footer del Desarrollador:** Implementado con nombre, cargo, contacto y versión V1.0.7.
-- [ ] **Sistema de Etiquetas Dinámico:** Detección automática en los correos y visualización de badges.
+### 1. Interfaz y Experiencia de Usuario (UI/UX)
+- [x] **Footer Pro:** Implementado con info del desarrollador y cápsula de versión.
+- [ ] **Sistema de Etiquetas Dinámico:** 
+    - [ ] Detección automática por palabras clave (URGENTE, SOPORTE, etc.).
+    - [ ] Visualización de badges de colores en la lista de hilos.
+- [ ] **Acciones Masivas:** Permitir seleccionar varios correos para borrar o marcar como resueltos de un solo golpe.
+- [ ] **Modo Oscuro/Claro:** Refinar el toggle para que sea 100% consistente en todas las vistas.
 
-### 2. Funciones de Backend (API)
-- [ ] **Backend de Asignación:** Lógica para persistir la delegación de tickets a operadores en la base de datos.
-- [ ] **Exportación de Reportes:** Generación de PDF/Excel desde el dashboard.
+### 2. Funciones de Backend (API & Datos)
+- [ ] **Backend de Asignación:** Persistir la delegación de tickets a operadores en la base de datos (actualmente solo es visual).
+- [ ] **Exportación de Datos:** Botón para descargar la vista actual en Excel o PDF (Reportes de gestión).
+- [ ] **Webhooks / Notificaciones:** Configurar que el servidor avise al frontend sin necesidad de recargar (Socket.io).
 
-### 3. Integración y Seguridad
-- [ ] **Validación de Roles:** Asegurar que solo administradores vean ciertas opciones de configuración.
+### 3. Seguridad y Administración
+- [ ] **Validación de Roles Avanzada:** Restringir endpoints sensibles para que solo el rol 'admin' pueda ejecutarlos.
+- [ ] **Gestión de Contraseñas:** Permitir que los colaboradores cambien su propia contraseña desde su perfil.
 
 ---
 
-## ✅ Tareas Completadas
-- [x] **Inicio de Rama V1.0.7:** Estructura base lista.
-- [x] **Footer Pro:** Información de Jorge Meneses integrada.
+## 💡 Recomendaciones Proactivas (Mejoras Futuras)
+
+### A. Inteligencia Artificial (IA) - *Tu Especialidad*
+- [ ] **Resumen de Hilos:** Botón para generar un resumen con IA de conversaciones largas.
+- [ ] **Análisis de Sentimiento:** Badge automático que indique si un cliente está molesto o satisfecho.
+- [ ] **Sugerencia de Respuesta:** Botón que genere una respuesta borrador basada en el historial de la empresa.
+
+### B. Rendimiento
+- [ ] **Paginación / Scroll Infinito:** Si una empresa tiene 5,000 correos, el panel se pondrá lento. Implementar carga por partes.
+- [ ] **Caché de Imágenes:** Optimizar la carga de adjuntos pesados.
+
+### C. Integraciones
+- [ ] **Notificaciones a Telegram/WhatsApp:** Alerta automática cuando llegue un correo etiquetado como "URGENTE".
+- [ ] **Buscador Avanzado:** Permitir buscar específicamente por rango de fechas exacto o por si tiene adjuntos.
 
 ---
 
-## 📝 Notas Adicionales
-- La rama V1.0.6 fue mergeada con éxito en main antes de iniciar esta versión.
+## ✅ Tareas Completadas (V1.0.7)
+- [x] **Identidad Visual:** Footer profesional integrado.
+- [x] **Estructura de Rama:** Repositorio sincronizado y listo para V1.0.7.

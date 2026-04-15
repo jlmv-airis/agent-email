@@ -267,6 +267,7 @@ def update_hilo():
         tid = data.get('thread_id')
         estado = data.get('estado')
         asignado_a = data.get('asignado_a')
+        leido = data.get('leido') # Nuevo campo
         
         if not tid:
             return jsonify({'error': 'thread_id requerido'}), 400
@@ -274,6 +275,14 @@ def update_hilo():
         conn = get_db_connection()
         cur = conn.cursor()
         
+        # Obtener información actual del hilo para sincronización IMAP
+        cur.execute("SELECT * FROM hilos WHERE thread_id = ?", (tid,))
+        hilo_actual = cur.fetchone()
+        if not hilo_actual:
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'Hilo no encontrado'}), 404
+
         updates = []
         params = []
         
@@ -296,20 +305,45 @@ def update_hilo():
             params.append(asignado_a)
             if asignado_a != "":
                 updates.append("estado_ticket = 'ASIGNADO'")
+
+        if leido is not None:
+            updates.append("leido = ?")
+            params.append(1 if leido else 0)
         
         if not updates:
+            cur.close()
+            conn.close()
             return jsonify({'error': 'Nada que actualizar'}), 400
             
         params.append(tid)
         query = f"UPDATE hilos SET {', '.join(updates)} WHERE thread_id = ?"
         cur.execute(query, params)
-        
         conn.commit()
+
+        # --- SINCRONIZACIÓN IMAP (Solo si cambió el estado de lectura) ---
+        if leido is not None:
+            try:
+                # Obtener credenciales de la empresa
+                cur.execute("SELECT * FROM empresas WHERE nombre = ? LIMIT 1", (hilo_actual['cuenta_empresa'],))
+                emp = cur.fetchone()
+                if emp:
+                    password = decrypt_password(emp['email_pass'])
+                    # Extraer UID del thread_id (formato: email_UID)
+                    raw_uid = tid.replace(f"{emp['email_user']}_", "")
+                    
+                    with imap_tools.MailBox(emp['imap_host'], port=emp['imap_port']).login(emp['email_user'], password, initial_folder=hilo_actual['folder'] or 'INBOX') as mailbox:
+                        mailbox.flag(raw_uid, imap_tools.MailMessageFlags.SEEN, leido)
+                        logger.info(f"Sincronizado IMAP: {tid} leido={leido}")
+            except Exception as imap_err:
+                logger.error(f"Error sincronizando IMAP para {tid}: {imap_err}")
+                # No bloqueamos la respuesta principal si falla IMAP, pero lo logueamos
+
         cur.close()
         conn.close()
         
-        return jsonify({'status': 'ok', 'message': 'Ticket actualizado'})
+        return jsonify({'status': 'ok', 'message': 'Ticket actualizado y sincronizado'})
     except Exception as e:
+        logger.error(f"Error en update_hilo: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/empresas', methods=['GET'])
