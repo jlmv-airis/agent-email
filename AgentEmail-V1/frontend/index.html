@@ -221,47 +221,78 @@
                 </div>
             </header>
             <main class="flex-1 overflow-y-auto custom-scrollbar px-10 py-8">
-                <div id="admin-dashboard" class="grid grid-cols-4 gap-4 mb-8">
-                    <div class="dash-card">
-                        <div class="dash-icon bg-blue-500/10 text-blue-400">Σ</div>
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Total Hilos</p>
-                        <p id="dash-total" class="text-2xl font-bold text-white">0</p>
+                <div id="admin-dashboard" class="grid grid-cols-4 gap-3 mb-6">
+                    <!-- Total Hilos -->
+                    <div class="dash-card group hover:border-blue-500/30 transition-all duration-300 !py-3 !px-4">
+                        <div class="flex items-center gap-3">
+                            <div class="dash-icon !w-8 !h-8 bg-blue-500/10 text-blue-400 group-hover:scale-110 transition-transform flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Total Hilos</p>
+                            </div>
+                            <p id="dash-total" class="text-xl font-bold text-white tracking-tight">0</p>
+                        </div>
                     </div>
-                    <div class="dash-card">
-                        <div class="dash-icon bg-amber-500/10 text-amber-400">!</div>
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Pendientes</p>
-                        <p id="dash-pending" class="text-2xl font-bold text-white">0</p>
+
+                    <!-- Pendientes -->
+                    <div class="dash-card group hover:border-amber-500/30 transition-all duration-300 !py-3 !px-4">
+                        <div class="flex items-center gap-3">
+                            <div class="dash-icon !w-8 !h-8 bg-amber-500/10 text-amber-400 group-hover:scale-110 transition-transform flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Pendientes</p>
+                            </div>
+                            <p id="dash-pending" class="text-xl font-bold text-white tracking-tight">0</p>
+                        </div>
                     </div>
-                    <div class="dash-card">
-                        <div class="dash-icon bg-indigo-500/10 text-indigo-400">👤</div>
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Asignados</p>
-                        <p id="dash-assigned" class="text-2xl font-bold text-white">0</p>
+
+                    <!-- Asignados -->
+                    <div class="dash-card group hover:border-indigo-500/30 transition-all duration-300 !py-3 !px-4">
+                        <div class="flex items-center gap-3">
+                            <div class="dash-icon !w-8 !h-8 bg-indigo-500/10 text-indigo-400 group-hover:scale-110 transition-transform flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">En Gestión</p>
+                            </div>
+                            <p id="dash-assigned" class="text-xl font-bold text-white tracking-tight">0</p>
+                        </div>
                     </div>
-                    <div class="dash-card">
-                        <div class="dash-icon bg-emerald-500/10 text-emerald-400">✓</div>
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Resueltos</p>
-                        <p id="dash-resolved" class="text-2xl font-bold text-white">0%</p>
+
+                    <!-- Resueltos -->
+                    <div class="dash-card group hover:border-emerald-500/30 transition-all duration-300 !py-3 !px-4">
+                        <div class="flex items-center gap-3">
+                            <div class="dash-icon !w-8 !h-8 bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Resueltos</p>
+                            </div>
+                            <p id="dash-resolved" class="text-xl font-bold text-white tracking-tight">0%</p>
+                        </div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-3 gap-4 mb-8">
                     <div class="dash-card col-span-2 overflow-hidden">
-                        <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center justify-between mb-4">
                             <div>
                                 <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Analítica</p>
-                                <h3 class="text-lg font-bold text-white">Tendencia</h3>
+                                <h3 class="text-lg font-bold text-white">Tendencia de Tickets</h3>
                             </div>
                             <select id="trend-mode" onchange="onTrendModeChange()" class="bg-white/5 border border-white/10 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-300 outline-none cursor-pointer">
-                                <option value="daily" class="bg-[#1a1c1e]">7 días</option>
+                                <option value="daily" class="bg-[#1a1c1e]">Últimos 7 días</option>
                                 <option value="hourly" class="bg-[#1a1c1e]">Hoy por hora</option>
                             </select>
                         </div>
                         <div class="h-[240px] w-full"><canvas id="trendChart"></canvas></div>
                     </div>
                     <div class="dash-card overflow-hidden">
-                        <div class="mb-2">
+                        <div class="mb-4">
                             <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Distribución</p>
-                            <h3 class="text-lg font-bold text-white">Empresas</h3>
+                            <h3 class="text-lg font-bold text-white">Cuentas / Empresas</h3>
                         </div>
                         <div class="h-[240px] w-full flex items-center justify-center"><canvas id="companyChart"></canvas></div>
                     </div>
@@ -456,21 +487,32 @@
         }
 
         function updateChartTheme() {
-            const isDark = document.body.classList.contains('dark-mode');
-            const color = isDark ? '#ffffff' : '#1d1d1f';
+            // Dado que el panel es inherentemente oscuro, usamos blanco/gris claro para las gráficas
+            const textColor = '#e1e1e6'; 
+            const gridColor = 'rgba(255, 255, 255, 0.05)';
+            
             [trendChart, companyChart].forEach(chart => {
                 if(!chart) return;
-                if(chart.options.scales && chart.options.scales.x) {
-                    chart.options.scales.x.ticks.color = color;
-                    chart.options.scales.y.ticks.color = color;
+                if(chart.options.scales) {
+                    if (chart.options.scales.x) {
+                        chart.options.scales.x.ticks.color = textColor;
+                        chart.options.scales.x.grid.color = gridColor;
+                    }
+                    if (chart.options.scales.y) {
+                        chart.options.scales.y.ticks.color = textColor;
+                        chart.options.scales.y.grid.color = gridColor;
+                    }
                 }
-                chart.options.plugins.legend.labels.color = color;
+                if (chart.options.plugins && chart.options.plugins.legend) {
+                    chart.options.plugins.legend.labels.color = textColor;
+                }
                 chart.update();
             });
         }
 
         window.onload = async () => { 
-            setTheme(localStorage.getItem('theme') || 'light');
+            // Forzamos modo oscuro visualmente
+            document.body.classList.add('dark-mode');
             if (token) {
                 await verifyToken();
             } else {
@@ -517,6 +559,8 @@
             await loadOperators();
             restoreFilterState();
             applyFilters();
+            // Asegurar que los colores de la gráfica se apliquen tras cargar los datos
+            setTimeout(updateChartTheme, 500);
             setInterval(loadData, 30000);
         }
 
@@ -579,18 +623,17 @@
         }
 
         function initCharts() {
-            const isDark = document.body.classList.contains('dark-mode');
-            const textColor = isDark ? '#ffffff' : '#1d1d1f';
+            const textColor = '#e1e1e6';
             const ctxTrend = document.getElementById('trendChart').getContext('2d');
             trendChart = new Chart(ctxTrend, {
                 type: 'line',
-                data: { labels: [], datasets: [{ label: 'Tickets Recibidos', data: [], borderColor: '#007aff', backgroundColor: 'rgba(0, 122, 255, 0.1)', borderWidth: 3, tension: 0.4, fill: true, pointBackgroundColor: '#007aff', pointRadius: 4 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '700' } } } }, scales: { x: { grid: { display: false }, ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '600' } } }, y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '600' }, stepSize: 1 } } } }
+                data: { labels: [], datasets: [{ label: 'Tickets Recibidos', data: [], borderColor: '#3478f6', backgroundColor: 'rgba(52, 120, 246, 0.1)', borderWidth: 3, tension: 0.4, fill: true, pointBackgroundColor: '#3478f6', pointRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '700' } } } }, scales: { x: { grid: { display: false }, ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '600' } } }, y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '600' }, stepSize: 1 } } } }
             });
             const ctxCompany = document.getElementById('companyChart').getContext('2d');
             companyChart = new Chart(ctxCompany, {
                 type: 'doughnut',
-                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#FF9500', '#FF2D55', '#5856D6', '#34C759', '#007AFF', '#AF52DE', '#FFCC00'], borderWidth: 0, hoverOffset: 10 }] },
+                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#FF9500', '#FF2D55', '#5856D6', '#34C759', '#3478f6', '#AF52DE', '#FFCC00'], borderWidth: 0, hoverOffset: 10 }] },
                 options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '700', size: 10 }, usePointStyle: true, padding: 20 } } } }
             });
         }

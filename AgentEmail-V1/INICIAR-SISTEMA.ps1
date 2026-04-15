@@ -58,7 +58,6 @@ Assert-Command -CommandName "python"
 
 Set-Location $projectRoot
 
-# Crear carpeta de logs si no existe
 if (-not (Test-Path $logsDir)) {
     Write-Step "Creando directorio de logs"
     New-Item -ItemType Directory -Path $logsDir | Out-Null
@@ -77,63 +76,45 @@ if (-not $SkipInstall) {
     Write-Step "Actualizando pip"
     & $venvPython -m pip install --upgrade pip --quiet
 
-    Write-Step "Instalando dependencias desde requirements.txt y extras"
+    Write-Step "Instalando dependencias desde requirements.txt"
     if (Test-Path $requirementsFile) {
         & $venvPython -m pip install -r $requirementsFile --quiet
-    } else {
-        Write-Host "Aviso: no existe requirements.txt" -ForegroundColor Yellow
     }
-
-    # Instalar paquetes adicionales necesarios
-    Write-Step "Instalando paquetes adicionales requeridos"
+    
+    Write-Step "Instalando paquetes adicionales"
     & $venvPython -m pip install python-json-logger flask-limiter pytest pytest-cov --quiet
-} else {
-    Write-Host "⚡ SkipInstall activo: se omite instalacion de paquetes" -ForegroundColor Yellow
 }
 
 if (-not (Test-Path $backendDir)) {
-    throw "❌ No se encontro la carpeta backend en '$projectRoot'."
+    throw "No se encontro la carpeta backend."
 }
 
 $portOwner = Get-PortOwnerInfo -Port $appPort
 if ($portOwner) {
-    Write-Host "⚠️  El puerto $appPort ya esta en uso" -ForegroundColor Yellow
-    Write-Host "   PID: $($portOwner.Pid) | Proceso: $($portOwner.Name)"
-    $response = Read-Host "¿Deseas usar un puerto diferente? (s/n)"
-    if ($response -eq 's') {
-        $newPort = Read-Host "Ingresa el nuevo puerto (1-65535)"
-        $appPort = [int]$newPort
-        $env:PORT = "$appPort"
-    } else {
-        throw "❌ No es posible continuar con el puerto $appPort en uso."
-    }
-} else {
-    $env:PORT = "$appPort"
+    Write-Host "Aviso: El puerto $appPort ya esta en uso" -ForegroundColor Yellow
+    Write-Host "PID: $($portOwner.Pid) | Proceso: $($portOwner.Name)"
+    throw "Libera el puerto o elige otro."
 }
 
-Write-Host ""
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
-Write-Step "🚀 Iniciando servicios..."
-Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Cyan
-Write-Host ""
+# Configurar variables de entorno para el proceso hijo
+$env:PORT = "$appPort"
+$env:PYTHONUNBUFFERED = "1"
 
-# Iniciar servidor Flask en background
-Write-Step "Iniciando servidor Flask en puerto $appPort"
+Write-Step "Iniciando servicios..."
+
 $serverProcess = Start-Process -FilePath $venvPython `
     -ArgumentList "server.py" `
     -WorkingDirectory $backendDir `
     -WindowStyle Hidden `
-    -PassThru `
-    -Environment @{"PORT"="$appPort"; "PYTHONUNBUFFERED"="1"}
+    -PassThru
 
 if ($null -eq $serverProcess) {
-    throw "❌ Error al iniciar el servidor Flask"
+    throw "Error al iniciar el servidor Flask"
 }
 
-Write-Host "✅ Proceso Flask iniciado (PID: $($serverProcess.Id))" -ForegroundColor Green
+Write-Host "Proceso Flask iniciado (PID: $($serverProcess.Id))" -ForegroundColor Green
 
-# Esperar a que el servidor esté listo
-Write-Step "Esperando a que el servidor esté listo (esto puede tomar 5-10 segundos)..."
+Write-Step "Esperando a que el servidor este listo..."
 $maxAttempts = 15
 $attempt = 0
 $serverReady = $false
@@ -145,43 +126,16 @@ while ($attempt -lt $maxAttempts) {
             $serverReady = $true
             break
         }
-    } catch {
-        # Servidor aún no está listo
-    }
+    } catch { }
     
     Start-Sleep -Seconds 1
     $attempt++
-    Write-Host "  ⏳ Intento $attempt/$maxAttempts..." -ForegroundColor Gray
 }
 
-Write-Host ""
 if ($serverReady) {
-    Write-Host "✅ Servidor respondiendo correctamente (HTTP 200)" -ForegroundColor Green
-    Write-Host ""
-    Write-Step "Abriendo navegador..."
+    Write-Host "SISTEMA INICIADO EXITOSAMENTE" -ForegroundColor Green
+    Write-Host "URL: http://localhost:$appPort" -ForegroundColor Cyan
     Start-Process "http://localhost:$appPort"
-    Write-Host ""
-    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Green
-    Write-Host "✅ SISTEMA INICIADO EXITOSAMENTE" -ForegroundColor Green
-    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Green
-    Write-Host ""
-    Write-Host "📍 URL: http://localhost:$appPort" -ForegroundColor Cyan
-    Write-Host "🔐 Credenciales: admin@airis.com / admin123" -ForegroundColor Cyan
-    Write-Host "📊 Logs: $logsDir\agent-email.log" -ForegroundColor Cyan
-    Write-Host ""
-    Write-Host "💡 Información:" -ForegroundColor Yellow
-    Write-Host "   • El servidor está ejecutándose en background" -ForegroundColor Gray
-    Write-Host "   • Los logs se guardan en: backend/logs/agent-email.log" -ForegroundColor Gray
-    Write-Host "   • Para detener: Abre Task Manager y finaliza 'python.exe'" -ForegroundColor Gray
-    Write-Host "   • O ejecuta: Stop-Process -Id $($serverProcess.Id)" -ForegroundColor Gray
-    Write-Host ""
 } else {
-    Write-Host "⚠️  Timeout esperando que el servidor esté listo" -ForegroundColor Yellow
-    Write-Host "    El servidor puede estar iniciándose. Revisa los logs." -ForegroundColor Yellow
-    Write-Host ""
-    Write-Host "📊 Ubicación de logs: $logsDir" -ForegroundColor Cyan
-    Write-Host ""
+    Write-Host "Timeout esperando el servidor" -ForegroundColor Yellow
 }
-
-Write-Host "Presiona Enter para continuar o cierra esta ventana..." -ForegroundColor Yellow
-Read-Host
