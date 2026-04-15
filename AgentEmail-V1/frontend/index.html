@@ -185,21 +185,6 @@
                     <h2 id="current-view-title" class="text-lg font-bold tracking-tight text-white leading-none">Bandeja General</h2>
                     <p id="filter-status-indicator" class="text-[9px] font-bold text-blue-400 uppercase mt-1 tracking-widest">Todos los estados</p>
                 </div>
-                <div class="flex items-center gap-4">
-                    <button id="manage-collab-btn" onclick="toggleCollaboratorsModal(true)" class="hidden flex items-center gap-2 px-5 py-2.5 rounded-full bg-violet-600 text-white hover:bg-violet-500 transition-all shadow-lg shadow-violet-900/20">
-                        <span class="text-xs">👥</span>
-                        <span class="text-[11px] font-bold uppercase tracking-widest">Colaboradores</span>
-                    </button>
-
-                    <button onclick="syncAll()" id="sync-btn" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-600 text-white hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20">
-                        <span id="sync-icon" class="text-xs">🔄</span>
-                        <span class="text-[11px] font-bold uppercase tracking-widest">Sincronizar</span>
-                    </button>
-                    <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs">🔍</span>
-                        <input id="global-search" oninput="debounceApplyFilters()" type="text" placeholder="Buscar hilos..." class="bg-white/5 border border-white/5 rounded-full pl-10 pr-4 py-2.5 text-sm outline-none w-64 focus:bg-white/10 focus:border-white/10 text-white transition-all">
-                    </div>
-                </div>
             </header>
             <main class="flex-1 overflow-y-auto custom-scrollbar px-10 py-8">
                 <!-- Dashboard Widgets ... -->
@@ -280,43 +265,62 @@
                     </div>
                 </div>
 
-                <!-- SECCIÓN DE FILTROS AVANZADOS -->
-                <div class="flex items-center justify-between mb-4 bg-white/5 border border-white/5 rounded-2xl p-4">
-                    <div class="flex items-center gap-6">
+                <!-- SECCIÓN DE FILTROS Y ACCIONES -->
+                <div class="flex items-end justify-between mb-4 bg-white/5 border border-white/5 rounded-2xl p-4 gap-4">
+                    <div class="flex items-center gap-4 flex-1">
                         <div class="flex flex-col">
                             <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 ml-1">Empresa</label>
-                            <select id="filter-company" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
-                                <option value="ALL" class="bg-[#1a1c1e]">TODAS LAS EMPRESAS</option>
+                            <select id="filter-company" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
+                                <option value="ALL" class="bg-[#1a1c1e]">TODAS</option>
                             </select>
                         </div>
                         <div class="flex flex-col">
                             <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 ml-1">Estado</label>
-                            <select id="filter-status" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
-                                <option value="ALL" class="bg-[#1a1c1e]">TODOS LOS ESTADOS</option>
+                            <select id="filter-status" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
+                                <option value="ALL" class="bg-[#1a1c1e]">TODOS</option>
                                 <option value="PENDIENTE" class="bg-[#1a1c1e]">PENDIENTES</option>
-                                <option value="ASIGNADO" class="bg-[#1a1c1e]">EN PROCESO</option>
+                                <option value="ASIGNADO" class="bg-[#1a1c1e]">PROCESO</option>
                                 <option value="CERRADO" class="bg-[#1a1c1e]">RESUELTOS</option>
                             </select>
                         </div>
                         <div class="flex flex-col">
                             <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 ml-1">Fecha</label>
-                            <select id="filter-date" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
+                            <select id="filter-date" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
                                 <option value="ALL" class="bg-[#1a1c1e]">CUALQUIER FECHA</option>
                                 <option value="TODAY" class="bg-[#1a1c1e]">HOY</option>
                                 <option value="YESTERDAY" class="bg-[#1a1c1e]">AYER</option>
-                                <option value="LAST7" class="bg-[#1a1c1e]">ÚLTIMOS 7 DÍAS</option>
+                                <option value="LAST7" class="bg-[#1a1c1e]">7 DÍAS</option>
                             </select>
                         </div>
                         <div class="flex flex-col">
                             <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 ml-1">Operador</label>
-                            <select id="filter-operator" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
-                                <option value="ALL" class="bg-[#1a1c1e]">TODOS LOS OPERADORES</option>
+                            <select id="filter-operator" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
+                                <option value="ALL" class="bg-[#1a1c1e]">TODOS</option>
                             </select>
                         </div>
+
+                        <div class="flex flex-col flex-1 max-w-xs">
+                            <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 ml-1">Búsqueda Global</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[10px]">🔍</span>
+                                <input id="global-search" oninput="debounceApplyFilters()" type="text" placeholder="Asunto, remitente..." class="w-full bg-white/5 border border-white/10 rounded-xl pl-8 pr-4 py-2 text-[11px] font-medium outline-none focus:bg-white/10 focus:border-blue-500/50 text-white transition-all">
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-3 self-end pb-1">
-                        <button onclick="resetFilters()" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all">
-                            Limpiar Filtros
+
+                    <div class="flex items-center gap-2 self-end">
+                        <button id="manage-collab-btn" onclick="toggleCollaboratorsModal(true)" class="hidden flex items-center justify-center w-10 h-10 rounded-xl bg-violet-600/20 text-violet-400 hover:bg-violet-600 hover:text-white transition-all border border-violet-500/20" title="Colaboradores">
+                            <span>👥</span>
+                        </button>
+
+                        <button onclick="syncAll()" id="sync-btn" class="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white transition-all border border-blue-500/20" title="Sincronizar">
+                            <span id="sync-icon">🔄</span>
+                        </button>
+                        
+                        <div class="w-px h-6 bg-white/10 mx-1"></div>
+
+                        <button onclick="resetFilters()" class="px-4 h-10 rounded-xl bg-white/5 border border-white/10 text-[9px] font-black text-slate-400 uppercase tracking-widest hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/30 transition-all">
+                            Limpiar
                         </button>
                     </div>
                 </div>
@@ -1391,6 +1395,22 @@
                     trendMode.value = state.trendMode;
                 }
             } catch (e) {}
+        }
+
+        function resetFilters() {
+            const filterCompany = document.getElementById('filter-company');
+            const filterStatus = document.getElementById('filter-status');
+            const filterDate = document.getElementById('filter-date');
+            const filterOperator = document.getElementById('filter-operator');
+            const globalSearch = document.getElementById('global-search');
+
+            if (filterCompany) filterCompany.value = 'ALL';
+            if (filterStatus) filterStatus.value = 'ALL';
+            if (filterDate) filterDate.value = 'ALL';
+            if (filterOperator) filterOperator.value = 'ALL';
+            if (globalSearch) globalSearch.value = '';
+
+            applyFilters();
         }
 
         function onTrendModeChange() {
