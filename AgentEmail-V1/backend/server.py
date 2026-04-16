@@ -929,16 +929,7 @@ def check_ai_quota():
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)})
 
-if __name__ == '__main__':
-    init_db()
-    logger.info(f"🚀 Iniciando Agent Email AIRIS V1")
-    logger.info(f"📍 Ambiente: {config.ENVIRONMENT}")
-    logger.info(f"🔌 http://{config.HOST}:{config.PORT}")
-    app.run(
-        host=config.HOST,
-        port=config.PORT,
-        debug=config.DEBUG
-    )
+# El bloque 'if __name__ == "__main__":' ha sido movido al final del archivo para permitir el registro completo de rutas.
 
 # ==================== API ETIQUETAS ====================
 
@@ -1201,3 +1192,85 @@ def delete_envio_programado(envio_id):
         return jsonify({'status': 'deleted'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# ==================== SMTP SEND ====================
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+@app.route('/api/smtp/send', methods=['POST'])
+@token_required
+def send_email():
+    try:
+        data = request.json
+        thread_id = data.get('thread_id')
+        to_email = data.get('to')
+        subject = data.get('subject')
+        body_html = data.get('body')
+        
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        cur.execute("SELECT correo_empresa FROM hilos WHERE thread_id = ?", (thread_id,))
+        hilo = cur.fetchone()
+        if not hilo:
+            return jsonify({'error': 'Hilo no encontrado'}), 404
+            
+        correo_empresa = hilo['correo_empresa']
+        
+        cur.execute("SELECT * FROM empresas WHERE email_user = ?", (correo_empresa,))
+        empresa = dict(cur.fetchone()) if cur.fetchone() else None
+        if not empresa:
+            cur.execute("SELECT * FROM empresas WHERE email_user = ?", (correo_empresa,)) 
+            row = cur.fetchone()
+            empresa = dict(row) if row else None
+            
+        if not empresa or not empresa.get('smtp_host'):
+            logger.warning(f"Simulando envïo para {correo_empresa} porque no hay credenciales SMTP")
+            pass
+        else:
+            smtp_host = empresa['smtp_host']
+            smtp_port = empresa['smtp_port'] or 465
+            email_user = empresa['email_user']
+            email_pass = decrypt_password(empresa['email_pass'])
+            
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = subject
+            msg['From'] = email_user
+            msg['To'] = to_email
+            msg['In-Reply-To'] = thread_id
+            msg['References'] = thread_id
+            msg.attach(MIMEText(body_html, 'html'))
+            
+            if smtp_port == 465:
+                server = smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10)
+            else:
+                server = smtplib.SMTP(smtp_host, smtp_port, timeout=10)
+                server.starttls()
+                
+            server.login(email_user, email_pass)
+            server.send_message(msg)
+            server.quit()
+            logger.info(f"Email SMTP enviado vía {smtp_host} a {to_email}")
+        
+        cur.execute("UPDATE hilos SET estado_ticket = ? WHERE thread_id = ?",
+                   (data.get('estado', 'RESPONDIDO'), thread_id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return jsonify({'status': 'sent'})
+    except Exception as e:
+        logger.error(f"Error enviando correo SMTP: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+if __name__ == '__main__':
+    init_db()
+    logger.info(f"🚀 Iniciando Agent Email AIRIS V1")
+    logger.info(f"📍 Ambiente: {config.ENVIRONMENT}")
+    logger.info(f"🔌 http://{config.HOST}:{config.PORT}")
+    app.run(
+        host=config.HOST,
+        port=config.PORT,
+        debug=config.DEBUG
+    )

@@ -82,7 +82,7 @@ if (-not $SkipInstall) {
     }
     
     Write-Step "Instalando paquetes adicionales"
-    & $venvPython -m pip install python-json-logger flask-limiter pytest pytest-cov --quiet
+    & $venvPython -m pip install requests python-json-logger flask-limiter pytest pytest-cov --quiet
 }
 
 if (-not (Test-Path $backendDir)) {

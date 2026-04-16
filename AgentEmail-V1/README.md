@@ -1,9 +1,9 @@
-# 📧 Agent Email AIRIS - Versión V1.0.9
+# 📧 Agent Email AIRIS - Versión V1.0.10
 
 Este es el sistema SaaS unificado de gestión de correos electrónicos. Se ha refactorizado para eliminar dependencias externas (como n8n) y utilizar una arquitectura limpia de **Python (Flask) + SQLite**.
 
 ## 📌 Estado Actual del Proyecto
-- **Versión:** V1.0.9
+- **Versión:** V1.0.10
 - **Acceso:** [http://localhost:8000](http://localhost:8000) (Se requiere login).
 - **Flujo:** Login ➔ Redirección a Dashboard (index.html).
 
@@ -31,7 +31,7 @@ python server.py
 ```
 Luego accede a: http://localhost:8000
 
-## ✨ Características Implementadas (V1.0.9)
+## ✨ Características Implementadas (V1.0.10)
 
 ### 🖥️ Interfaz de Usuario
 - [x] **Dashboard Estilo Gmail:** Panel de correos con diseño moderno similar a Gmail
@@ -41,10 +41,11 @@ Luego accede a: http://localhost:8000
 - [x] **Filtros de Búsqueda:** Filtrado por estado, fecha, empresa
 
 ### 📧 Gestión de Correos
-- [x] **Sincronización IMAP:** recibe correos de múltiples cuentas
-- [x] **Estados Automáticos:** Pendiente → Asignado → Respondido → Cerrado
-- [x] **Asignación de Operadores:** Admin puede asignar correos a operadores
-- [x] **Responder/Reenviar:** Funcionalidades completas en el inspector
+- [x] **Sincronización IMAP:** Sincronización transparente de correos de múltiples cuentas
+- [x] **Envío Real SMTP:** Integración nativa para respuestas reales con credenciales mapeadas.
+- [x] **Estados Automáticos Dinámicos:** Pendiente → Asignado → Respondido por [Operador] → Cerrado
+- [x] **Bandeja de Borradores Avanzada:** Autoguardado silencioso del editor y ventana "Mis Borradores" dedicada.
+- [x] **Responder/Reenviar Estilo Gmail:** Modal rediseñado, barra superior enriquecida (Emojis, Color, Links, Attachments visuales) y citas históricas adjuntas.
 
 ### 🤖 Inteligencia Artificial
 - [x] **Generación de Respuestas con IA:** Integración con Google Gemini

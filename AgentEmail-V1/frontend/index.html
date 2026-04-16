@@ -166,6 +166,8 @@
             flex: 1; overflow-y: auto; padding: 0 40px 40px 40px; 
             font-family: 'Google Sans', Roboto, RobotoDraft, Helvetica, Arial, sans-serif; /* Similar font stack */
             color: var(--ins-text-primary);
+            display: flex;
+            flex-direction: column;
         }
         .ins-subject-line { 
             padding: 32px 0 24px 0; 
@@ -262,7 +264,7 @@
             border-top: 1px solid var(--ins-border); /* Use inspector border */
             display: flex; 
             gap: 12px; 
-            margin-top: 32px; /* Add more space above footer actions */
+            margin-top: auto; /* Fixes position at bottom */
         }
         .ins-action-outline { 
             padding: 8px 24px; 
@@ -335,8 +337,17 @@
                 <h1 class="text-xl font-extrabold tracking-tight text-white italic">Agent Email <span class="text-blue-500">AIRIS</span></h1>
                 <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Command Center Pro</p>
             </div>
-            <nav class="flex-1 overflow-y-auto custom-scrollbar">
+            <nav class="flex-1 flex flex-col overflow-y-auto custom-scrollbar">
                 <div id="company-list-sidebar"></div>
+                
+                <div class="px-6 mt-auto py-4 border-t border-white/5">
+                    <button onclick="toggleDraftsModal(true)" class="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-slate-500/10 border border-slate-500/20 text-slate-300 hover:text-white hover:bg-slate-500/30 transition-all group shadow-sm text-left">
+                        <div class="flex items-center gap-3">
+                            <span class="text-[16px] group-hover:scale-110 transition-transform">📝</span>
+                            <span class="text-[11px] font-bold uppercase tracking-widest mt-0.5">Mis Borradores</span>
+                        </div>
+                    </button>
+                </div>
             </nav>
             <div class="p-6 space-y-3">
                 <div id="user-profile-card" onclick="confirmLogout()" class="mx-1 p-3 rounded-xl bg-[#2e3238] border border-white/5 hover:bg-[#383d44] transition-all cursor-pointer flex items-center gap-3 group">
@@ -472,10 +483,15 @@
                                 <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Analítica</p>
                                 <h3 class="text-lg font-bold text-white">Tendencia de Tickets</h3>
                             </div>
-                            <select id="trend-mode" onchange="onTrendModeChange()" class="bg-white/5 border border-white/10 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-300 outline-none cursor-pointer">
-                                <option value="daily" class="bg-[#1a1c1e]">Últimos 7 días</option>
-                                <option value="hourly" class="bg-[#1a1c1e]">Hoy por hora</option>
-                            </select>
+                            <div class="flex items-center gap-2">
+                                <select id="trend-mode" onchange="onTrendModeChange()" class="bg-white/5 border border-white/10 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-300 outline-none cursor-pointer">
+                                    <option value="daily" class="bg-[#1a1c1e]">Últimos 7 días</option>
+                                    <option value="hourly" class="bg-[#1a1c1e]">Hoy por hora</option>
+                                </select>
+                                <button onclick="exportReport()" class="bg-white/5 border border-white/10 text-white hover:bg-blue-600 hover:border-blue-500 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all shadow-sm">
+                                    📥 Exportar CSV
+                                </button>
+                            </div>
                         </div>
                         <div class="h-[240px] w-full"><canvas id="trendChart"></canvas></div>
                     </div>
@@ -618,7 +634,7 @@
                         <!-- Derecha: App & Versión -->
                         <div class="flex flex-col items-center md:items-end text-center md:text-right">
                             <p class="text-[11px] font-bold text-slate-300 uppercase tracking-widest mb-2">Agent Email AIRIS</p>
-                            <span class="inline-block px-3 py-1 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-500 text-[9px] font-black tracking-tighter shadow-[0_0_10px_rgba(52,120,246,0.1)]">v1.0.9</span>
+                            <span class="inline-block px-3 py-1 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-500 text-[9px] font-black tracking-tighter shadow-[0_0_10px_rgba(52,120,246,0.1)]">v1.0.10</span>
                         </div>
                     </div>
                 </footer>
@@ -636,6 +652,10 @@
                         <span>←</span>
                         <span>Volver</span>
                     </button>
+                    <!-- Navegación entre correos -->
+                    <div class="w-px h-6 bg-slate-300 mx-1"></div>
+                    <button onclick="navigateInspector(-1)" class="ins-tool-btn px-2" title="Anterior (k)">▲</button>
+                    <button onclick="navigateInspector(1)" class="ins-tool-btn px-2" title="Siguiente (j)">▼</button>
                 </div>
                 
                 <div class="flex items-center gap-6">
@@ -710,115 +730,96 @@
     </div>
 
     <!-- MODAL: Responder con IA - Estilo Gmail EXACTO -->
-    <div id="response-modal" class="hidden fixed inset-0 z-[300] bg-black/40 flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg w-full max-w-3xl shadow-2xl overflow-hidden" style="font-family: Roboto, Arial, sans-serif;">
-            <!-- Header estilo Gmail -->
-            <div class="bg-gray-100 px-4 py-3 flex items-center justify-between border-b border-gray-300">
-                <span class="text-gray-700 text-base font-semibold">Nuevo mensaje</span>
-                <button onclick="closeResponseModal()" class="text-gray-500 hover:text-gray-700 text-2xl font-light leading-none">×</button>
+    <div id="response-modal" class="hidden fixed inset-0 z-[300] bg-black/40 flex items-center justify-center p-8">
+        <div class="bg-white rounded-xl w-full max-w-5xl h-[85vh] flex flex-col pointer-events-auto shadow-2xl" style="font-family: Roboto, Arial, sans-serif;">
+            <!-- Header estilo Gmail Dark -->
+            <div class="bg-[#404040] px-4 py-2.5 flex items-center justify-between rounded-t-xl cursor-default">
+                <span class="text-white text-sm font-medium tracking-wide">Mensaje nuevo</span>
+                <button onclick="closeResponseModal()" class="text-gray-300 hover:text-white text-xl font-medium leading-none focus:outline-none">×</button>
             </div>
             
-            <!-- Campos de destino y asunto - estilo Gmail -->
-            <div class="px-4 py-3 border-b border-gray-200">
-                <div class="flex items-center py-1.5">
-                    <span class="text-gray-500 text-sm w-16">De:</span>
-                    <span id="response-from" class="text-sm text-gray-800 font-medium"></span>
+            <!-- Campos de destino y asunto -->
+            <div class="px-4 py-2 flex flex-col">
+                <div class="flex items-center text-sm border-b border-gray-200 py-1.5 focus-within:border-blue-500">
+                     <span class="text-gray-500 w-12">Para</span>
+                     <input id="response-to" type="text" class="flex-1 text-sm text-gray-800 outline-none bg-transparent">
                 </div>
-                <div class="flex items-center py-1.5">
-                    <span class="text-gray-500 text-sm w-16">Para:</span>
-                    <input id="response-to" type="text" class="flex-1 text-sm text-gray-800 outline-none bg-transparent" readonly>
+                <div class="flex items-center text-sm border-b border-gray-200 py-1.5 focus-within:border-blue-500">
+                     <input id="response-subject" type="text" placeholder="Asunto" class="flex-1 text-sm text-gray-800 font-medium outline-none bg-transparent">
                 </div>
-                <div class="flex items-center py-1.5 border-t border-gray-100">
-                    <span class="text-gray-500 text-sm w-16">Asunto:</span>
-                    <input id="response-subject" type="text" class="flex-1 text-sm text-gray-800 outline-none bg-transparent">
-                </div>
-            </div>
-            
-            <!-- Barra de herramientas de formato - ESTILO GMAIL -->
-            <div class="px-4 py-2 border-b border-gray-200 flex items-center gap-1">
-                <button onclick="formatText('bold')" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Negrita (Ctrl+B)">
-                    <span class="font-bold text-lg">B</span>
-                </button>
-                <button onclick="formatText('italic')" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Cursiva (Ctrl+I)">
-                    <span class="italic text-lg">I</span>
-                </button>
-                <button onclick="formatText('underline')" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Subrayado (Ctrl+U)">
-                    <span class="underline text-lg">U</span>
-                </button>
-                <div class="w-px h-5 bg-gray-300 mx-1"></div>
-                <button onclick="formatText('left')" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Alinear a la izquierda">
-                    <span class="text-lg">≡</span>
-                </button>
-                <button onclick="formatText('center')" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Centrar">
-                    <span class="text-lg">☰</span>
-                </button>
-                <button onclick="formatText('right')" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Alinear a la derecha">
-                    <span class="text-lg">≡</span>
-                </button>
-                <div class="w-px h-5 bg-gray-300 mx-1"></div>
-                <button onclick="formatText('list')" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Viñetas">
-                    <span class="text-lg">•</span>
-                </button>
-                <button onclick="formatText('numbered')" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Numeración">
-                    <span class="text-lg">1.</span>
-                </button>
-                <div class="w-px h-5 bg-gray-300 mx-1"></div>
-                <button onclick="formatText('undo')" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Deshacer">
-                    <span class="text-lg">↶</span>
-                </button>
-                <button onclick="formatText('redo')" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Rehacer">
-                    <span class="text-lg">↷</span>
-                </button>
-                <div class="w-px h-5 bg-gray-300 mx-1"></div>
-                <select onchange="formatText('font', this.value)" class="text-sm text-gray-600 border border-gray-300 rounded px-2 py-1 hover:bg-gray-50">
-                    <option value="">Fuente</option>
-                    <option value="Arial">Arial</option>
-                    <option value="Times New Roman">Times New Roman</option>
-                    <option value="Courier New">Courier New</option>
-                    <option value="Georgia">Georgia</option>
-                    <option value="Verdana">Verdana</option>
-                </select>
-                <select onchange="formatText('size', this.value)" class="text-sm text-gray-600 border border-gray-300 rounded px-2 py-1 hover:bg-gray-50">
-                    <option value="">Tamaño</option>
-                    <option value="1">Pequeño</option>
-                    <option value="3">Normal</option>
-                    <option value="5">Grande</option>
-                    <option value="7">Muy Grande</option>
-                </select>
-                <input type="color" onchange="formatText('color', this.value)" class="w-8 h-8 border border-gray-300 rounded cursor-pointer" title="Color de texto">
-                <input type="color" onchange="formatText('bgcolor', this.value)" class="w-8 h-8 border border-gray-300 rounded cursor-pointer" title="Color de fondo" value="#ffffff">
             </div>
             
             <!-- Área de texto con editor -->
-            <div class="p-4">
-                <div class="flex items-center gap-2 mb-3">
-                    <button onclick="generateAIResponse()" id="btn-generate-ai" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded text-sm font-medium flex items-center gap-2 transition-all shadow-sm">
-                        <span>✨</span> Generar con IA
-                    </button>
-                    <span id="ai-loading" class="hidden text-gray-500 text-sm ml-2">Generando respuesta...</span>
+            <div class="flex flex-col flex-1 min-h-0">
+                <div id="editor-container" class="flex-1 relative">
+                    <div id="response-body" contenteditable="true" class="absolute inset-0 p-4 text-gray-800 text-sm outline-none overflow-y-auto" placeholder="Escribe tu respuesta..."></div>
                 </div>
-                
-                <!-- Editor HTML estilo Gmail -->
-                <div id="editor-container" class="border border-gray-300 rounded min-h-[250px]">
-                    <div id="response-body" contenteditable="true" class="p-3 text-gray-800 min-h-[220px] outline-none" placeholder="Escribe tu respuesta..."></div>
-                </div>
-                
-                <p id="response-feedback" class="text-sm font-medium mt-2"></p>
             </div>
             
-            <!-- Footer con botones estilo Gmail EXACTO -->
-            <div class="px-4 py-3 bg-gray-100 flex items-center justify-between border-t border-gray-300">
-                <div class="flex items-center gap-2">
-                    <button onclick="sendResponse()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-medium flex items-center gap-2 transition-colors shadow-sm">
-                        <span>✉️</span> Enviar
+            <!-- Feedback -->
+            <div class="px-4 py-1.5 flex items-center gap-2">
+                 <span id="ai-loading" class="hidden text-gray-400 text-xs tracking-wide">Generando respuesta...</span>
+                 <p id="response-feedback" class="text-xs ml-auto"></p>
+            </div>
+
+            <!-- Toolbar inferior y Enviar -->
+            <div class="px-4 py-3 flex items-center justify-between bg-white border-t border-gray-100 rounded-b-xl">
+                <div class="flex items-center gap-4">
+                    <button onclick="sendResponse()" class="px-6 py-2.5 bg-[#0b57d0] hover:bg-[#0842a0] text-white rounded-full text-sm font-medium transition-colors shadow-sm">
+                        Enviar
                     </button>
-                    <button onclick="closeResponseModal()" class="px-4 py-2.5 text-gray-600 hover:bg-gray-200 rounded text-sm font-medium transition-colors">
-                        Cancelar
+                    <button onclick="saveDraft()" id="btn-save-draft" class="px-4 py-2 bg-gray-100 font-bold hover:bg-gray-200 text-gray-700 rounded-full text-[12px] transition-colors shadow-sm" title="Puedes forzar el guardado (Autoguardado activo)">
+                        Guardar
                     </button>
+                    <!-- Funciones Extra Integradas -->
+                    <div class="flex items-center gap-2 border-l border-gray-200 pl-4">
+                         <button onclick="generateAIResponse()" id="btn-generate-ai" class="text-[12px] font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 px-4 py-2 rounded-full flex items-center gap-1.5 transition-colors mr-2">
+                            ✨ Autocompletar con IA
+                         </button>
+                         <button onclick="formatText('bold')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded" title="Negrita"><span class="font-bold">B</span></button>
+                         <button onclick="formatText('italic')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded" title="Cursiva"><span class="italic font-serif">I</span></button>
+                         <button onclick="formatText('underline')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded" title="Subrayado"><span class="underline">U</span></button>
+                         
+                         <!-- Selector de color -->
+                         <div class="relative flex items-center justify-center w-8 h-8 hover:bg-gray-100 rounded overflow-hidden" title="Color de texto">
+                             <span class="font-bold border-b-[3px] border-black leading-none text-gray-600 pointer-events-none mt-1">A</span>
+                             <input type="color" onchange="formatText('color', this.value)" class="absolute inset-x-0 bottom-0 top-0 opacity-0 w-full h-full cursor-pointer">
+                         </div>
+                         
+                         <div class="w-px h-5 bg-gray-300 mx-1"></div>
+                         
+                         <!-- Nuevos iconos Gmail -->
+                         <button onclick="formatText('attach')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded" title="Adjuntar archivos">📎</button>
+                         <input type="file" id="attach-file-input" class="hidden" multiple onchange="alert('Archivos recibidos en memoria (visualización Demo).')">
+                         
+                         <button onclick="formatText('link')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded" title="Insertar enlace">🔗</button>
+                         <button onclick="formatText('emoji')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded text-lg" title="Insertar emoticono">😀</button>
+                         <button onclick="formatText('image')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded" title="Insertar imagen">🖼️</button>
+                    </div>
                 </div>
-                <button onclick="closeResponseModal()" class="p-2 hover:bg-gray-200 rounded text-gray-500" title="Eliminar mensaje">
-                    <span class="text-lg">🗑️</span>
+                <button onclick="closeResponseModal()" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded" title="Descartar borrador">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" class="opacity-80"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                 </button>
+            </div>
+            
+            <!-- Campo Oculto de De: -->
+            <span id="response-from" class="hidden"></span>
+        </div>
+    </div>
+
+    <!-- MODAL: Bandeja de Borradores -->
+    <div id="drafts-modal" class="hidden fixed inset-0 z-[400] bg-black/60 backdrop-blur-sm flex items-center justify-center p-8">
+        <div class="w-full max-w-4xl rounded-3xl border border-white/10 bg-[#111315] shadow-2xl overflow-hidden flex flex-col h-[75vh]">
+            <header class="px-8 py-5 border-b border-white/10 flex items-center justify-between bg-[#1a1c1e]">
+                <div>
+                    <h3 class="text-white text-xl font-bold tracking-tight flex items-center gap-2">📝 Mis Borradores Guardados</h3>
+                </div>
+                <button onclick="toggleDraftsModal(false)" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+            </header>
+            <div class="p-6 overflow-y-auto flex-1 custom-scrollbar">
+                <div id="drafts-list" class="space-y-3">
+                    <p class="text-slate-500 text-sm text-center py-6">Cargando borradores...</p>
+                </div>
             </div>
         </div>
     </div>
@@ -1358,6 +1359,41 @@
 
         function toggleSubmenu(c) { selectCompany(c); }
 
+        function getLabelForThread(thread) {
+            const upText = ((thread.asunto || '') + ' ' + (thread.mensaje || '')).toUpperCase();
+            if (upText.includes('URGENTE') || upText.includes('RÁPIDO') || upText.includes('ASAP')) {
+                return { text: 'URGENTE', bg: 'bg-red-500/20 text-red-400 border border-red-500/30' };
+            }
+            if (upText.includes('SOPORTE') || upText.includes('AYUDA') || upText.includes('ERROR') || upText.includes('FALLA')) {
+                return { text: 'SOPORTE', bg: 'bg-orange-500/20 text-orange-400 border border-orange-500/30' };
+            }
+            if (upText.includes('VENTA') || upText.includes('COMPRA') || upText.includes('FACTURA') || upText.includes('PAGO')) {
+                return { text: 'VENTAS', bg: 'bg-green-500/20 text-green-400 border border-green-500/30' };
+            }
+            if (upText.includes('INFO') || upText.includes('PREGUNTA') || upText.includes('DUDA')) {
+                return { text: 'INFO', bg: 'bg-blue-500/20 text-blue-400 border border-blue-500/30' };
+            }
+            return null;
+        }
+
+        function navigateInspector(direction) {
+            if (!currentTid) return;
+            const filtered = getFilteredHilos();
+            if (!filtered || filtered.length === 0) return;
+            const idx = filtered.findIndex(h => h.thread_id === currentTid);
+            if (idx === -1) return;
+            
+            let newIdx = idx + direction;
+            if (newIdx < 0) newIdx = 0; // Top limit
+            if (newIdx >= filtered.length) newIdx = filtered.length - 1; // Bottom limit
+            
+            if (newIdx !== idx) {
+                openInspector(filtered[newIdx].thread_id);
+            } else {
+                showToast(direction === -1 ? 'Estás en el primer correo de la lista' : 'Estás en el último correo de la lista');
+            }
+        }
+
         function renderThreads() {
             const container = document.getElementById('thread-list');
             if(!container) return;
@@ -1377,6 +1413,8 @@
                     <div class="header-label text-right pr-4">Fecha</div>
                 </div>` + filtered.map(m => {
                 const cfg = {'PENDIENTE': { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' }, 'ASIGNADO': { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' }, 'RESPONDIDO': { bg: 'bg-green-500/10', text: 'text-green-400', border: 'border-green-500/20' }, 'CERRADO': { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' }}[m.estado_ticket] || { bg: 'bg-slate-500/10', text: 'text-slate-400', border: 'border-slate-500/20' };
+                const label = getLabelForThread(m);
+                const labelHtml = label ? `<span class="ml-2 px-1.5 py-0.5 rounded text-[8px] font-black tracking-wider uppercase ${label.bg}">${label.text}</span>` : '';
                 return `
                 <div class="email-card ${m.leido ? 'read' : 'unread'} group" onclick="openInspector('${m.thread_id}')">
                     <div class="flex items-center px-4" onclick="event.stopPropagation()">
@@ -1387,8 +1425,11 @@
                         <div class="avatar-circle" style="background:${getAvatarColor(m.remitente)}">${m.remitente[0].toUpperCase()}</div>
                     </div>
                     <div class="px-4"><p class="text-[11px] font-bold ${m.leido ? 'text-slate-400' : 'text-white'} uppercase truncate tracking-wider">${m.cuenta_empresa || 'System'}</p></div>
-                    <div class="px-8 border-l border-white/5 overflow-hidden text-left">
-                        <p class="text-[14px] ${m.leido ? 'font-medium text-slate-400' : 'font-extrabold text-white'} truncate mb-0.5">${m.asunto || '(Sin Asunto)'}</p>
+                    <div class="px-8 border-l border-white/5 overflow-hidden text-left flex flex-col justify-center gap-0.5">
+                        <div class="flex items-center">
+                            <p class="text-[14px] ${m.leido ? 'font-medium text-slate-400' : 'font-extrabold text-white'} truncate" style="max-width: ${label ? 'calc(100% - 70px)' : '100%'}">${m.asunto || '(Sin Asunto)'}</p>
+                            ${labelHtml}
+                        </div>
                         <p class="text-[12px] font-medium ${m.leido ? 'text-slate-500' : 'text-slate-400'} truncate">${(m.mensaje || '').replace(/<[^>]*>?/gm, '')}</p>
                     </div>
                     <div class="px-4"><span class="px-3 py-1.5 rounded-full text-[9px] font-black uppercase ${cfg.bg} ${cfg.text} border ${cfg.border}">${m.estado_ticket}</span></div>
@@ -1605,20 +1646,44 @@
 
         function showToast(message, isError = false) {
             const toast = document.createElement('div');
-            toast.className = `fixed bottom-8 right-8 px-6 py-3 rounded-2xl shadow-2xl font-bold text-xs uppercase tracking-widest z-[300] transition-all duration-500 transform translate-y-20 opacity-0 ${isError ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white'}`;
+            toast.className = `fixed bottom-8 right-8 px-6 py-3 rounded-2xl shadow-2xl font-bold text-xs uppercase tracking-widest z-[300] transition-all duration-500 ease-out transform translate-y-12 opacity-0 scale-95 ${isError ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white'}`;
             toast.innerText = message;
             document.body.appendChild(toast);
             
             // Animación de entrada
             setTimeout(() => {
-                toast.classList.remove('translate-y-20', 'opacity-0');
-            }, 100);
+                toast.classList.remove('translate-y-12', 'opacity-0', 'scale-95');
+                toast.classList.add('translate-y-0', 'opacity-100', 'scale-100');
+            }, 50);
 
             // Animación de salida
             setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100', 'scale-100');
+                toast.classList.add('translate-y-12', 'opacity-0', 'scale-95');
                 setTimeout(() => toast.remove(), 500);
-            }, 3000);
+            }, 3500);
+        }
+
+        function exportReport() {
+            const filtered = getFilteredHilos();
+            if (filtered.length === 0) {
+                showToast('No hay datos para exportar', true);
+                return;
+            }
+            let csv = 'ID,Empresa,Remitente,Asunto,Estado,Asignado_A,Fecha\\n';
+            filtered.forEach(h => {
+                const asunto = (h.asunto || '').replace(/"/g, '""');
+                csv += `"${h.thread_id}","${h.cuenta_empresa}","${h.remitente}","${asunto}","${h.estado_ticket}","${h.asignado_a || ''}","${h.fecha}"\\n`;
+            });
+            const blob = new Blob(["\\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Reporte_Tickets_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showToast('Reporte exportado como CSV');
         }
 
         async function openInspector(tid) { 
@@ -1738,7 +1803,11 @@
             display.innerText = c.text;
         }
 
+        let currentDraftId = null;
+        let autosaveTimer = null;
+
         async function prepareResponder() {
+            currentDraftId = null;
             if (!currentTid) return;
             const m = hilos.find(h => h.thread_id === currentTid);
             if (!m || !m.asignado_a) {
@@ -1750,13 +1819,34 @@
             document.getElementById('response-from').innerText = currentUser.email || 'admin@airis.com';
             document.getElementById('response-to').value = m.remitente_email || m.remitente;
             document.getElementById('response-subject').value = m.asunto ? `Re: ${m.asunto}` : 'Re: ';
-            document.getElementById('response-body').innerHTML = '';
-            document.getElementById('response-body').focus();
+            
+            const historicContent = document.getElementById('ins-body').innerHTML;
+            const timestamp = m.fecha; 
+            const editor = document.getElementById('response-body');
+            editor.innerHTML = `<div><br></div>
+            <div class="gmail_quote" style="border-left: 1px solid #ccc; padding-left: 1ex; margin: 1.5ex 0px 0px 0.8ex; font-size:13px;">
+                <div dir="ltr" class="gmail_attr" style="color: #555; margin-bottom: 5px;">El ${timestamp}, <strong>${m.remitente}</strong> &lt;<a href="mailto:${m.remitente_email || m.remitente}">${m.remitente_email || m.remitente}</a>&gt; escribió:</div>
+                <blockquote style="margin:0px 0px 0px 0.8ex; border-left:1px solid rgb(204,204,204); padding-left:1ex">
+                    ${historicContent}
+                </blockquote>
+            </div>`;
+            
+            editor.focus();
+            if (window.getSelection && document.createRange) {
+                 const range = document.createRange();
+                 const sel = window.getSelection();
+                 range.setStart(editor, 0); 
+                 range.collapse(true);
+                 sel.removeAllRanges();
+                 sel.addRange(range);
+            }
+            
             document.getElementById('response-feedback').innerText = '';
             document.getElementById('response-feedback').className = 'text-sm font-medium';
         }
 
         async function prepareForward() {
+            currentDraftId = null;
             if (!currentTid) return;
             const m = hilos.find(h => h.thread_id === currentTid);
             if (!m || !m.asignado_a) {
@@ -1852,6 +1942,17 @@
                 document.execCommand('undo', false, null);
             } else if (command === 'redo') {
                 document.execCommand('redo', false, null);
+            } else if (command === 'link') {
+                const url = prompt('Introduce el enlace completo (ej. https://google.com):');
+                if (url) document.execCommand('createLink', false, url);
+            } else if (command === 'emoji') {
+                const emoji = prompt('Inserta/Pega tu emoticono aquí o abre el selector de tu Sistema (Windows: [Win] + [.]):', '😀');
+                if (emoji) document.execCommand('insertText', false, emoji);
+            } else if (command === 'image') {
+                const imgUrl = prompt('URL pública de la imagen a insertar:');
+                if (imgUrl) document.execCommand('insertImage', false, imgUrl);
+            } else if (command === 'attach') {
+                document.getElementById('attach-file-input').click();
             }
             document.getElementById('response-body').focus();
         }
@@ -1870,15 +1971,18 @@
             }
             
             try {
-                const res = await fetch(`${API_URL}/hilos/update`, {
-                    method: 'PUT',
+                const res = await fetch(`${API_URL}/smtp/send`, {
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': 'Bearer ' + token
                     },
                     body: JSON.stringify({
                         thread_id: currentTid,
-                        estado: 'RESPONDIDO'
+                        to: to,
+                        subject: subject,
+                        body: body,
+                        estado: 'Respondido por ' + (currentUser.username || 'Operador')
                     })
                 });
                 
@@ -1896,6 +2000,126 @@
                 feedback.innerText = 'Error de conexión';
                 feedback.className = 'text-sm font-semibold text-red-500';
             }
+        }
+
+        // Auto guardado logica
+        document.getElementById('response-body').addEventListener('input', () => {
+            clearTimeout(autosaveTimer);
+            autosaveTimer = setTimeout(saveDraft, 2000); 
+        });
+
+        async function saveDraft() {
+            if (!currentTid) return;
+            const m = hilos.find(h => h.thread_id === currentTid);
+            if (!m) return;
+            
+            const body = document.getElementById('response-body').innerHTML;
+            const to = document.getElementById('response-to').value;
+            const subject = document.getElementById('response-subject').value;
+            const plain = document.getElementById('response-body').innerText.trim();
+            if (!plain) return; 
+            
+            const payload = {
+                hilo_id: m.id,
+                destinatario: to,
+                asunto: subject,
+                cuerpo: body
+            };
+            
+            try {
+                let url = `${API_URL}/borradores`;
+                let method = 'POST';
+                if (currentDraftId) {
+                    url += `/${currentDraftId}`;
+                    method = 'PUT';
+                }
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.id) currentDraftId = data.id;
+                    const feedback = document.getElementById('response-feedback');
+                    feedback.innerText = '✓ Borrador autoguardado';
+                    feedback.className = 'text-[11px] text-emerald-500 font-bold tracking-wide ml-auto animate-pulse';
+                    setTimeout(() => { if(feedback.innerText.includes('Borrador autoguardado')) feedback.innerText = ''; }, 3000);
+                }
+            } catch (e) {
+                console.error('Error autosaving draft', e);
+            }
+        }
+
+        async function loadDrafts() {
+            try {
+                 const res = await fetch(`${API_URL}/borradores`, {
+                     headers: { 'Authorization': 'Bearer ' + token }
+                 });
+                 if (!res.ok) return;
+                 const borradores = await res.json();
+                 const list = document.getElementById('drafts-list');
+                 if (borradores.length === 0) {
+                     list.innerHTML = `<p class="text-slate-500 text-sm text-center py-6 font-semibold">No tienes borradores guardados.</p>`;
+                     return;
+                 }
+                 list.innerHTML = borradores.map(b => `
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 hover:bg-white/10 transition-colors cursor-pointer flex justify-between items-center group" onclick="openDraft(${b.id})">
+                        <div class="flex-1 truncate pr-4">
+                            <h4 class="text-white font-bold text-sm truncate">${b.asunto || 'Sin asunto'}</h4>
+                            <p class="text-slate-400 text-xs mt-1 truncate">Para: ${b.destinatario || 'Sin destinatario'}</p>
+                            <p class="text-slate-500 text-[10px] mt-1 line-clamp-1">${b.cuerpo.replace(/<[^>]+>/g, '')}</p>
+                        </div>
+                        <button onclick="event.stopPropagation(); deleteDraft(${b.id})" class="text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-2 bg-red-500/10 rounded-lg" title="Eliminar borrador">🗑️</button>
+                    </div>
+                 `).join('');
+            } catch(e) {
+                 console.error('Error loading drafts', e);
+            }
+        }
+
+        function toggleDraftsModal(show) {
+            const m = document.getElementById('drafts-modal');
+            if (show) {
+                m.classList.remove('hidden');
+                loadDrafts();
+            } else {
+                m.classList.add('hidden');
+            }
+        }
+
+        async function deleteDraft(id) {
+            if(!confirm('¿Eliminar este borrador?')) return;
+            try {
+                 await fetch(`${API_URL}/borradores/${id}`, {
+                     method: 'DELETE',
+                     headers: { 'Authorization': 'Bearer ' + token }
+                 });
+                 loadDrafts();
+            } catch(e) {}
+        }
+
+        async function openDraft(draftId) {
+           const res = await fetch(`${API_URL}/borradores`, { headers: { 'Authorization': 'Bearer ' + token } });
+           const borradores = await res.json();
+           const draft = borradores.find(d => d.id === draftId);
+           if (!draft) return;
+           
+           toggleDraftsModal(false);
+           
+           const m = hilos.find(h => h.id === draft.hilo_id);
+           if (m) {
+               currentTid = m.thread_id;
+               selectThread(currentTid);
+           }
+           
+           document.getElementById('response-modal').classList.remove('hidden');
+           document.getElementById('response-to').value = draft.destinatario || '';
+           document.getElementById('response-subject').value = draft.asunto || '';
+           document.getElementById('response-body').innerHTML = draft.cuerpo || '';
+           currentDraftId = draft.id;
+           document.getElementById('response-from').innerText = currentUser.email || 'admin@airis.com';
         }
 
         async function markAsResponded() {
