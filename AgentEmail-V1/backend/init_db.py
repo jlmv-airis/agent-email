@@ -122,6 +122,64 @@ def init_database():
     add_column_if_not_exists("usuarios", "updated_at", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     add_column_if_not_exists("empresas", "updated_at", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     
+    # Tabla de etiquetas personalizadas
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS etiquetas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            color TEXT NOT NULL,
+            descripcion TEXT,
+            created_by INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(created_by) REFERENCES usuarios(id)
+        )
+    ''')
+    
+    # Tabla de relación hilos-etiquetas
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS hilos_etiquetas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            hilo_id INTEGER NOT NULL,
+            etiqueta_id INTEGER NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(hilo_id) REFERENCES hilos(id),
+            FOREIGN KEY(etiqueta_id) REFERENCES etiquetas(id)
+        )
+    ''')
+    
+    # Tabla de borradores
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS borradores (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            hilo_id INTEGER,
+            destinatario TEXT,
+            asunto TEXT,
+            cuerpo TEXT,
+            created_by INTEGER,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(hilo_id) REFERENCES hilos(id),
+            FOREIGN KEY(created_by) REFERENCES usuarios(id)
+        )
+    ''')
+    
+    # Tabla de programación de envíos
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS envios_programados (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            hilo_id INTEGER,
+            destinatario TEXT,
+            asunto TEXT,
+            cuerpo TEXT,
+            fecha_programada TIMESTAMP NOT NULL,
+            created_by INTEGER,
+            estado TEXT DEFAULT 'pendiente',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(hilo_id) REFERENCES hilos(id),
+            FOREIGN KEY(created_by) REFERENCES usuarios(id)
+        )
+    ''')
+    
     # Crear usuario admin por defecto
     cur.execute("SELECT id FROM usuarios WHERE username = 'admin' LIMIT 1")
     if not cur.fetchone():

@@ -928,3 +928,265 @@ if __name__ == '__main__':
         port=config.PORT,
         debug=config.DEBUG
     )
+
+# ==================== API ETIQUETAS ====================
+
+@app.route('/api/etiquetas', methods=['GET'])
+@token_required
+def get_etiquetas():
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM etiquetas ORDER BY nombre")
+        etiquetas = [dict(row) for row in cur.fetchall()]
+        cur.close()
+        conn.close()
+        return jsonify(etiquetas)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/etiquetas', methods=['POST'])
+@token_required
+def create_etiqueta():
+    data = request.json or {}
+    nombre = data.get('nombre', '').strip()
+    color = data.get('color', '#3B82F6').strip()
+    descripcion = data.get('descripcion', '').strip()
+    
+    if not nombre:
+        return jsonify({'error': 'El nombre es requerido'}), 400
+    
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("INSERT INTO etiquetas (nombre, color, descripcion, created_by) VALUES (?, ?, ?, ?)",
+                   (nombre, color, descripcion, currentUser['id']))
+        etiqueta_id = cur.lastrowid
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'id': etiqueta_id, 'nombre': nombre, 'color': color, 'descripcion': descripcion, 'status': 'created'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/etiquetas/<int:etiqueta_id>', methods=['PUT'])
+@token_required
+def update_etiqueta(etiqueta_id):
+    data = request.json or {}
+    nombre = data.get('nombre', '').strip()
+    color = data.get('color', '').strip()
+    descripcion = data.get('descripcion', '').strip()
+    
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("UPDATE etiquetas SET nombre = ?, color = ?, descripcion = ? WHERE id = ?",
+                   (nombre, color, descripcion, etiqueta_id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'status': 'updated'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/etiquetas/<int:etiqueta_id>', methods=['DELETE'])
+@token_required
+def delete_etiqueta(etiqueta_id):
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM hilos_etiquetas WHERE etiqueta_id = ?", (etiqueta_id,))
+        cur.execute("DELETE FROM etiquetas WHERE id = ?", (etiqueta_id,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'status': 'deleted'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/hilos/<int:hilo_id>/etiquetas', methods=['POST'])
+@token_required
+def add_etiqueta_to_hilo(hilo_id):
+    data = request.json or {}
+    etiqueta_id = data.get('etiqueta_id')
+    
+    if not etiqueta_id:
+        return jsonify({'error': 'etiqueta_id requerido'}), 400
+    
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("INSERT OR IGNORE INTO hilos_etiquetas (hilo_id, etiqueta_id) VALUES (?, ?)",
+                   (hilo_id, etiqueta_id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'status': 'added'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/hilos/<int:hilo_id>/etiquetas/<int:etiqueta_id>', methods=['DELETE'])
+@token_required
+def remove_etiqueta_from_hilo(hilo_id, etiqueta_id):
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM hilos_etiquetas WHERE hilo_id = ? AND etiqueta_id = ?", (hilo_id, etiqueta_id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'status': 'removed'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# ==================== API BORRADORES ====================
+
+@app.route('/api/borradores', methods=['GET'])
+@token_required
+def get_borradores():
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT b.*, h.asunto as hilo_asunto, h.remitente as hilo_remitente
+            FROM borradores b
+            LEFT JOIN hilos h ON b.hilo_id = h.id
+            WHERE b.created_by = ?
+            ORDER BY b.updated_at DESC
+        """, (currentUser['id'],))
+        borradores = [dict(row) for row in cur.fetchall()]
+        cur.close()
+        conn.close()
+        return jsonify(borradores)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/borradores', methods=['POST'])
+@token_required
+def create_borrador():
+    data = request.json or {}
+    hilo_id = data.get('hilo_id')
+    destinatario = data.get('destinatario', '').strip()
+    asunto = data.get('asunto', '').strip()
+    cuerpo = data.get('cuerpo', '').strip()
+    
+    if not cuerpo and not asunto:
+        return jsonify({'error': 'El cuerpo o asunto es requerido'}), 400
+    
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO borradores (hilo_id, destinatario, asunto, cuerpo, created_by)
+            VALUES (?, ?, ?, ?, ?)
+        """, (hilo_id, destinatario, asunto, cuerpo, currentUser['id']))
+        borrador_id = cur.lastrowid
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'id': borrador_id, 'status': 'saved'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/borradores/<int:borrador_id>', methods=['PUT'])
+@token_required
+def update_borrador(borrador_id):
+    data = request.json or {}
+    destinatario = data.get('destinatario', '').strip()
+    asunto = data.get('asunto', '').strip()
+    cuerpo = data.get('cuerpo', '').strip()
+    
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE borradores SET destinatario = ?, asunto = ?, cuerpo = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ? AND created_by = ?
+        """, (destinatario, asunto, cuerpo, borrador_id, currentUser['id']))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'status': 'updated'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/borradores/<int:borrador_id>', methods=['DELETE'])
+@token_required
+def delete_borrador(borrador_id):
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM borradores WHERE id = ? AND created_by = ?", (borrador_id, currentUser['id']))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'status': 'deleted'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# ==================== API ENVÍOS PROGRAMADOS ====================
+
+@app.route('/api/envios-programados', methods=['GET'])
+@token_required
+def get_envios_programados():
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT e.*, h.asunto as hilo_asunto, h.remitente as hilo_remitente
+            FROM envios_programados e
+            LEFT JOIN hilos h ON e.hilo_id = h.id
+            WHERE e.created_by = ? AND e.estado = 'pendiente'
+            ORDER BY e.fecha_programada ASC
+        """, (currentUser['id'],))
+        envios = [dict(row) for row in cur.fetchall()]
+        cur.close()
+        conn.close()
+        return jsonify(envios)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/envios-programados', methods=['POST'])
+@token_required
+def create_envio_programado():
+    data = request.json or {}
+    hilo_id = data.get('hilo_id')
+    destinatario = data.get('destinatario', '').strip()
+    asunto = data.get('asunto', '').strip()
+    cuerpo = data.get('cuerpo', '').strip()
+    fecha_programada = data.get('fecha_programada', '').strip()
+    
+    if not fecha_programada:
+        return jsonify({'error': 'La fecha programada es requerida'}), 400
+    
+    if not cuerpo and not asunto:
+        return jsonify({'error': 'El cuerpo o asunto es requerido'}), 400
+    
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            INSERT INTO envios_programados (hilo_id, destinatario, asunto, cuerpo, fecha_programada, created_by)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (hilo_id, destinatario, asunto, cuerpo, fecha_programada, currentUser['id']))
+        envio_id = cur.lastrowid
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'id': envio_id, 'status': 'scheduled'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/envios-programados/<int:envio_id>', methods=['DELETE'])
+@token_required
+def delete_envio_programado(envio_id):
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM envios_programados WHERE id = ? AND created_by = ?", (envio_id, currentUser['id']))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({'status': 'deleted'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
