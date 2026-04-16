@@ -148,16 +148,19 @@
             border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
             display: flex; flex-direction: column; overflow: hidden; color: var(--ins-text-primary); /* Use inspector primary text */
         }
-        .ins-toolbar {
-            height: 56px; padding: 0 16px; border-bottom: 1px solid var(--ins-border); /* Use inspector border */
+.ins-toolbar {
+            height: auto; min-height: 56px; padding: 12px 20px; border-bottom: 1px solid var(--ins-border);
             display: flex; align-items: center; justify-content: space-between;
-            background: var(--ins-header-bg); /* Use inspector header background */
+            background: var(--ins-header-bg);
+            gap: 16px; flex-wrap: wrap;
         }
         .ins-tool-btn {
-            width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            color: var(--ins-text-secondary); transition: background 0.2s; cursor: pointer; font-size: 18px;
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 8px 16px; border-radius: 8px;
+            color: var(--ins-text-secondary); transition: all 0.2s; cursor: pointer; font-size: 14px;
+            border: none; background: transparent;
         }
-        .ins-tool-btn:hover { background: rgba(60,64,67,0.08); color: #202124; } /* Gmail hover for buttons */
+        .ins-tool-btn:hover { background: rgba(60,64,67,0.08); color: #202124; }
         
         .ins-content-area { 
             flex: 1; overflow-y: auto; padding: 0 40px 40px 40px; 
@@ -587,18 +590,36 @@
         <div class="inspector-window">
             <!-- Barra de Herramientas Superior -->
             <div class="ins-toolbar">
-                <div class="flex items-center gap-2">
-                    <button onclick="closeInspector()" class="ins-tool-btn" title="Volver">←</button>
-                    <div class="w-px h-6 bg-slate-100 mx-2"></div>
-                    <button onclick="prepareBulkAction('DELETE', null)" class="ins-tool-btn" title="Eliminar">🗑</button>
-                    <button id="ins-tool-unread" class="ins-tool-btn" title="Marcar como no leído">✉️</button>
-                </div>
                 <div class="flex items-center gap-3">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mr-2">Estado:</span>
-                    <!-- Updated status buttons to use new CSS classes -->
-                    <button onclick="updateStatus('PENDIENTE')" class="ins-status-btn pending px-3 py-1.5 rounded-lg">Pendiente</button>
-                    <button onclick="updateStatus('ASIGNADO')" class="ins-status-btn processing px-3 py-1.5 rounded-lg">En Proceso</button>
-                    <button onclick="updateStatus('CERRADO')" class="ins-status-btn closed px-3 py-1.5 rounded-lg">Cerrar</button>
+                    <button onclick="closeInspector()" class="ins-tool-btn flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-700" title="Volver">
+                        <span class="text-lg">←</span>
+                        <span class="text-sm font-semibold">Volver</span>
+                    </button>
+                    <div class="w-px h-6 bg-slate-300 mx-1"></div>
+                    <button onclick="prepareBulkAction('DELETE', null)" class="ins-tool-btn flex items-center gap-1.5 px-3 py-1.5 hover:bg-red-50 rounded-lg text-red-600" title="Eliminar">
+                        <span>🗑️</span>
+                        <span class="text-sm font-medium">Eliminar</span>
+                    </button>
+                </div>
+                
+                <div class="flex items-center gap-6">
+                    <!-- Estado del Ticket -->
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Estado:</span>
+                        <select id="ins-status-select" onchange="updateStatus(this.value)" class="px-3 py-1.5 rounded-lg border border-slate-300 text-sm font-semibold bg-white text-slate-700 cursor-pointer hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30">
+                            <option value="PENDIENTE">⏳ Pendiente</option>
+                            <option value="ASIGNADO">🔄 En Proceso</option>
+                            <option value="CERRADO">✅ Cerrado</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Asignar a Operador -->
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Asignar a:</span>
+                        <select id="ins-operator-select" onchange="assignOperator(this.value)" class="px-3 py-1.5 rounded-lg border border-slate-300 text-sm font-semibold bg-white text-slate-700 cursor-pointer hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 min-w-[160px]">
+                            <option value="">👤 Sin asignar</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -1392,6 +1413,11 @@
             // Mostrar el inspector
             document.getElementById('inspector-overlay').style.display = 'flex'; 
             
+            // Cargar operadores y configurar selects
+            await loadOperatorsForInspector();
+            document.getElementById('ins-status-select').value = m.estado_ticket || 'PENDIENTE';
+            document.getElementById('ins-operator-select').value = m.asignado_a || '';
+            
             // Populate inspector fields with new Gmail-like styling in mind
             document.getElementById('ins-subject').innerText = m.asunto || '(Sin Asunto)'; 
             
@@ -1435,6 +1461,53 @@
         }
 
         function closeInspector() { document.getElementById('inspector-overlay').style.display = 'none'; }
+
+        async function loadOperatorsForInspector() {
+            const select = document.getElementById('ins-operator-select');
+            select.innerHTML = '<option value="">👤 Sin asignar</option>';
+            try {
+                const res = await fetch(`${API_URL}/operadores`, { headers: {'Authorization': 'Bearer ' + token} });
+                const ops = await res.json();
+                ops.forEach(op => {
+                    const option = document.createElement('option');
+                    option.value = op.username;
+                    option.textContent = `👤 ${op.nombre || op.username}`;
+                    select.appendChild(option);
+                });
+            } catch (e) {
+                console.error("Error cargando operadores:", e);
+            }
+        }
+
+        async function assignOperator(username) {
+            if (!currentTid) return;
+            try {
+                const payload = { thread_id: currentTid, asignado_a: username };
+                if (!username) {
+                    payload.estado = 'PENDIENTE';
+                } else {
+                    payload.estado = 'ASIGNADO';
+                }
+                const res = await fetch(`${API_URL}/hilos/update`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    await loadData();
+                    showToast('Operador asignado correctamente');
+                } else {
+                    const err = await res.json();
+                    alert("Error: " + (err.error || "No se pudo asignar"));
+                }
+            } catch (e) {
+                console.error("Error en assignOperator:", e);
+            }
+        }
+
         async function updateStatus(estado) {
             if (!currentTid) return;
             try {
@@ -1451,7 +1524,7 @@
                 });
                 if (res.ok) {
                     await loadData();
-                    closeInspector();
+                    showToast('Estado actualizado correctamente');
                 } else {
                     const err = await res.json();
                     alert("Error: " + (err.error || "No se pudo actualizar el estado"));
