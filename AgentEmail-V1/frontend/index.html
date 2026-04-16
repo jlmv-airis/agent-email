@@ -650,11 +650,6 @@
                             <span id="ins-date"></span>
                             <span class="text-slate-400">(<span id="ins-time-ago"></span>)</span>
                         </div>
-                        
-                        <!-- Botón eliminar solo emoji -->
-                        <button onclick="prepareBulkAction('DELETE', null)" class="text-slate-400 hover:text-red-600 p-2 text-lg leading-none" title="Eliminar">
-                            🗑️
-                        </button>
                     </div>
                     
                     <!-- Información adicional - SOLO AL PASAR EL MOUSE -->
@@ -682,6 +677,9 @@
                 <div class="ins-footer-actions">
                     <button id="btn-responder" onclick="prepareResponder()" class="ins-action-outline flex items-center gap-2"><span>↩</span> Responder</button>
                     <button onclick="prepareForward()" class="ins-action-outline flex items-center gap-2"><span>↪</span> Reenviar</button>
+                    <button onclick="prepareBulkAction('DELETE', null)" class="text-slate-400 hover:text-red-600 ml-auto text-xl" title="Eliminar">
+                        🗑️
+                    </button>
                 </div>
             </div>
         </div>
