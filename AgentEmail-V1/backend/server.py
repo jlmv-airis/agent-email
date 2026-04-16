@@ -845,7 +845,7 @@ def generate_ai_response():
         return jsonify({'error': 'Se requiere el mensaje para generar respuesta'}), 400
     
     if not config.GEMINI_API_KEY:
-        return jsonify({'error': 'API Key de Gemini no configurada'}), 500
+        return jsonify({'error': 'API Key de Gemini no configurada. Configúrala en ⚙️ → Configuración IA'}), 500
     
     try:
         import requests
@@ -877,12 +877,46 @@ Respuesta:"""
             ai_response = result['candidates'][0]['content']['parts'][0]['text']
             return jsonify({'response': ai_response, 'status': 'success'})
         else:
+            error_data = response.json()
+            error_msg = "Error al generar respuesta con IA"
+            
+            if response.status_code == 429:
+                error_msg = "⚠️ Cuota de Gemini API agotada. Tu plan gratuito se ha acabado. Visita https://ai.dev/rate-limit para más información o usa una API Key con facturación."
+            elif 'error' in error_data and 'message' in error_data['error']:
+                error_msg = f"Error de Gemini: {error_data['error']['message']}"
+            
             logger.error(f"Error de Gemini API: {response.text}")
-            return jsonify({'error': 'Error al generar respuesta con IA'}), 500
+            return jsonify({'error': error_msg, 'quota_exhausted': response.status_code == 429}), 500
             
     except Exception as e:
         logger.error(f"Error en generate_ai_response: {e}")
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/ai/check-quota', methods=['GET'])
+@token_required
+def check_ai_quota():
+    """Verificar estado de la API de Gemini"""
+    if not config.GEMINI_API_KEY:
+        return jsonify({'status': 'no_key', 'message': 'API Key no configurada'})
+    
+    try:
+        import requests
+        
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={config.GEMINI_API_KEY}"
+        headers = {'Content-Type': 'application/json'}
+        payload = {'contents': [{'parts': [{'text': 'test'}]}]}
+        
+        response = requests.post(url, headers=headers, json=payload, timeout=10)
+        
+        if response.status_code == 200:
+            return jsonify({'status': 'ok', 'message': 'API Key funcionando correctamente'})
+        elif response.status_code == 429:
+            return jsonify({'status': 'quota_exhausted', 'message': 'Cuota agotada. El plan gratuito se ha acabado.'})
+        else:
+            return jsonify({'status': 'error', 'message': f'Error: {response.status_code}'})
+            
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)})
 
 if __name__ == '__main__':
     init_db()

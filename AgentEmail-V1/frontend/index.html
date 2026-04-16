@@ -1657,10 +1657,12 @@
             const btn = document.getElementById('btn-generate-ai');
             const loading = document.getElementById('ai-loading');
             const editor = document.getElementById('response-body');
+            const feedback = document.getElementById('response-feedback');
             
             btn.disabled = true;
             btn.classList.add('opacity-50');
             loading.classList.remove('hidden');
+            feedback.innerText = '';
             
             try {
                 const res = await fetch(`${API_URL}/ai/generate-response`, {
@@ -1677,11 +1679,18 @@
                 const data = await res.json();
                 if (res.ok) {
                     editor.innerHTML = data.response.replace(/\n/g, '<br>');
+                    feedback.innerText = '✅ Respuesta generada con IA';
+                    feedback.className = 'text-sm font-medium text-green-600';
                 } else {
-                    alert('Error: ' + (data.error || 'No se pudo generar respuesta'));
+                    feedback.innerText = '❌ ' + (data.error || 'No se pudo generar respuesta');
+                    feedback.className = 'text-sm font-medium text-red-500';
+                    if (data.quota_exhausted) {
+                        feedback.innerText += ' - Ve a ⚙️ Configuración para más info';
+                    }
                 }
             } catch (e) {
-                alert('Error de conexión');
+                feedback.innerText = '❌ Error de conexión';
+                feedback.className = 'text-sm font-medium text-red-500';
             }
             
             btn.disabled = false;
@@ -1943,9 +1952,29 @@
                 const data = await res.json();
                 const statusDot = document.getElementById('gemini-status');
                 const statusText = document.getElementById('gemini-status').nextElementSibling;
+                
                 if (data.gemini_api_key_set) {
-                    statusDot.className = 'w-3 h-3 rounded-full bg-green-500';
-                    statusText.innerText = 'API Key configurada';
+                    statusDot.className = 'w-3 h-3 rounded-full bg-yellow-500';
+                    statusText.innerText = 'Verificando cuota...';
+                    
+                    try {
+                        const quotaRes = await fetch(`${API_URL}/ai/check-quota`, { headers: {'Authorization': 'Bearer ' + token} });
+                        const quotaData = await quotaRes.json();
+                        
+                        if (quotaData.status === 'ok') {
+                            statusDot.className = 'w-3 h-3 rounded-full bg-green-500';
+                            statusText.innerText = 'API Key funcionando ✓';
+                        } else if (quotaData.status === 'quota_exhausted') {
+                            statusDot.className = 'w-3 h-3 rounded-full bg-red-500';
+                            statusText.innerText = 'Cuota agotada ⚠️';
+                        } else {
+                            statusDot.className = 'w-3 h-3 rounded-full bg-red-500';
+                            statusText.innerText = quotaData.message || 'Error en API';
+                        }
+                    } catch (e) {
+                        statusDot.className = 'w-3 h-3 rounded-full bg-green-500';
+                        statusText.innerText = 'API Key configurada';
+                    }
                 } else {
                     statusDot.className = 'w-3 h-3 rounded-full bg-red-500';
                     statusText.innerText = 'API Key no configurada';
