@@ -644,7 +644,9 @@
                 <div class="ins-footer-actions">
                     <button id="btn-responder" onclick="prepareResponder()" class="ins-action-outline flex items-center gap-2"><span>↩</span> Responder</button>
                     <button onclick="prepareForward()" class="ins-action-outline flex items-center gap-2"><span>↪</span> Reenviar</button>
-                    <button onclick="prepareBulkAction('DELETE', null)" class="ins-action-outline flex items-center gap-2 ml-auto bg-red-50 hover:bg-red-100 text-red-600 border-red-300"><span>🗑️</span> Eliminar</button>
+                    <button onclick="prepareBulkAction('DELETE', null)" class="ins-action-outline flex items-center justify-center ml-auto w-10 h-10 text-red-600 hover:bg-red-100 border-red-300" title="Eliminar">
+                        <span class="text-xl">🗑️</span>
+                    </button>
                 </div>
             </div>
         </div>
