@@ -624,7 +624,7 @@
                 </div>
 
                 <!-- Encabezado del Mensaje estilo Gmail EXACTO -->
-                <div class="ins-message-header-inspector">
+                <div class="ins-message-header-inspector group">
                     <div class="flex items-start gap-3">
                         <div id="ins-avatar-large" class="ins-avatar-circle shadow-sm flex-shrink-0 w-10 h-10 text-lg"></div>
                         <div class="flex-1 min-w-0">
@@ -633,29 +633,32 @@
                                 <span id="ins-sender-name" class="font-bold text-slate-900"></span>
                                 <span id="ins-from" class="text-slate-600 text-sm"></span>
                             </div>
-                            <!-- Para con correo -->
-                            <div class="text-sm text-slate-600 mb-2">
-                                <span class="text-slate-500">para </span>
-                                <span id="ins-to-company" class="text-slate-700"></span>
+                            <!-- Para con correo - MAYUSCULAS Y NEGRITA -->
+                            <div class="text-sm mb-2">
+                                <span class="text-slate-500 font-semibold">PARA: </span>
+                                <span id="ins-to-company" class="text-slate-900 font-bold"></span>
                             </div>
                             <!-- CC si existe -->
                             <div id="ins-cc-container" class="text-sm text-slate-600 mb-2 hidden">
-                                <span class="text-slate-500">cc: </span>
+                                <span class="text-slate-500 font-semibold">CC: </span>
                                 <span id="ins-cc"></span>
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- Fecha y acciones adicionales estilo Gmail -->
-                    <div class="flex items-center justify-between mt-2 border-b border-gray-200 pb-3">
+                        
+                        <!-- Fecha a la derecha -->
                         <div class="flex items-center gap-2 text-sm text-slate-500">
                             <span id="ins-date"></span>
                             <span class="text-slate-400">(<span id="ins-time-ago"></span>)</span>
                         </div>
+                        
+                        <!-- Botón eliminar solo emoji -->
+                        <button onclick="prepareBulkAction('DELETE', null)" class="text-slate-400 hover:text-red-600 p-2" title="Eliminar">
+                            🗑️
+                        </button>
                     </div>
                     
-                    <!-- Información adicional estilo Gmail -->
-                    <div class="mt-2 text-sm text-slate-500 space-y-1">
+                    <!-- Información adicional - SOLO AL PASAR EL MOUSE -->
+                    <div class="mt-2 text-sm text-slate-500 space-y-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                         <div class="flex items-center gap-2">
                             <span class="text-slate-500">Enviado por:</span>
                             <span id="ins-sent-by" class="text-blue-600"></span>
@@ -679,9 +682,6 @@
                 <div class="ins-footer-actions">
                     <button id="btn-responder" onclick="prepareResponder()" class="ins-action-outline flex items-center gap-2"><span>↩</span> Responder</button>
                     <button onclick="prepareForward()" class="ins-action-outline flex items-center gap-2"><span>↪</span> Reenviar</button>
-                    <button onclick="prepareBulkAction('DELETE', null)" class="ins-action-outline flex items-center justify-center ml-auto w-10 h-10 text-slate-400 hover:text-red-600 hover:bg-red-50" title="Eliminar">
-                        <span class="text-xl">🗑️</span>
-                    </button>
                 </div>
             </div>
         </div>
