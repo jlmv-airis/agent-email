@@ -72,6 +72,9 @@ class Config:
     IMAP_TIMEOUT = int(os.getenv('IMAP_TIMEOUT', 30))
     SMTP_TIMEOUT = int(os.getenv('SMTP_TIMEOUT', 30))
     
+    # Google Gemini AI
+    GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
+    
     @classmethod
     def validate(cls):
         """Valida configuración crítica"""

@@ -792,6 +792,98 @@ def sync_all_emails():
         logger.error(f"Error general en sync_all: {e}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/admin/settings', methods=['GET'])
+@admin_required
+def get_settings():
+    """Obtener configuración del sistema"""
+    return jsonify({
+        'gemini_api_key_set': bool(config.GEMINI_API_KEY)
+    })
+
+@app.route('/api/admin/settings', methods=['POST'])
+@admin_required
+def update_settings():
+    """Actualizar configuración del sistema"""
+    data = request.json or {}
+    
+    if 'gemini_api_key' in data:
+        new_key = data['gemini_api_key'].strip()
+        if new_key:
+            env_path = os.path.join(BASE_DIR, '.env')
+            with open(env_path, 'r') as f:
+                lines = f.readlines()
+            
+            updated = False
+            new_lines = []
+            for line in lines:
+                if line.startswith('GEMINI_API_KEY='):
+                    new_lines.append(f'GEMINI_API_KEY={new_key}\n')
+                    updated = True
+                else:
+                    new_lines.append(line)
+            
+            if not updated:
+                new_lines.append(f'GEMINI_API_KEY={new_key}\n')
+            
+            with open(env_path, 'w') as f:
+                f.writelines(new_lines)
+            
+            config.GEMINI_API_KEY = new_key
+            logger.info("✅ API Key de Gemini actualizada")
+    
+    return jsonify({'status': 'ok', 'message': 'Configuración actualizada'})
+
+@app.route('/api/ai/generate-response', methods=['POST'])
+@token_required
+def generate_ai_response():
+    """Generar respuesta automática con IA (Gemini)"""
+    data = request.json or {}
+    mensaje = data.get('mensaje', '').strip()
+    asunto = data.get('asunto', '').strip()
+    
+    if not mensaje:
+        return jsonify({'error': 'Se requiere el mensaje para generar respuesta'}), 400
+    
+    if not config.GEMINI_API_KEY:
+        return jsonify({'error': 'API Key de Gemini no configurada'}), 500
+    
+    try:
+        import requests
+        
+        prompt = f"""Eres un asistente de soporte al cliente profesional. Genera una respuesta automática y cortés al siguiente correo:
+
+Asunto: {asunto}
+Mensaje: {mensaje}
+
+La respuesta debe ser:
+- Profesional y amable
+- Breve pero completa
+- En español
+- Lista para enviar (sin lugar para firma, el sistema la añadirá)
+
+Respuesta:"""
+        
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={config.GEMINI_API_KEY}"
+        
+        headers = {'Content-Type': 'application/json'}
+        payload = {
+            'contents': [{'parts': [{'text': prompt}]}]
+        }
+        
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        
+        if response.status_code == 200:
+            result = response.json()
+            ai_response = result['candidates'][0]['content']['parts'][0]['text']
+            return jsonify({'response': ai_response, 'status': 'success'})
+        else:
+            logger.error(f"Error de Gemini API: {response.text}")
+            return jsonify({'error': 'Error al generar respuesta con IA'}), 500
+            
+    except Exception as e:
+        logger.error(f"Error en generate_ai_response: {e}")
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     init_db()
     logger.info(f"🚀 Iniciando Agent Email AIRIS V1")
