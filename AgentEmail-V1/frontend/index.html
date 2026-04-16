@@ -643,7 +643,7 @@
                 <!-- Acciones Finales -->
                 <div class="ins-footer-actions">
                     <button id="btn-responder" onclick="prepareResponder()" class="ins-action-outline flex items-center gap-2"><span>↩</span> Responder</button>
-                    <button class="ins-action-outline flex items-center gap-2"><span>↪</span> Reenviar</button>
+                    <button onclick="prepareForward()" class="ins-action-outline flex items-center gap-2"><span>↪</span> Reenviar</button>
                     <button onclick="prepareBulkAction('DELETE', null)" class="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium text-sm transition-colors"><span>🗑️</span> Eliminar</button>
                 </div>
             </div>
@@ -1638,6 +1638,24 @@
             document.getElementById('response-to').value = m.remitente_email || m.remitente;
             document.getElementById('response-subject').value = m.asunto ? `Re: ${m.asunto}` : 'Re: ';
             document.getElementById('response-body').innerHTML = '';
+            document.getElementById('response-body').focus();
+            document.getElementById('response-feedback').innerText = '';
+            document.getElementById('response-feedback').className = 'text-sm font-medium';
+        }
+
+        async function prepareForward() {
+            if (!currentTid) return;
+            const m = hilos.find(h => h.thread_id === currentTid);
+            if (!m || !m.asignado_a) {
+                alert('⚠️ Este correo debe estar asignado a un operador para reenviar.');
+                return;
+            }
+            
+            document.getElementById('response-modal').classList.remove('hidden');
+            document.getElementById('response-from').innerText = currentUser.email || 'admin@airis.com';
+            document.getElementById('response-to').value = '';
+            document.getElementById('response-subject').value = m.asunto ? `Fwd: ${m.asunto}` : 'Fwd: ';
+            document.getElementById('response-body').innerHTML = `<br><br>---------- Mensaje original ----------<br>De: ${m.remitente || ''}<br>Asunto: ${m.asunto || ''}<br>Fecha: ${m.fecha || ''}<br><br>${m.mensaje || ''}`;
             document.getElementById('response-body').focus();
             document.getElementById('response-feedback').innerText = '';
             document.getElementById('response-feedback').className = 'text-sm font-medium';
