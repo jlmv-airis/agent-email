@@ -252,11 +252,21 @@ def get_stats():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/hilos', methods=['GET'])
+@token_required
 def get_hilos():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute('SELECT * FROM hilos ORDER BY fecha DESC LIMIT 200')
+        
+        # Si es operador, solo mostrar correos asignados a él
+        user_rol = currentUser.get('rol', '').lower()
+        username = currentUser.get('username', '')
+        
+        if user_rol == 'operador':
+            cur.execute('SELECT * FROM hilos WHERE asignado_a = ? ORDER BY fecha DESC LIMIT 200', (username,))
+        else:
+            cur.execute('SELECT * FROM hilos ORDER BY fecha DESC LIMIT 200')
+        
         hilos = [dict(row) for row in cur.fetchall()]
         cur.close()
         conn.close()
