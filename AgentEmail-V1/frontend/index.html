@@ -424,6 +424,46 @@
                     </div>
                 </div>
 
+                <!-- Dashboard Operador -->
+                <div id="operator-dashboard" class="hidden grid grid-cols-3 gap-3 mb-6">
+                    <!-- Mis Pendientes -->
+                    <div class="dash-card group hover:border-amber-500/30 transition-all duration-300 !py-3 !px-4">
+                        <div class="flex items-center gap-3">
+                            <div class="dash-icon !w-8 !h-8 bg-amber-500/10 text-amber-400 group-hover:scale-110 transition-transform flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Pendientes</p>
+                            </div>
+                            <p id="op-pending" class="text-xl font-bold text-white tracking-tight">0</p>
+                        </div>
+                    </div>
+                    <!-- En Proceso -->
+                    <div class="dash-card group hover:border-blue-500/30 transition-all duration-300 !py-3 !px-4">
+                        <div class="flex items-center gap-3">
+                            <div class="dash-icon !w-8 !h-8 bg-blue-500/10 text-blue-400 group-hover:scale-110 transition-transform flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">En Proceso</p>
+                            </div>
+                            <p id="op-process" class="text-xl font-bold text-white tracking-tight">0</p>
+                        </div>
+                    </div>
+                    <!-- Respondidos Hoy -->
+                    <div class="dash-card group hover:border-emerald-500/30 transition-all duration-300 !py-3 !px-4">
+                        <div class="flex items-center gap-3">
+                            <div class="dash-icon !w-8 !h-8 bg-emerald-500/10 text-emerald-400 group-hover:scale-110 transition-transform flex-shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Respondidos Hoy</p>
+                            </div>
+                            <p id="op-responded" class="text-xl font-bold text-white tracking-tight">0</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-3 gap-4 mb-10">
                     <div class="dash-card col-span-2 overflow-hidden">
                         <div class="flex items-center justify-between mb-4">
@@ -1035,6 +1075,12 @@
                     if (btn) btn.classList.remove('hidden');
                     const settingsBtn = document.getElementById('settings-btn');
                     if (settingsBtn) settingsBtn.classList.remove('hidden');
+                    
+                    document.getElementById('admin-dashboard').classList.remove('hidden');
+                    document.getElementById('operator-dashboard').classList.add('hidden');
+                } else {
+                    document.getElementById('admin-dashboard').classList.add('hidden');
+                    document.getElementById('operator-dashboard').classList.remove('hidden');
                 }
                 initApp();
             } catch(e) { logout(); }
@@ -1232,6 +1278,22 @@
                     document.getElementById('dash-assigned').innerText = assigned;
                     document.getElementById('dash-resolved').innerText = total > 0 ? Math.round((resolved / total) * 100) + '%' : '0%';
                 }
+                
+                // Stats para operador
+                const username = currentUser.username;
+                const myHilos = hilos.filter(h => h.asignado_a === username);
+                const opPending = myHilos.filter(h => h.estado_ticket === 'PENDIENTE').length;
+                const opProcess = myHilos.filter(h => h.estado_ticket === 'ASIGNADO').length;
+                
+                const hoy = new Date().toISOString().split('T')[0];
+                const opResponded = myHilos.filter(h => 
+                    (h.estado_ticket === 'RESPONDIDO' || h.estado_ticket === 'CERRADO') && 
+                    h.fecha && h.fecha.startsWith(hoy)
+                ).length;
+                
+                document.getElementById('op-pending').innerText = opPending;
+                document.getElementById('op-process').innerText = opProcess;
+                document.getElementById('op-responded').innerText = opResponded;
             } catch (e) {
                 console.error("Error cargando stats:", e);
             }
