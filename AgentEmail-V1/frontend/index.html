@@ -464,7 +464,8 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-4 mb-10">
+                <!-- Sección de gráficos - Solo Admin -->
+                <div id="admin-charts" class="grid grid-cols-3 gap-4 mb-10">
                     <div class="dash-card col-span-2 overflow-hidden">
                         <div class="flex items-center justify-between mb-4">
                             <div>
@@ -1078,9 +1079,11 @@
                     
                     document.getElementById('admin-dashboard').classList.remove('hidden');
                     document.getElementById('operator-dashboard').classList.add('hidden');
+                    document.getElementById('admin-charts').classList.remove('hidden');
                 } else {
                     document.getElementById('admin-dashboard').classList.add('hidden');
                     document.getElementById('operator-dashboard').classList.remove('hidden');
+                    document.getElementById('admin-charts').classList.add('hidden');
                 }
                 initApp();
             } catch(e) { logout(); }
