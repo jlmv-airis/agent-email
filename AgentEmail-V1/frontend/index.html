@@ -574,7 +574,7 @@
                         <!-- Derecha: App & Versión -->
                         <div class="flex flex-col items-center md:items-end text-center md:text-right">
                             <p class="text-[11px] font-bold text-slate-300 uppercase tracking-widest mb-2">Agent Email AIRIS</p>
-                            <span class="inline-block px-3 py-1 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-500 text-[9px] font-black tracking-tighter shadow-[0_0_10px_rgba(52,120,246,0.1)]">V1.0.7</span>
+                            <span class="inline-block px-3 py-1 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-500 text-[9px] font-black tracking-tighter shadow-[0_0_10px_rgba(52,120,246,0.1)]">v1.0.9</span>
                         </div>
                     </div>
                 </footer>
@@ -1998,18 +1998,6 @@
             saveFilterState();
             updateCharts();
         }
-
-        async function loadEmpresas() {
-            const res = await fetch(`${API_URL}/empresas`, { headers: {'Authorization': 'Bearer ' + token} });
-            empresas = await res.json();
-            const filterCompany = document.getElementById('filter-company');
-            if (filterCompany) {
-                filterCompany.innerHTML = '<option value="ALL" class="bg-[#1a1c1e]">TODAS LAS EMPRESAS</option>' +
-                    empresas.map(e => `<option value="${e.nombre}" class="bg-[#1a1c1e]">${e.nombre.toUpperCase()}</option>`).join('');
-            }
-            renderSidebar();
-        }
-
     </script>
 </body>
 </html>
