@@ -629,7 +629,7 @@
                         <div id="ins-avatar-large" class="ins-avatar-circle shadow-sm"></div>
                         <div class="ins-sender-details">
                             <p><span id="ins-sender-name"></span> <span id="ins-from" class="ins-from"></span></p>
-                            <p class="ins-to-me">para mí ▾</p>
+                            <p class="ins-to-me"><span id="ins-to-company"></span> ▾</p>
                         </div>
                     </div>
                     <div class="ins-date-info">
@@ -1570,6 +1570,9 @@
             const messageDate = new Date(m.fecha);
             const options = { weekday: undefined, year: undefined, month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true };
             document.getElementById('ins-date').innerText = messageDate.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }) + ' a las ' + messageDate.toLocaleTimeString('es-ES', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+            // Mostrar el correo de la empresa que recibió el mensaje
+            document.getElementById('ins-to-company').innerText = 'para ' + (m.correo_empresa || 'correo@empresa.com');
 
             // SI EL CORREO NO ESTÁ LEÍDO, MARCARLO COMO LEÍDO AUTOMÁTICAMENTE
             if (!m.leido) {
