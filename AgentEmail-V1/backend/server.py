@@ -259,8 +259,8 @@ def get_hilos():
         cur = conn.cursor()
         
         # Si es operador, solo mostrar correos asignados a él
-        user_rol = currentUser.get('rol', '').lower()
-        username = currentUser.get('username', '')
+        user_rol = request.user.get('rol', '').lower()
+        username = request.user.get('username', '')
         
         if user_rol == 'operador':
             cur.execute('SELECT * FROM hilos WHERE asignado_a = ? ORDER BY fecha DESC LIMIT 200', (username,))
@@ -272,6 +272,7 @@ def get_hilos():
         conn.close()
         return jsonify(hilos)
     except Exception as e:
+        logger.error(f"Error en get_hilos: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/hilos/update', methods=['PUT'])
