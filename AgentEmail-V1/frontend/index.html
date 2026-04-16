@@ -634,40 +634,12 @@
                                 <span id="ins-from" class="text-slate-600 text-sm"></span>
                             </div>
                             <!-- Para con correo - SOLO PARA EN NEGRITA -->
-                            <div class="text-sm mb-2 relative group/tooltip">
+                            <div class="text-sm mb-2">
                                 <span class="text-slate-900 font-bold">PARA: </span>
-                                <span id="ins-to-company" class="text-slate-700 cursor-pointer hover:text-blue-600"></span>
-                                <!-- Tooltip estilo Gmail -->
-                                <div class="absolute left-0 top-full mt-2 bg-white border border-gray-200 rounded-lg shadow-xl p-4 z-50 min-w-[350px] opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200">
-                                    <div class="text-sm space-y-2">
-                                        <div class="flex">
-                                            <span class="text-slate-500 w-24 flex-shrink-0">De:</span>
-                                            <span id="ins-tooltip-from" class="text-slate-800"></span>
-                                        </div>
-                                        <div class="flex">
-                                            <span class="text-slate-500 w-24 flex-shrink-0">Para:</span>
-                                            <span id="ins-tooltip-to" class="text-slate-800"></span>
-                                        </div>
-                                        <div id="ins-tooltip-cc-row" class="flex hidden">
-                                            <span class="text-slate-500 w-24 flex-shrink-0">CC:</span>
-                                            <span id="ins-tooltip-cc" class="text-slate-800"></span>
-                                        </div>
-                                        <div class="border-t border-gray-200 pt-2 mt-2">
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-slate-500 w-24 flex-shrink-0">Enviado por:</span>
-                                                <span id="ins-tooltip-sent-by" class="text-blue-600"></span>
-                                            </div>
-                                            <div class="flex items-center gap-2 mt-1">
-                                                <span class="text-slate-500 w-24 flex-shrink-0">Firmado por:</span>
-                                                <span id="ins-tooltip-signed-by" class="text-slate-600 text-xs"></span>
-                                            </div>
-                                            <div class="flex items-center gap-2 mt-1">
-                                                <span class="text-slate-500 w-24 flex-shrink-0">Seguridad:</span>
-                                                <span class="text-green-600 text-xs">✓ Encriptación estándar (TLS)</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="absolute -top-2 left-4 w-4 h-4 bg-white border-t border-l border-gray-200 transform rotate-45"></div>
+                                <span id="ins-to-company" class="text-slate-700"></span>
+                                <!-- Información de seguridad visible -->
+                                <div class="text-xs text-slate-500 mt-1">
+                                    <span>Enviado por: <span id="ins-sent-by" class="text-blue-600"></span></span>
                                 </div>
                             </div>
                             <!-- CC si existe -->
@@ -1653,20 +1625,6 @@
             const domain = toEmail.split('@')[1] || 'airis-ae.com.mx';
             document.getElementById('ins-sent-by').innerText = domain;
             document.getElementById('ins-signed-by').innerText = domain.replace(/\./g, '-') + '.20251104.gappssmtp.com';
-            
-            // Llenar tooltip
-            document.getElementById('ins-tooltip-from').innerText = (m.remitente_email || m.remitente) + (m.remitente ? ` (${m.remitente})` : '');
-            document.getElementById('ins-tooltip-to').innerText = toName ? `${toName} <${toEmail}>` : toEmail;
-            document.getElementById('ins-tooltip-sent-by').innerText = domain;
-            document.getElementById('ins-tooltip-signed-by').innerText = domain.replace(/\./g, '-') + '.20251104.gappssmtp.com';
-            
-            // CC en tooltip
-            if (m.cc) {
-                document.getElementById('ins-tooltip-cc-row').classList.remove('hidden');
-                document.getElementById('ins-tooltip-cc').innerText = m.cc;
-            } else {
-                document.getElementById('ins-tooltip-cc-row').classList.add('hidden');
-            }
 
             // SI EL CORREO NO ESTÁ LEÍDO, MARCARLO COMO LEÍDO AUTOMÁTICAMENTE
             if (!m.leido) {
