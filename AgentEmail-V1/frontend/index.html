@@ -653,52 +653,127 @@
         </div>
     </div>
 
-    <!-- MODAL: Responder con IA - Estilo Gmail -->
-    <div id="response-modal" class="hidden fixed inset-0 z-[300] bg-black/50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-lg w-full max-w-3xl shadow-2xl overflow-hidden" style="font-family: 'Google Sans', Roboto, Arial, sans-serif;">
+    <!-- MODAL: Responder con IA - Estilo Gmail EXACTO -->
+    <div id="response-modal" class="hidden fixed inset-0 z-[300] bg-black/40 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg w-full max-w-3xl shadow-2xl overflow-hidden" style="font-family: Roboto, Arial, sans-serif;">
             <!-- Header estilo Gmail -->
-            <div class="bg-gray-100 px-4 py-3 flex items-center justify-between border-b border-gray-200">
-                <span class="text-gray-600 text-sm font-medium">Nuevo mensaje</span>
-                <button onclick="closeResponseModal()" class="text-gray-500 hover:text-gray-700 text-xl leading-none">×</button>
+            <div class="bg-gray-100 px-4 py-3 flex items-center justify-between border-b border-gray-300">
+                <span class="text-gray-700 text-base font-semibold">Nuevo mensaje</span>
+                <button onclick="closeResponseModal()" class="text-gray-500 hover:text-gray-700 text-2xl font-light leading-none">×</button>
             </div>
             
-            <!-- Campos de destino y asunto -->
-            <div class="px-4 py-2 border-b border-gray-100">
-                <div class="flex items-center py-1">
-                    <span class="text-gray-500 text-sm w-12">Para:</span>
+            <!-- Campos de destino y asunto - estilo Gmail -->
+            <div class="px-4 py-3 border-b border-gray-200">
+                <div class="flex items-center py-1.5">
+                    <span class="text-gray-500 text-sm w-16">De:</span>
+                    <span id="response-from" class="text-sm text-gray-800 font-medium"></span>
+                </div>
+                <div class="flex items-center py-1.5">
+                    <span class="text-gray-500 text-sm w-16">Para:</span>
                     <input id="response-to" type="text" class="flex-1 text-sm text-gray-800 outline-none bg-transparent" readonly>
                 </div>
-                <div class="flex items-center py-1 border-t border-gray-100">
-                    <span class="text-gray-500 text-sm w-12">Asunto:</span>
+                <div class="flex items-center py-1.5 border-t border-gray-100">
+                    <span class="text-gray-500 text-sm w-16">Asunto:</span>
                     <input id="response-subject" type="text" class="flex-1 text-sm text-gray-800 outline-none bg-transparent">
                 </div>
             </div>
             
-            <!-- Área de texto y herramientas -->
+            <!-- Barra de herramientas de formato - ESTILO GMAIL -->
+            <div class="px-4 py-2 border-b border-gray-200 flex items-center gap-1">
+                <button onclick="formatText('bold')" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Negrita (Ctrl+B)">
+                    <span class="font-bold text-lg">B</span>
+                </button>
+                <button onclick="formatText('italic')" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Cursiva (Ctrl+I)">
+                    <span class="italic text-lg">I</span>
+                </button>
+                <button onclick="formatText('underline')" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Subrayado (Ctrl+U)">
+                    <span class="underline text-lg">U</span>
+                </button>
+                <div class="w-px h-5 bg-gray-300 mx-1"></div>
+                <button onclick="formatText('left')" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Alinear a la izquierda">
+                    <span class="text-lg">≡</span>
+                </button>
+                <button onclick="formatText('center')" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Centrar">
+                    <span class="text-lg">☰</span>
+                </button>
+                <button onclick="formatText('right')" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Alinear a la derecha">
+                    <span class="text-lg">≡</span>
+                </button>
+                <div class="w-px h-5 bg-gray-300 mx-1"></div>
+                <button onclick="formatText('list')" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Viñetas">
+                    <span class="text-lg">•</span>
+                </button>
+                <button onclick="formatText('numbered')" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Numeración">
+                    <span class="text-lg">1.</span>
+                </button>
+                <div class="w-px h-5 bg-gray-300 mx-1"></div>
+                <button onclick="formatText('undo')" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Deshacer">
+                    <span class="text-lg">↶</span>
+                </button>
+                <button onclick="formatText('redo')" class="p-2 hover:bg-gray-100 rounded text-gray-600" title="Rehacer">
+                    <span class="text-lg">↷</span>
+                </button>
+                <div class="w-px h-5 bg-gray-300 mx-1"></div>
+                <select onchange="formatText('font', this.value)" class="text-sm text-gray-600 border border-gray-300 rounded px-2 py-1 hover:bg-gray-50">
+                    <option value="">Fuente</option>
+                    <option value="Arial">Arial</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                    <option value="Courier New">Courier New</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Verdana">Verdana</option>
+                </select>
+                <select onchange="formatText('size', this.value)" class="text-sm text-gray-600 border border-gray-300 rounded px-2 py-1 hover:bg-gray-50">
+                    <option value="">Tamaño</option>
+                    <option value="1">Pequeño</option>
+                    <option value="3">Normal</option>
+                    <option value="5">Grande</option>
+                    <option value="7">Muy Grande</option>
+                </select>
+                <input type="color" onchange="formatText('color', this.value)" class="w-8 h-8 border border-gray-300 rounded cursor-pointer" title="Color de texto">
+                <input type="color" onchange="formatText('bgcolor', this.value)" class="w-8 h-8 border border-gray-300 rounded cursor-pointer" title="Color de fondo" value="#ffffff">
+            </div>
+            
+            <!-- Área de texto con editor -->
             <div class="p-4">
                 <div class="flex items-center gap-2 mb-3">
-                    <button onclick="generateAIResponse()" id="btn-generate-ai" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-medium flex items-center gap-2 transition-colors shadow-sm">
+                    <button onclick="generateAIResponse()" id="btn-generate-ai" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-full text-sm font-medium flex items-center gap-2 transition-all shadow-md">
                         <span>✨</span> Generar con IA
                     </button>
-                    <span id="ai-loading" class="hidden text-gray-500 text-sm">Generando respuesta...</span>
+                    <span id="ai-loading" class="hidden text-gray-500 text-sm ml-2">Generando respuesta...</span>
                 </div>
                 
-                <textarea id="response-body" rows="12" class="w-full text-gray-800 text-sm resize-none outline-none" placeholder="Escribe tu respuesta..."></textarea>
+                <!-- Editor HTML estilo Gmail -->
+                <div id="editor-container" class="border border-gray-300 rounded min-h-[250px]">
+                    <div id="editor-toolbar" class="bg-gray-50 px-2 py-1 border-b border-gray-200 flex items-center gap-1">
+                        <button onclick="execCmd('bold')" class="p-1.5 hover:bg-gray-200 rounded text-gray-700" title="Negrita">
+                            <span class="font-bold text-sm">B</span>
+                        </button>
+                        <button onclick="execCmd('italic')" class="p-1.5 hover:bg-gray-200 rounded text-gray-700" title="Cursiva">
+                            <span class="italic text-sm">I</span>
+                        </button>
+                        <button onclick="execCmd('underline')" class="p-1.5 hover:bg-gray-200 rounded text-gray-700" title="Subrayado">
+                            <span class="underline text-sm">U</span>
+                        </button>
+                    </div>
+                    <div id="response-body" contenteditable="true" class="p-3 text-gray-800 min-h-[220px] outline-none" placeholder="Escribe tu respuesta..."></div>
+                </div>
                 
                 <p id="response-feedback" class="text-sm font-medium mt-2"></p>
             </div>
             
-            <!-- Footer con botones -->
-            <div class="px-4 py-3 bg-gray-50 flex items-center justify-between border-t border-gray-200">
-                <div class="flex items-center gap-2">
-                    <button onclick="sendResponse()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm flex items-center gap-2 transition-colors shadow-sm">
+            <!-- Footer con botones estilo Gmail -->
+            <div class="px-4 py-3 bg-gray-100 flex items-center justify-between border-t border-gray-300">
+                <div class="flex items-center gap-3">
+                    <button onclick="sendResponse()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium text-sm flex items-center gap-2 transition-colors shadow-md">
                         <span>✉️</span> Enviar
                     </button>
-                    <button onclick="closeResponseModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 text-sm font-medium transition-colors">
+                    <button onclick="closeResponseModal()" class="px-4 py-2.5 text-gray-600 hover:bg-gray-200 rounded-full text-sm font-medium transition-colors">
                         Cancelar
                     </button>
                 </div>
-                <button onclick="closeResponseModal()" class="text-gray-400 hover:text-gray-600 text-xl" title="Descartar">🗑️</button>
+                <button onclick="closeResponseModal()" class="p-2 hover:bg-gray-200 rounded-full text-gray-500" title="Eliminar mensaje">
+                    <span class="text-lg">🗑️</span>
+                </button>
             </div>
         </div>
     </div>
@@ -1573,11 +1648,13 @@
             }
             
             document.getElementById('response-modal').classList.remove('hidden');
+            document.getElementById('response-from').innerText = currentUser.email || 'admin@airis.com';
             document.getElementById('response-to').value = m.remitente_email || m.remitente;
             document.getElementById('response-subject').value = m.asunto ? `Re: ${m.asunto}` : 'Re: ';
-            document.getElementById('response-body').value = '';
+            document.getElementById('response-body').innerHTML = '';
+            document.getElementById('response-body').focus();
             document.getElementById('response-feedback').innerText = '';
-            document.getElementById('response-feedback').className = 'text-sm font-semibold';
+            document.getElementById('response-feedback').className = 'text-sm font-medium';
         }
 
         function closeResponseModal() {
@@ -1590,9 +1667,10 @@
             
             const btn = document.getElementById('btn-generate-ai');
             const loading = document.getElementById('ai-loading');
-            const textarea = document.getElementById('response-body');
+            const editor = document.getElementById('response-body');
             
             btn.disabled = true;
+            btn.classList.add('opacity-50');
             loading.classList.remove('hidden');
             
             try {
@@ -1609,7 +1687,7 @@
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    textarea.value = data.response;
+                    editor.innerHTML = data.response.replace(/\n/g, '<br>');
                 } else {
                     alert('Error: ' + (data.error || 'No se pudo generar respuesta'));
                 }
@@ -1618,18 +1696,50 @@
             }
             
             btn.disabled = false;
+            btn.classList.remove('opacity-50');
             loading.classList.add('hidden');
+        }
+
+        function execCmd(command) {
+            document.execCommand(command, false, null);
+            document.getElementById('response-body').focus();
+        }
+
+        function formatText(command, value) {
+            if (command === 'font' || command === 'size') {
+                document.execCommand(command, false, value);
+            } else if (command === 'color') {
+                document.execCommand('foreColor', false, value);
+            } else if (command === 'bgcolor') {
+                document.execCommand('backColor', false, value);
+            } else if (command === 'left') {
+                document.execCommand('justifyLeft', false, null);
+            } else if (command === 'center') {
+                document.execCommand('justifyCenter', false, null);
+            } else if (command === 'right') {
+                document.execCommand('justifyRight', false, null);
+            } else if (command === 'list') {
+                document.execCommand('insertUnorderedList', false, null);
+            } else if (command === 'numbered') {
+                document.execCommand('insertOrderedList', false, null);
+            } else if (command === 'undo') {
+                document.execCommand('undo', false, null);
+            } else if (command === 'redo') {
+                document.execCommand('redo', false, null);
+            }
+            document.getElementById('response-body').focus();
         }
 
         async function sendResponse() {
             const to = document.getElementById('response-to').value;
             const subject = document.getElementById('response-subject').value;
-            const body = document.getElementById('response-body').value;
+            const body = document.getElementById('response-body').innerHTML;
             const feedback = document.getElementById('response-feedback');
             
-            if (!body.trim()) {
+            const plainText = document.getElementById('response-body').innerText;
+            if (!plainText.trim()) {
                 feedback.innerText = '⚠️ Escribe un mensaje';
-                feedback.className = 'text-sm font-semibold text-amber-500';
+                feedback.className = 'text-sm font-medium text-amber-600';
                 return;
             }
             
