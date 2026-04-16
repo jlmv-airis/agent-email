@@ -595,10 +595,6 @@
                         <span>←</span>
                         <span>Volver</span>
                     </button>
-                    <button onclick="prepareBulkAction('DELETE', null)" class="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-semibold text-sm shadow-md transition-all" title="Eliminar">
-                        <span>🗑️</span>
-                        <span>Eliminar</span>
-                    </button>
                 </div>
                 
                 <div class="flex items-center gap-6">
@@ -648,6 +644,7 @@
                 <div class="ins-footer-actions">
                     <button id="btn-responder" onclick="prepareResponder()" class="ins-action-outline flex items-center gap-2"><span>↩</span> Responder</button>
                     <button class="ins-action-outline flex items-center gap-2"><span>↪</span> Reenviar</button>
+                    <button onclick="prepareBulkAction('DELETE', null)" class="ins-action-outline flex items-center gap-2 text-red-500 hover:text-red-600"><span>🗑️</span> Eliminar</button>
                 </div>
             </div>
         </div>
