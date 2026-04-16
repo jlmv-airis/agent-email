@@ -736,7 +736,7 @@
             <!-- Área de texto con editor -->
             <div class="p-4">
                 <div class="flex items-center gap-2 mb-3">
-                    <button onclick="generateAIResponse()" id="btn-generate-ai" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-full text-sm font-medium flex items-center gap-2 transition-all shadow-md">
+                    <button onclick="generateAIResponse()" id="btn-generate-ai" class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded text-sm font-medium flex items-center gap-2 transition-all shadow-sm">
                         <span>✨</span> Generar con IA
                     </button>
                     <span id="ai-loading" class="hidden text-gray-500 text-sm ml-2">Generando respuesta...</span>
@@ -744,34 +744,23 @@
                 
                 <!-- Editor HTML estilo Gmail -->
                 <div id="editor-container" class="border border-gray-300 rounded min-h-[250px]">
-                    <div id="editor-toolbar" class="bg-gray-50 px-2 py-1 border-b border-gray-200 flex items-center gap-1">
-                        <button onclick="execCmd('bold')" class="p-1.5 hover:bg-gray-200 rounded text-gray-700" title="Negrita">
-                            <span class="font-bold text-sm">B</span>
-                        </button>
-                        <button onclick="execCmd('italic')" class="p-1.5 hover:bg-gray-200 rounded text-gray-700" title="Cursiva">
-                            <span class="italic text-sm">I</span>
-                        </button>
-                        <button onclick="execCmd('underline')" class="p-1.5 hover:bg-gray-200 rounded text-gray-700" title="Subrayado">
-                            <span class="underline text-sm">U</span>
-                        </button>
-                    </div>
                     <div id="response-body" contenteditable="true" class="p-3 text-gray-800 min-h-[220px] outline-none" placeholder="Escribe tu respuesta..."></div>
                 </div>
                 
                 <p id="response-feedback" class="text-sm font-medium mt-2"></p>
             </div>
             
-            <!-- Footer con botones estilo Gmail -->
+            <!-- Footer con botones estilo Gmail EXACTO -->
             <div class="px-4 py-3 bg-gray-100 flex items-center justify-between border-t border-gray-300">
-                <div class="flex items-center gap-3">
-                    <button onclick="sendResponse()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-medium text-sm flex items-center gap-2 transition-colors shadow-md">
+                <div class="flex items-center gap-2">
+                    <button onclick="sendResponse()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-medium flex items-center gap-2 transition-colors shadow-sm">
                         <span>✉️</span> Enviar
                     </button>
-                    <button onclick="closeResponseModal()" class="px-4 py-2.5 text-gray-600 hover:bg-gray-200 rounded-full text-sm font-medium transition-colors">
+                    <button onclick="closeResponseModal()" class="px-4 py-2.5 text-gray-600 hover:bg-gray-200 rounded text-sm font-medium transition-colors">
                         Cancelar
                     </button>
                 </div>
-                <button onclick="closeResponseModal()" class="p-2 hover:bg-gray-200 rounded-full text-gray-500" title="Eliminar mensaje">
+                <button onclick="closeResponseModal()" class="p-2 hover:bg-gray-200 rounded text-gray-500" title="Eliminar mensaje">
                     <span class="text-lg">🗑️</span>
                 </button>
             </div>
