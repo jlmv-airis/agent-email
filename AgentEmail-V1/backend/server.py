@@ -233,6 +233,10 @@ def get_stats():
         # Asignados
         cur.execute("SELECT COUNT(*) FROM hilos WHERE estado_ticket = 'ASIGNADO'")
         asignados = cur.fetchone()[0]
+        
+        # Respondidos
+        cur.execute("SELECT COUNT(*) FROM hilos WHERE estado_ticket = 'RESPONDIDO'")
+        respondidos = cur.fetchone()[0]
 
         cur.close()
         conn.close()
@@ -241,7 +245,8 @@ def get_stats():
             'total_hoy': total_hoy,
             'pendientes': pendientes,
             'resueltos_hoy': resueltos,
-            'asignados': asignados
+            'asignados': asignados,
+            'respondidos': respondidos
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
