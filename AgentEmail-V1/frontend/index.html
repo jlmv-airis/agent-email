@@ -971,12 +971,24 @@
             try { 
                 const res = await fetch(`${API_URL}/hilos`, { headers: {'Authorization': 'Bearer ' + token} });
                 hilos = await res.json(); 
-                console.log("Data fetched by loadData:", hilos); // Log to check fetched threads
+                console.log("Data fetched by loadData:", hilos);
             } catch (e) { 
                 hilos = []; 
-                console.error("Error in loadData:", e); // Log errors
+                console.error("Error in loadData:", e);
             }
             renderSidebar(); renderThreads(); updateStats(); updateCharts();
+        }
+
+        async function loadEmpresas() {
+            try {
+                const res = await fetch(`${API_URL}/empresas`);
+                empresas = await res.json();
+                console.log("Empresas loaded:", empresas);
+                renderSidebar();
+            } catch (e) {
+                console.error("Error loading empresas:", e);
+                empresas = [];
+            }
         }
 
         function updateCharts() {
