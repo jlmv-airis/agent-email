@@ -658,7 +658,7 @@
                     <button onclick="navigateInspector(1)" class="ins-tool-btn px-2" title="Siguiente (j)">▼</button>
                 </div>
                 
-                <div class="flex items-center gap-6">
+                <div class="flex items-center gap-6" id="ins-admin-actions">
                     <!-- Estado del Ticket (Solo lectura - se actualiza automáticamente) -->
                     <div class="flex items-center gap-2">
                         <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Estado:</span>
@@ -754,6 +754,8 @@
                 <div id="editor-container" class="flex-1 relative">
                     <div id="response-body" contenteditable="true" class="absolute inset-0 p-4 text-gray-800 text-sm outline-none overflow-y-auto" placeholder="Escribe tu respuesta..."></div>
                 </div>
+                <!-- Lista de adjuntos visual -->
+                <div id="attachment-list" class="px-4 py-2 border-t border-gray-50 flex flex-wrap gap-2 bg-gray-50/50 empty:hidden"></div>
             </div>
             
             <!-- Feedback -->
@@ -790,7 +792,7 @@
                          
                          <!-- Nuevos iconos Gmail -->
                          <button onclick="formatText('attach')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded" title="Adjuntar archivos">📎</button>
-                         <input type="file" id="attach-file-input" class="hidden" multiple onchange="alert('Archivos recibidos en memoria (visualización Demo).')">
+                         <input type="file" id="attach-file-input" class="hidden" multiple onchange="handleFileSelection(this)">
                          
                          <button onclick="formatText('link')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded" title="Insertar enlace">🔗</button>
                          <button onclick="formatText('emoji')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded text-lg" title="Insertar emoticono">😀</button>
@@ -1698,6 +1700,10 @@
             await loadOperatorsForInspector();
             updateStatusDisplay(m.estado_ticket || 'PENDIENTE');
             document.getElementById('ins-operator-select').value = m.asignado_a || '';
+            const isOperator = (currentUser.rol || '').toLowerCase() === 'operador';
+            if(document.getElementById('ins-admin-actions')) {
+                document.getElementById('ins-admin-actions').style.display = isOperator ? 'none' : 'flex';
+            }
             
             // Populate inspector fields with new Gmail-like styling in mind
             document.getElementById('ins-subject').innerText = m.asunto || '(Sin Asunto)'; 
@@ -1746,8 +1752,10 @@
 
             // Información de envío
             const domain = toEmail.split('@')[1] || 'airis-ae.com.mx';
-            document.getElementById('ins-sent-by').innerText = domain;
-            document.getElementById('ins-signed-by').innerText = domain.replace(/\./g, '-') + '.20251104.gappssmtp.com';
+            const sentByEl = document.getElementById('ins-sent-by');
+            const signedByEl = document.getElementById('ins-signed-by');
+            if (sentByEl) sentByEl.innerText = domain;
+            if (signedByEl) signedByEl.innerText = domain.replace(/\./g, '-') + '.20251104.gappssmtp.com';
 
             // SI EL CORREO NO ESTÁ LEÍDO, MARCARLO COMO LEÍDO AUTOMÁTICAMENTE
             if (!m.leido) {
@@ -1957,6 +1965,35 @@
             document.getElementById('response-body').focus();
         }
 
+        function handleFileSelection(input) {
+            const list = document.getElementById('attachment-list');
+            if(!list) return;
+            list.innerHTML = '';
+            if(!input.files.length) return;
+            
+            Array.from(input.files).forEach((file, index) => {
+                const pill = document.createElement('div');
+                pill.className = 'flex items-center gap-2 px-3 py-1 bg-white border border-gray-200 rounded-full text-[11px] font-medium text-gray-700 shadow-sm transition-all';
+                pill.innerHTML = `
+                    <span class="text-blue-500">📄</span>
+                    <span class="truncate max-w-[150px]">${file.name}</span>
+                    <span class="text-gray-400 text-[9px]">(${(file.size / 1024).toFixed(1)} KB)</span>
+                    <button onclick="removeAttachment(${index})" class="ml-1 text-gray-400 hover:text-red-500 transition-colors">×</button>
+                `;
+                list.appendChild(pill);
+            });
+        }
+
+        function removeAttachment(index) {
+            const input = document.getElementById('attach-file-input');
+            const dataTransfer = new DataTransfer();
+            Array.from(input.files).forEach((file, i) => {
+                if (i !== index) dataTransfer.items.add(file);
+            });
+            input.files = dataTransfer.files;
+            handleFileSelection(input);
+        }
+
         async function sendResponse() {
             const to = document.getElementById('response-to').value;
             const subject = document.getElementById('response-subject').value;
@@ -1986,15 +2023,22 @@
                     })
                 });
                 
-                if (res.ok) {
-                    await loadData();
-                    closeResponseModal();
-                    closeInspector();
-                    showToast('✅ Respuesta enviada y marcada como respondida');
-                } else {
-                    const err = await res.json();
-                    feedback.innerText = 'Error: ' + (err.error || 'No se pudo enviar');
-                    feedback.className = 'text-sm font-semibold text-red-500';
+                try {
+                    if (res.ok) {
+                        await loadData();
+                        closeResponseModal();
+                        closeInspector();
+                        showToast('✅ Respuesta enviada y marcada como respondida');
+                    } else {
+                        const errText = await res.text();
+                        console.error('SERVER RESPONDED ERROR:', errText);
+                        let errJson = {};
+                        try { errJson = JSON.parse(errText); } catch(e){}
+                        feedback.innerText = 'Error: ' + (errJson.error || errText || 'No se pudo enviar');
+                        feedback.className = 'text-sm font-semibold text-red-500';
+                    }
+                } catch(postEr) {
+                    console.error('Error post-fetch:', postEr);
                 }
             } catch (e) {
                 feedback.innerText = 'Error de conexión';

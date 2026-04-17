@@ -11,6 +11,7 @@ import logging
 from cryptography.fernet import Fernet
 import imap_tools
 import sys
+import traceback
 from pathlib import Path
 
 # Agregar backend al path para importar config y logger
@@ -52,7 +53,9 @@ def decrypt_password(encrypted):
 
 def create_token(user_data):
     payload = {
+        'id': user_data.get('id', 0),
         'user': user_data['username'],
+        'username': user_data['username'],
         'email': user_data.get('email', ''),
         'rol': user_data.get('rol', 'operador'),
         'exp': datetime.utcnow() + timedelta(hours=JWT_EXPIRE_HOURS)
@@ -260,7 +263,7 @@ def get_hilos():
         
         # Si es operador, solo mostrar correos asignados a él
         user_rol = request.user.get('rol', '').lower()
-        username = request.user.get('username', '')
+        username = request.user.get('username') or request.user.get('user', '')
         
         if user_rol == 'operador':
             cur.execute('SELECT * FROM hilos WHERE asignado_a = ? ORDER BY fecha DESC LIMIT 200', (username,))
@@ -319,7 +322,7 @@ def update_hilo():
                     return jsonify({'error': 'Operador no valido o inactivo'}), 400
             updates.append("asignado_a = ?")
             params.append(asignado_a)
-            if asignado_a != "":
+            if asignado_a != "" and not estado:
                 updates.append("estado_ticket = 'ASIGNADO'")
 
         if leido is not None:
@@ -847,7 +850,7 @@ def update_settings():
 @app.route('/api/ai/generate-response', methods=['POST'])
 @token_required
 def generate_ai_response():
-    """Generar respuesta automática con IA (Gemini)"""
+    """Generar respuesta automatica con IA (Gemini)"""
     data = request.json or {}
     mensaje = data.get('mensaje', '').strip()
     asunto = data.get('asunto', '').strip()
@@ -856,83 +859,88 @@ def generate_ai_response():
         return jsonify({'error': 'Se requiere el mensaje para generar respuesta'}), 400
     
     if not config.GEMINI_API_KEY:
-        return jsonify({'error': 'API Key de Gemini no configurada. Configúrala en ⚙️ → Configuración IA'}), 500
+        return jsonify({'error': 'API Key de Gemini no configurada. Configurala en Config IA'}), 500
     
     try:
         import requests
-        
-        prompt = f"""Eres un asistente de soporte al cliente profesional. Genera una respuesta automática y cortés al siguiente correo:
+        prompt = f"Eres un asistente de soporte al cliente profesional. Genera una respuesta automatica y cortes al siguiente correo:\n\nAsunto: {asunto}\nMensaje: {mensaje}\n\nLa respuesta debe ser:\n- Profesional y amable\n- Breve pero completa\n- En espanol\n- Lista para enviar (sin lugar para firma, el sistema la anadira)\n\nRespuesta:"
+        # Lista de modelos y sus versiones de API preferidas
+        models_configs = [
+            ("gemini-1.5-pro", "v1"),
+            ("gemini-1.5-flash", "v1"),
+            ("gemini-2.0-flash", "v1beta")
+        ]
+        last_error = ""
+        for model, api_ver in models_configs:
+            try:
+                logger.info(f"Intentando con modelo: {model} ({api_ver})")
+                url = f"https://generativelanguage.googleapis.com/{api_ver}/models/{model}:generateContent?key={config.GEMINI_API_KEY}"
+                headers = {'Content-Type': 'application/json'}
+                payload = {'contents': [{'parts': [{'text': prompt}]}]}
+                response = requests.post(url, headers=headers, json=payload, timeout=25)
+                if response.status_code == 200:
+                    result = response.json()
+                    ai_response = result['candidates'][0]['content']['parts'][0]['text']
+                    logger.info(f"Respuesta IA exitosa con {model}")
+                    return jsonify({'response': ai_response, 'status': 'success', 'model': model})
+                error_data = response.json()
+                msg = error_data.get('error', {}).get('message', 'Error desconocido')
+                last_error = f"{model} ({response.status_code}): {msg}"
+                logger.warning(f"Modelo {model} fallo con code {response.status_code}: {msg}")
+            except Exception as inner_e:
+                last_error = f"{model}: {str(inner_e)}"
+                logger.warning(f"Error con {model}: {inner_e}")
+                continue
+        return jsonify({'error': 'Todos los modelos de IA reportan error.', 'details': last_error, 'quota_exhausted': '429' in last_error}), 500
 
-Asunto: {asunto}
-Mensaje: {mensaje}
-
-La respuesta debe ser:
-- Profesional y amable
-- Breve pero completa
-- En español
-- Lista para enviar (sin lugar para firma, el sistema la añadirá)
-
-Respuesta:"""
-        
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={config.GEMINI_API_KEY}"
-        
-        headers = {'Content-Type': 'application/json'}
-        payload = {
-            'contents': [{'parts': [{'text': prompt}]}]
-        }
-        
-        response = requests.post(url, headers=headers, json=payload, timeout=30)
-        
-        if response.status_code == 200:
-            result = response.json()
-            ai_response = result['candidates'][0]['content']['parts'][0]['text']
-            return jsonify({'response': ai_response, 'status': 'success'})
-        else:
-            error_data = response.json()
-            error_msg = "Error al generar respuesta con IA"
-            
-            if response.status_code == 429:
-                error_msg = "⚠️ Cuota de Gemini API agotada. Tu plan gratuito se ha acabado. Visita https://ai.dev/rate-limit para más información o usa una API Key con facturación."
-            elif 'error' in error_data and 'message' in error_data['error']:
-                error_msg = f"Error de Gemini: {error_data['error']['message']}"
-            
-            logger.error(f"Error de Gemini API: {response.text}")
-            return jsonify({'error': error_msg, 'quota_exhausted': response.status_code == 429}), 500
-            
     except Exception as e:
-        logger.error(f"Error en generate_ai_response: {e}")
+        logger.error(f'Error en generate_ai_response: {e}')
         return jsonify({'error': str(e)}), 500
-
 @app.route('/api/ai/check-quota', methods=['GET'])
 @token_required
 def check_ai_quota():
-    """Verificar estado de la API de Gemini"""
+    """Verificar estado de la API de Gemini con soporte multi-modelo"""
     if not config.GEMINI_API_KEY:
         return jsonify({'status': 'no_key', 'message': 'API Key no configurada'})
-    
     try:
         import requests
+        # Probar con los modelos que sabemos que estan activos para esta cuenta
+        models_to_test = [
+            ("v1", "gemini-2.5-flash"),
+            ("v1beta", "gemini-3.1-pro-preview"),
+            ("v1", "gemini-1.5-flash")
+        ]
         
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={config.GEMINI_API_KEY}"
-        headers = {'Content-Type': 'application/json'}
-        payload = {'contents': [{'parts': [{'text': 'test'}]}]}
-        
-        response = requests.post(url, headers=headers, json=payload, timeout=10)
-        
-        if response.status_code == 200:
-            return jsonify({'status': 'ok', 'message': 'API Key funcionando correctamente'})
-        elif response.status_code == 429:
-            return jsonify({'status': 'quota_exhausted', 'message': 'Cuota agotada. El plan gratuito se ha acabado.'})
-        else:
-            return jsonify({'status': 'error', 'message': f'Error: {response.status_code}'})
-            
+        last_error = ""
+        for api_ver, model in models_to_test:
+            try:
+                url = f"https://generativelanguage.googleapis.com/{api_ver}/models/{model}:generateContent?key={config.GEMINI_API_KEY}"
+                headers = {'Content-Type': 'application/json'}
+                payload = {'contents': [{'parts': [{'text': 'test'}]}]}
+                response = requests.post(url, headers=headers, json=payload, timeout=10)
+                
+                if response.status_code == 200:
+                    return jsonify({'status': 'ok', 'message': f'API Key funcionando (Modelo {model})'})
+                elif response.status_code == 429:
+                    return jsonify({'status': 'quota_exhausted', 'message': 'Cuota agotada en Google Gemini.'})
+                
+                last_error = f"Error {response.status_code} en {model}"
+            except:
+                continue
+                
+        # Si fallan todos los generateContent, intentamos el listado simple
+        try:
+            url_list = f"https://generativelanguage.googleapis.com/v1/models?key={config.GEMINI_API_KEY}"
+            if requests.get(url_list, timeout=10).status_code == 200:
+                return jsonify({'status': 'ok', 'message': 'Llave valida (Modelos habilitados)'})
+        except:
+            pass
+
+        return jsonify({'status': 'error', 'message': last_error or 'No se pudo conectar con ningun modelo'})
+
     except Exception as e:
+        logger.error(f"Error en check_ai_quota: {e}")
         return jsonify({'status': 'error', 'message': str(e)})
-
-# El bloque 'if __name__ == "__main__":' ha sido movido al final del archivo para permitir el registro completo de rutas.
-
-# ==================== API ETIQUETAS ====================
-
 @app.route('/api/etiquetas', methods=['GET'])
 @token_required
 def get_etiquetas():
@@ -962,7 +970,7 @@ def create_etiqueta():
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("INSERT INTO etiquetas (nombre, color, descripcion, created_by) VALUES (?, ?, ?, ?)",
-                   (nombre, color, descripcion, currentUser['id']))
+                   (nombre, color, descripcion, request.user['id']))
         etiqueta_id = cur.lastrowid
         conn.commit()
         cur.close()
@@ -1055,7 +1063,7 @@ def get_borradores():
             LEFT JOIN hilos h ON b.hilo_id = h.id
             WHERE b.created_by = ?
             ORDER BY b.updated_at DESC
-        """, (currentUser['id'],))
+        """, (request.user['id'],))
         borradores = [dict(row) for row in cur.fetchall()]
         cur.close()
         conn.close()
@@ -1081,7 +1089,7 @@ def create_borrador():
         cur.execute("""
             INSERT INTO borradores (hilo_id, destinatario, asunto, cuerpo, created_by)
             VALUES (?, ?, ?, ?, ?)
-        """, (hilo_id, destinatario, asunto, cuerpo, currentUser['id']))
+        """, (hilo_id, destinatario, asunto, cuerpo, request.user['id']))
         borrador_id = cur.lastrowid
         conn.commit()
         cur.close()
@@ -1104,7 +1112,7 @@ def update_borrador(borrador_id):
         cur.execute("""
             UPDATE borradores SET destinatario = ?, asunto = ?, cuerpo = ?, updated_at = CURRENT_TIMESTAMP
             WHERE id = ? AND created_by = ?
-        """, (destinatario, asunto, cuerpo, borrador_id, currentUser['id']))
+        """, (destinatario, asunto, cuerpo, borrador_id, request.user['id']))
         conn.commit()
         cur.close()
         conn.close()
@@ -1118,7 +1126,7 @@ def delete_borrador(borrador_id):
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute("DELETE FROM borradores WHERE id = ? AND created_by = ?", (borrador_id, currentUser['id']))
+        cur.execute("DELETE FROM borradores WHERE id = ? AND created_by = ?", (borrador_id, request.user['id']))
         conn.commit()
         cur.close()
         conn.close()
@@ -1140,7 +1148,7 @@ def get_envios_programados():
             LEFT JOIN hilos h ON e.hilo_id = h.id
             WHERE e.created_by = ? AND e.estado = 'pendiente'
             ORDER BY e.fecha_programada ASC
-        """, (currentUser['id'],))
+        """, (request.user['id'],))
         envios = [dict(row) for row in cur.fetchall()]
         cur.close()
         conn.close()
@@ -1170,7 +1178,7 @@ def create_envio_programado():
         cur.execute("""
             INSERT INTO envios_programados (hilo_id, destinatario, asunto, cuerpo, fecha_programada, created_by)
             VALUES (?, ?, ?, ?, ?, ?)
-        """, (hilo_id, destinatario, asunto, cuerpo, fecha_programada, currentUser['id']))
+        """, (hilo_id, destinatario, asunto, cuerpo, fecha_programada, request.user['id']))
         envio_id = cur.lastrowid
         conn.commit()
         cur.close()
@@ -1185,7 +1193,7 @@ def delete_envio_programado(envio_id):
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute("DELETE FROM envios_programados WHERE id = ? AND created_by = ?", (envio_id, currentUser['id']))
+        cur.execute("DELETE FROM envios_programados WHERE id = ? AND created_by = ?", (envio_id, request.user['id']))
         conn.commit()
         cur.close()
         conn.close()
@@ -1219,11 +1227,8 @@ def send_email():
         correo_empresa = hilo['correo_empresa']
         
         cur.execute("SELECT * FROM empresas WHERE email_user = ?", (correo_empresa,))
-        empresa = dict(cur.fetchone()) if cur.fetchone() else None
-        if not empresa:
-            cur.execute("SELECT * FROM empresas WHERE email_user = ?", (correo_empresa,)) 
-            row = cur.fetchone()
-            empresa = dict(row) if row else None
+        row = cur.fetchone()
+        empresa = dict(row) if row else None
             
         if not empresa or not empresa.get('smtp_host'):
             logger.warning(f"Simulando envïo para {correo_empresa} porque no hay credenciales SMTP")
@@ -1261,8 +1266,10 @@ def send_email():
         
         return jsonify({'status': 'sent'})
     except Exception as e:
-        logger.error(f"Error enviando correo SMTP: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        error_msg = str(e) or repr(e)
+        logger.error(f"Error enviando correo SMTP: {error_msg}")
+        logger.error(traceback.format_exc())
+        return jsonify({'error': error_msg}), 500
 
 if __name__ == '__main__':
     init_db()

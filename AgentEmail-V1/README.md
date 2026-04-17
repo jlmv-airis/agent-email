@@ -1,9 +1,9 @@
-# 📧 Agent Email AIRIS - Versión V1.0.10
+# 📧 Agent Email AIRIS - Versión V1.0.11
 
 Este es el sistema SaaS unificado de gestión de correos electrónicos. Se ha refactorizado para eliminar dependencias externas (como n8n) y utilizar una arquitectura limpia de **Python (Flask) + SQLite**.
 
 ## 📌 Estado Actual del Proyecto
-- **Versión:** V1.0.10
+- **Versión:** V1.0.11
 - **Acceso:** [http://localhost:8000](http://localhost:8000) (Se requiere login).
 - **Flujo:** Login ➔ Redirección a Dashboard (index.html).
 
@@ -31,12 +31,14 @@ python server.py
 ```
 Luego accede a: http://localhost:8000
 
-## ✨ Características Implementadas (V1.0.10)
+## ✨ Características Implementadas (V1.0.11)
 
 ### 🖥️ Interfaz de Usuario
 - [x] **Dashboard Estilo Gmail:** Panel de correos con diseño moderno similar a Gmail
 - [x] **Inspector de Correos:** Vista detallada del correo con estilo Gmail (De, Para, CC, Fecha)
 - [x] **Sidebar con Empresas:** Navegación por buzones de empresas
+- [x] **Gestión de Adjuntos:** Barra visual de archivos adjuntos con eliminación individual y previsualización.
+- [x] **UI de Operador Simplificada:** Interfaz limpia que oculta controles de gestión y asignación para operadores.
 - [x] **Gráficos de Tendencias:** Estadísticas visuales de tickets
 - [x] **Filtros de Búsqueda:** Filtrado por estado, fecha, empresa
 
@@ -45,12 +47,13 @@ Luego accede a: http://localhost:8000
 - [x] **Envío Real SMTP:** Integración nativa para respuestas reales con credenciales mapeadas.
 - [x] **Estados Automáticos Dinámicos:** Pendiente → Asignado → Respondido por [Operador] → Cerrado
 - [x] **Bandeja de Borradores Avanzada:** Autoguardado silencioso del editor y ventana "Mis Borradores" dedicada.
-- [x] **Responder/Reenviar Estilo Gmail:** Modal rediseñado, barra superior enriquecida (Emojis, Color, Links, Attachments visuales) y citas históricas adjuntas.
+- [x] **Responder/Reenviar Estilo Gmail:** Modal rediseñado, barra superior enriquecida (Emojis, Color, Links) y citas históricas adjuntas.
 
-### 🤖 Inteligencia Artificial
-- [x] **Generación de Respuestas con IA:** Integración con Google Gemini
-- [x] **Configuración de API Key:** Panel de admin para configurar Gemini
-- [x] **Verificación de Cuota:** Muestra estado de la API (funcionando/agotada)
+### 🤖 Inteligencia Artificial (Engine 3.1)
+- [x] **Cascada Inteligente de IA:** Intento automático secuencial: **Gemini 3.1 Pro** ➔ **Gemini 2.5 Flash** ➔ **Gemini 1.5 Flash**.
+- [x] **Detección Automática de Cuota:** El sistema detecta y cambia de modelo instantáneamente si uno agota su cuota.
+- [x] **Identificación de Modelos por Llave:** Soporte para llaves `AQ.` y `AIzaSy` con detección de modelos habilitados.
+- [x] **Verificación Robusta:** Panel de admin que escanea los modelos disponibles en la cuota del usuario.
 
 ### ⚙️ Administración
 - [x] **Gestión de Colaboradores:** Crear/editar/eliminar operadores
