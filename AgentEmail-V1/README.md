@@ -1,9 +1,9 @@
-# 📧 Agent Email AIRIS - Versión V1.0.11
+# 📧 Agent Email AIRIS - Versión V1.0.12
 
 Este es el sistema SaaS unificado de gestión de correos electrónicos. Se ha refactorizado para eliminar dependencias externas (como n8n) y utilizar una arquitectura limpia de **Python (Flask) + SQLite**.
 
 ## 📌 Estado Actual del Proyecto
-- **Versión:** V1.0.11
+- **Versión:** V1.0.12
 - **Acceso:** [http://localhost:8000](http://localhost:8000) (Se requiere login).
 - **Flujo:** Login ➔ Redirección a Dashboard (index.html).
 
@@ -31,35 +31,32 @@ python server.py
 ```
 Luego accede a: http://localhost:8000
 
-## ✨ Características Implementadas (V1.0.11)
+## ✨ Características Implementadas (V1.0.12)
 
 ### 🖥️ Interfaz de Usuario
 - [x] **Dashboard Estilo Gmail:** Panel de correos con diseño moderno similar a Gmail
 - [x] **Inspector de Correos:** Vista detallada del correo con estilo Gmail (De, Para, CC, Fecha)
+- [x] **Gestión de Cc y Cco (BCC):** Modal de respuesta con campos editables y soporte multi-destinatario.
 - [x] **Sidebar con Empresas:** Navegación por buzones de empresas
+- [x] **Gráficos de Tendencias:** Estadísticas visuales de tickets
 - [x] **Gestión de Adjuntos:** Barra visual de archivos adjuntos con eliminación individual y previsualización.
 - [x] **UI de Operador Simplificada:** Interfaz limpia que oculta controles de gestión y asignación para operadores.
-- [x] **Gráficos de Tendencias:** Estadísticas visuales de tickets
-- [x] **Filtros de Búsqueda:** Filtrado por estado, fecha, empresa
 
 ### 📧 Gestión de Correos
 - [x] **Sincronización IMAP:** Sincronización transparente de correos de múltiples cuentas
-- [x] **Envío Real SMTP:** Integración nativa para respuestas reales con credenciales mapeadas.
+- [x] **Entregabilidad Optimizada (SMTP):** Generación de cabeceras profesionales (`Message-ID`, `Date`, `Reply-To`) para evitar filtros SPAM.
+- [x] **Soporte Multi-correo:** Envío a múltiples destinatarios separados por comas.
 - [x] **Estados Automáticos Dinámicos:** Pendiente → Asignado → Respondido por [Operador] → Cerrado
 - [x] **Bandeja de Borradores Avanzada:** Autoguardado silencioso del editor y ventana "Mis Borradores" dedicada.
-- [x] **Responder/Reenviar Estilo Gmail:** Modal rediseñado, barra superior enriquecida (Emojis, Color, Links) y citas históricas adjuntas.
 
 ### 🤖 Inteligencia Artificial (Engine 3.1)
-- [x] **Cascada Inteligente de IA:** Intento automático secuencial: **Gemini 3.1 Pro** ➔ **Gemini 2.5 Flash** ➔ **Gemini 1.5 Flash**.
-- [x] **Detección Automática de Cuota:** El sistema detecta y cambia de modelo instantáneamente si uno agota su cuota.
-- [x] **Identificación de Modelos por Llave:** Soporte para llaves `AQ.` y `AIzaSy` con detección de modelos habilitados.
-- [x] **Verificación Robusta:** Panel de admin que escanea los modelos disponibles en la cuota del usuario.
+- [x] **Cascada Inteligente de IA:** Soporte dinámico para **Gemini 3.1 Pro**, **Gemini 2.5 Flash** y **Gemini 1.5 Flash**.
+- [x] **Identificación de Modelos por Llave:** Soporte para llaves `AQ.` y `AIzaSy` con detección automática de cuota.
 
 ### ⚙️ Administración
 - [x] **Gestión de Colaboradores:** Crear/editar/eliminar operadores
 - [x] **Gestión de Empresas:** Agregar cuentas de correo IMAP
-- [x] **Sincronización Manual:** Forzar descarga de correos
-- [x] **Base de Datos Local:** SQLite con cifrado Fernet
+- [x] **Cifrado AES de Credenciales:** Seguridad mediante llave `.key` local.
 
 ### 🎨 Mejoras Visuales Recientes
 - [x] Botón Eliminar con estilo Gmail (solo icono)

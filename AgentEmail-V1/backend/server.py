@@ -1213,6 +1213,8 @@ def send_email():
         data = request.json
         thread_id = data.get('thread_id')
         to_email = data.get('to')
+        cc_email = data.get('cc', '')
+        bcc_email = data.get('bcc', '')
         subject = data.get('subject')
         body_html = data.get('body')
         
@@ -1231,43 +1233,63 @@ def send_email():
         empresa = dict(row) if row else None
             
         if not empresa or not empresa.get('smtp_host'):
-            logger.warning(f"Simulando envïo para {correo_empresa} porque no hay credenciales SMTP")
+            logger.warning(f"Simulando envío para {correo_empresa} porque no hay credenciales SMTP")
             pass
         else:
             smtp_host = empresa['smtp_host']
-            smtp_port = empresa['smtp_port'] or 465
+            smtp_port = int(empresa['smtp_port'] or 465)
             email_user = empresa['email_user']
             email_pass = decrypt_password(empresa['email_pass'])
             
+            from email.utils import formatdate, make_msgid
+            
             msg = MIMEMultipart('alternative')
             msg['Subject'] = subject
-            msg['From'] = email_user
+            msg['From'] = f"{empresa['nombre']} <{email_user}>"
             msg['To'] = to_email
+            
+            if cc_email:
+                msg['Cc'] = cc_email
+            
+            msg['Date'] = formatdate(localtime=True)
+            msg['Message-ID'] = make_msgid(domain=smtp_host)
+            msg['Reply-To'] = email_user
             msg['In-Reply-To'] = thread_id
             msg['References'] = thread_id
+            
             msg.attach(MIMEText(body_html, 'html'))
             
+            # Destinatarios totales para el sobre (envelope)
+            recipients = [x.strip() for x in to_email.split(',') if x.strip()]
+            if cc_email:
+                recipients.extend([x.strip() for x in cc_email.split(',') if x.strip()])
+            if bcc_email:
+                recipients.extend([x.strip() for x in bcc_email.split(',') if x.strip()])
+            
             if smtp_port == 465:
-                server = smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10)
+                server = smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=12)
             else:
-                server = smtplib.SMTP(smtp_host, smtp_port, timeout=10)
+                server = smtplib.SMTP(smtp_host, smtp_port, timeout=12)
+                server.ehlo()
                 server.starttls()
+                server.ehlo()
                 
             server.login(email_user, email_pass)
-            server.send_message(msg)
+            server.sendmail(email_user, recipients, msg.as_string())
             server.quit()
-            logger.info(f"Email SMTP enviado vía {smtp_host} a {to_email}")
-        
-        cur.execute("UPDATE hilos SET estado_ticket = ? WHERE thread_id = ?",
-                   (data.get('estado', 'RESPONDIDO'), thread_id))
+            logger.info(f"Email SMTP enviado vía {smtp_host} a {to_email} (CC: {cc_email}, BCC: {bcc_email})")
+
+        # Actualizar estado del hilo
+        estado = data.get('estado', 'RESPONDIDO')
+        cur.execute("UPDATE hilos SET estado_ticket = ?, leido = 1 WHERE thread_id = ?", (estado, thread_id))
         conn.commit()
-        cur.close()
         conn.close()
         
         return jsonify({'status': 'sent'})
     except Exception as e:
         error_msg = str(e) or repr(e)
         logger.error(f"Error enviando correo SMTP: {error_msg}")
+        return jsonify({'error': error_msg}), 500
         logger.error(traceback.format_exc())
         return jsonify({'error': error_msg}), 500
 

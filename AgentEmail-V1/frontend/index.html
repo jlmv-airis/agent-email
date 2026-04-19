@@ -738,11 +738,25 @@
                 <button onclick="closeResponseModal()" class="text-gray-300 hover:text-white text-xl font-medium leading-none focus:outline-none">×</button>
             </div>
             
-            <!-- Campos de destino y asunto -->
+            <!-- Campos de destino, asunto, CC y CCO -->
             <div class="px-4 py-2 flex flex-col">
-                <div class="flex items-center text-sm border-b border-gray-200 py-1.5 focus-within:border-blue-500">
-                     <span class="text-gray-500 w-12">Para</span>
+                <div class="flex items-center text-sm border-b border-gray-200 py-1.5 focus-within:border-blue-500 group">
+                     <span class="text-gray-500 w-12 cursor-default">Para</span>
                      <input id="response-to" type="text" class="flex-1 text-sm text-gray-800 outline-none bg-transparent">
+                     <div class="flex gap-2 text-[11px] text-gray-400 font-bold ml-2">
+                        <button onclick="toggleCCBCC('cc')" class="hover:text-blue-500 hover:underline">Cc</button>
+                        <button onclick="toggleCCBCC('bcc')" class="hover:text-blue-500 hover:underline">Cco</button>
+                     </div>
+                </div>
+                <!-- Campo CC (Oculto por defecto) -->
+                <div id="cc-row" class="hidden flex items-center text-sm border-b border-gray-200 py-1.5 focus-within:border-blue-500">
+                     <span class="text-gray-500 w-12 cursor-default">Cc</span>
+                     <input id="response-cc" type="text" placeholder="Copia a..." class="flex-1 text-sm text-gray-800 outline-none bg-transparent">
+                </div>
+                <!-- Campo BCC (Oculto por defecto) -->
+                <div id="bcc-row" class="hidden flex items-center text-sm border-b border-gray-200 py-1.5 focus-within:border-blue-500">
+                     <span class="text-gray-500 w-12 cursor-default">Cco</span>
+                     <input id="response-bcc" type="text" placeholder="Copia oculta a..." class="flex-1 text-sm text-gray-800 outline-none bg-transparent">
                 </div>
                 <div class="flex items-center text-sm border-b border-gray-200 py-1.5 focus-within:border-blue-500">
                      <input id="response-subject" type="text" placeholder="Asunto" class="flex-1 text-sm text-gray-800 font-medium outline-none bg-transparent">
@@ -1824,8 +1838,12 @@
             }
             
             document.getElementById('response-modal').classList.remove('hidden');
+            document.getElementById('cc-row').classList.add('hidden');
+            document.getElementById('bcc-row').classList.add('hidden');
             document.getElementById('response-from').innerText = currentUser.email || 'admin@airis.com';
             document.getElementById('response-to').value = m.remitente_email || m.remitente;
+            document.getElementById('response-cc').value = '';
+            document.getElementById('response-bcc').value = '';
             document.getElementById('response-subject').value = m.asunto ? `Re: ${m.asunto}` : 'Re: ';
             
             const historicContent = document.getElementById('ins-body').innerHTML;
@@ -1994,8 +2012,18 @@
             handleFileSelection(input);
         }
 
+        function toggleCCBCC(type) {
+            const row = document.getElementById(type + '-row');
+            row.classList.toggle('hidden');
+            if (!row.classList.contains('hidden')) {
+                document.getElementById('response-' + type).focus();
+            }
+        }
+
         async function sendResponse() {
             const to = document.getElementById('response-to').value;
+            const cc = document.getElementById('response-cc').value;
+            const bcc = document.getElementById('response-bcc').value;
             const subject = document.getElementById('response-subject').value;
             const body = document.getElementById('response-body').innerHTML;
             const feedback = document.getElementById('response-feedback');
@@ -2017,28 +2045,25 @@
                     body: JSON.stringify({
                         thread_id: currentTid,
                         to: to,
+                        cc: cc,
+                        bcc: bcc,
                         subject: subject,
                         body: body,
                         estado: 'Respondido por ' + (currentUser.username || 'Operador')
                     })
                 });
                 
-                try {
-                    if (res.ok) {
-                        await loadData();
-                        closeResponseModal();
-                        closeInspector();
-                        showToast('✅ Respuesta enviada y marcada como respondida');
-                    } else {
-                        const errText = await res.text();
-                        console.error('SERVER RESPONDED ERROR:', errText);
-                        let errJson = {};
-                        try { errJson = JSON.parse(errText); } catch(e){}
-                        feedback.innerText = 'Error: ' + (errJson.error || errText || 'No se pudo enviar');
-                        feedback.className = 'text-sm font-semibold text-red-500';
-                    }
-                } catch(postEr) {
-                    console.error('Error post-fetch:', postEr);
+                if (res.ok) {
+                    await loadData();
+                    closeResponseModal();
+                    closeInspector();
+                    showToast('✅ Respuesta enviada con éxito');
+                } else {
+                    const errText = await res.text();
+                    let errJson = {};
+                    try { errJson = JSON.parse(errText); } catch(e){}
+                    feedback.innerText = 'Error: ' + (errJson.error || errText || 'No se pudo enviar');
+                    feedback.className = 'text-sm font-semibold text-red-500';
                 }
             } catch (e) {
                 feedback.innerText = 'Error de conexión';
