@@ -188,15 +188,50 @@ class InputValidator:
         if not isinstance(value, str):
             return value
         
-        # Remover espacios excesivos
         value = ' '.join(value.split())
         
-        # Remover caracteres prohibidos
         forbidden = cls.FORBIDDEN_CHARS.get(field_type, cls.FORBIDDEN_CHARS['default'])
         for char in forbidden:
             value = value.replace(char, '')
         
         return value
+    
+    @classmethod
+    def sanitize_html(cls, html_content, allow_images=True):
+        """Sanitizar contenido HTML para prevenir XSS"""
+        if not isinstance(html_content, str):
+            return html_content
+        
+        import re
+        
+        html_content = re.sub(r'<script[^>]*>.*?</script>', '', html_content, flags=re.IGNORECASE | re.DOTALL)
+        html_content = re.sub(r'<iframe[^>]*>.*?</iframe>', '', html_content, flags=re.IGNORECASE | re.DOTALL)
+        html_content = re.sub(r'javascript:', '', html_content, flags=re.IGNORECASE)
+        html_content = re.sub(r'on\w+\s*=', '', html_content, flags=re.IGNORECASE)
+        
+        if not allow_images:
+            html_content = re.sub(r'<img[^>]*>', '', html_content, flags=re.IGNORECASE)
+        
+        html_content = re.sub(r'<object[^>]*>.*?</object>', '', html_content, flags=re.IGNORECASE | re.DOTALL)
+        html_content = re.sub(r'<embed[^>]*>', '', html_content, flags=re.IGNORECASE)
+        html_content = re.sub(r'<link[^>]*>', '', html_content, flags=re.IGNORECASE)
+        html_content = re.sub(r'@import', '', html_content, flags=re.IGNORECASE)
+        
+        if 'data:' in html_content.lower():
+            html_content = re.sub(r'data:[^<>]*base64,[a-zA-Z0-9+/=]+', '[FILTERED]', html_content, flags=re.IGNORECASE)
+        
+        return html_content
+    
+    @classmethod
+    def validate_input_length(cls, value, field_name='campo', max_length=1000):
+        """Validar longitud de input"""
+        if not isinstance(value, str):
+            return True, "OK"
+        
+        if len(value) > max_length:
+            return False, f"{field_name} muy largo (máx {max_length} caracteres)"
+        
+        return True, "OK"
     
     @classmethod
     def validate_json_request(cls, data, required_fields, field_types=None):

@@ -315,6 +315,8 @@ def update_hilo():
         params = []
         
         if estado:
+            if estado not in ('PENDIENTE', 'ASIGNADO', 'RESPONDIDO', 'CERRADO'):
+                return jsonify({'error': 'Estado inválido'}), 400
             updates.append("estado_ticket = ?")
             params.append(estado)
             if estado == 'CERRADO':
@@ -328,13 +330,13 @@ def update_hilo():
                     (asignado_a,)
                 )
                 if not cur.fetchone():
-                    return jsonify({'error': 'Operador no valido o inactivo'}), 400
+                    return jsonify({'error': 'Operador no válido o inactivo'}), 400
             updates.append("asignado_a = ?")
             params.append(asignado_a)
-            # Si se asigna a alguien, cambiar a ASIGNADO (En Proceso)
             if asignado_a != "":
-                updates.append("estado_ticket = 'ASIGNADO'")
-
+                updates.append("estado_ticket = ?")
+                params.append('ASIGNADO')
+        
         if leido is not None:
             updates.append("leido = ?")
             params.append(1 if leido else 0)
@@ -1313,6 +1315,7 @@ from email.mime.multipart import MIMEMultipart
 @token_required
 def send_email():
     try:
+        import re
         data = request.json
         thread_id = data.get('thread_id')
         to_email = data.get('to')
@@ -1320,6 +1323,25 @@ def send_email():
         bcc_email = data.get('bcc', '')
         subject = data.get('subject')
         body_html = data.get('body')
+        
+        if not to_email:
+            return jsonify({'error': 'Destinatario requerido'}), 400
+        
+        def split_emails(email_str):
+            return [x.strip() for x in email_str.split(',') if x.strip()]
+        
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        all_emails = split_emails(to_email) + split_emails(cc_email) + split_emails(bcc_email)
+        
+        for email in all_emails:
+            if email and not re.match(email_pattern, email):
+                return jsonify({'error': f'Email inválido: {email}'}), 400
+        
+        if subject and len(subject) > 255:
+            return jsonify({'error': 'Asunto muy largo'}), 400
+        
+        if body_html and len(body_html) > 50000:
+            return jsonify({'error': 'Mensaje muy largo'}), 400
         
         conn = get_db_connection()
         cur = conn.cursor()
