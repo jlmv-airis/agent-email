@@ -47,12 +47,11 @@ class DatabaseManager:
             ("idx_hilos_fecha", "hilos", "fecha DESC"),
             ("idx_hilos_folder", "hilos", "folder"),
             ("idx_hilos_leido", "hilos", "leido"),
-            
+
             # Índices compuestos para queries comunes
-            ("idx_hilos_empresa_estado", "hilos", "(cuenta_empresa, estado_ticket)"),
-            ("idx_hilos_empresa_fecha", "hilos", "(correo_empresa, fecha DESC)"),
-        ]
-        
+            ("idx_hilos_empresa_estado", "hilos", "cuenta_empresa, estado_ticket"),
+            ("idx_hilos_empresa_fecha", "hilos", "correo_empresa, fecha DESC"),
+            ]
         for idx_name, table, columns in indexes:
             try:
                 # Verificar si el índice ya existe

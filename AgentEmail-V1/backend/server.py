@@ -258,17 +258,26 @@ def get_stats():
 @token_required
 def get_hilos():
     try:
+        folder = request.args.get('folder', 'INBOX').upper()
         conn = get_db_connection()
         cur = conn.cursor()
         
-        # Si es operador, solo mostrar correos asignados a él
+        # Si es operador, solo mostrar correos asignados a él (en cualquier carpeta relevante)
         user_rol = request.user.get('rol', '').lower()
         username = request.user.get('username') or request.user.get('user', '')
         
         if user_rol == 'operador':
-            cur.execute('SELECT * FROM hilos WHERE asignado_a = ? ORDER BY fecha DESC LIMIT 200', (username,))
+            cur.execute('''
+                SELECT * FROM hilos 
+                WHERE asignado_a = ? AND folder = ? 
+                ORDER BY fecha DESC LIMIT 200
+            ''', (username, folder))
         else:
-            cur.execute('SELECT * FROM hilos ORDER BY fecha DESC LIMIT 200')
+            cur.execute('''
+                SELECT * FROM hilos 
+                WHERE folder = ? 
+                ORDER BY fecha DESC LIMIT 200
+            ''', (folder,))
         
         hilos = [dict(row) for row in cur.fetchall()]
         cur.close()
@@ -762,38 +771,62 @@ def sync_all_emails():
         cur.execute("SELECT * FROM empresas WHERE activo = 1")
         empresas = [dict(row) for row in cur.fetchall()]
         
+        # Mapeo de carpetas estándar a buscar
+        # Intentamos nombres comunes para asegurar compatibilidad con Gmail/Outlook/etc.
+        folder_mappings = {
+            'INBOX': ['INBOX'],
+            'SENT': ['Sent', 'Sent Messages', '[Gmail]/Sent Mail', 'Enviados'],
+            'DRAFTS': ['Drafts', '[Gmail]/Drafts', 'Borradores'],
+            'TRASH': ['Trash', 'Deleted Items', '[Gmail]/Trash', 'Papelera']
+        }
+        
         results = []
         for emp in empresas:
             logger.info(f"Sincronizando {emp['nombre']}...")
             try:
-                # Desencriptar contraseña
                 password = decrypt_password(emp['email_pass'])
+                emp_results = {'empresa': emp['nombre'], 'folders': []}
                 
-                # Conexión IMAP
-                with imap_tools.MailBox(emp['imap_host'], port=emp['imap_port']).login(emp['email_user'], password, initial_folder='INBOX') as mailbox:
-                    synced_count = 0
-                    # Obtener los últimos 100 correos
-                    for msg in mailbox.fetch(limit=100, reverse=True):
-                        # Generar un thread_id único concatenando el email para evitar colisiones entre cuentas
-                        raw_id = msg.uid or msg.message_id
-                        tid = f"{emp['email_user']}_{raw_id}"
-                        
-                        # Insertar o ignorar si ya existe
-                        cur.execute('''
-                            INSERT OR IGNORE INTO hilos (
-                                thread_id, remitente, asunto, mensaje, cuenta_empresa, 
-                                correo_empresa, folder, fecha, adjuntos, estado_ticket
-                            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        ''', (
-                            tid, msg.from_, msg.subject, msg.html or msg.text, 
-                            emp['nombre'], emp['email_user'], 'INBOX', 
-                            msg.date.strftime('%Y-%m-%d %H:%M:%S'), 
-                            1 if msg.attachments else 0, 'PENDIENTE'
-                        ))
-                        if cur.rowcount > 0:
-                            synced_count += 1
+                with imap_tools.MailBox(emp['imap_host'], port=emp['imap_port']).login(emp['email_user'], password) as mailbox:
+                    # Obtener lista real de carpetas en el servidor
+                    existing_folders = [f.name for f in mailbox.folder.list()]
                     
-                results.append({'empresa': emp['nombre'], 'synced': synced_count, 'success': True})
+                    for target_folder, search_names in folder_mappings.items():
+                        # Encontrar qué nombre de carpeta existe en el servidor para este tipo
+                        actual_folder = None
+                        for name in search_names:
+                            if name in existing_folders:
+                                actual_folder = name
+                                break
+                        
+                        if not actual_folder:
+                            continue
+                            
+                        mailbox.folder.set(actual_folder)
+                        synced_count = 0
+                        # Fetch de los últimos 50 correos por carpeta
+                        for msg in mailbox.fetch(limit=50, reverse=True):
+                            raw_id = msg.uid or msg.message_id
+                            tid = f"{emp['email_user']}_{raw_id}"
+                            
+                            cur.execute('''
+                                INSERT OR IGNORE INTO hilos (
+                                    thread_id, remitente, asunto, mensaje, cuenta_empresa, 
+                                    correo_empresa, folder, fecha, adjuntos, estado_ticket
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            ''', (
+                                tid, msg.from_, msg.subject, msg.html or msg.text, 
+                                emp['nombre'], emp['email_user'], target_folder, 
+                                msg.date.strftime('%Y-%m-%d %H:%M:%S'), 
+                                1 if msg.attachments else 0, 'PENDIENTE'
+                            ))
+                            if cur.rowcount > 0:
+                                synced_count += 1
+                        
+                        emp_results['folders'].append({'name': target_folder, 'synced': synced_count})
+                
+                emp_results['success'] = True
+                results.append(emp_results)
             except Exception as e:
                 logger.error(f"Error sincronizando {emp['nombre']}: {e}")
                 results.append({'empresa': emp['nombre'], 'error': str(e), 'success': False})
@@ -1277,9 +1310,42 @@ def send_email():
             server.login(email_user, email_pass)
             server.sendmail(email_user, recipients, msg.as_string())
             server.quit()
-            logger.info(f"Email SMTP enviado vía {smtp_host} a {to_email} (CC: {cc_email}, BCC: {bcc_email})")
+            logger.info(f"Email SMTP enviado vía {smtp_host} a {to_email}")
 
-        # Actualizar estado del hilo
+            # --- SINCRONIZACIÓN IMAP: Guardar en Enviados del Servidor ---
+            try:
+                # Mapeo de nombres comunes para carpetas de enviados
+                sent_folder_options = ['Sent', 'Sent Messages', '[Gmail]/Sent Mail', 'Enviados']
+                with imap_tools.MailBox(empresa['imap_host'], port=empresa['imap_port']).login(email_user, email_pass) as mailbox:
+                    existing = [f.name for f in mailbox.folder.list()]
+                    target = next((f for f in sent_folder_options if f in existing), 'INBOX')
+                    
+                    # Usar el mensaje as_string() o bytes para el append
+                    mailbox.append(msg.as_bytes(), target)
+                    logger.info(f"Copia guardada en IMAP folder: {target}")
+            except Exception as imap_err:
+                logger.error(f"No se pudo guardar copia en IMAP: {imap_err}")
+
+            # --- REGISTRO LOCAL: Guardar en hilos locales como SENT ---
+            try:
+                # Usar Message-ID real o uno generado
+                raw_msg_id = msg['Message-ID'] or make_msgid()
+                new_tid = f"sent_{raw_msg_id.strip('<>')}"
+                
+                cur.execute('''
+                    INSERT INTO hilos (
+                        thread_id, remitente, asunto, mensaje, cuenta_empresa, 
+                        correo_empresa, folder, fecha, estado_ticket, leido, de_operador
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    new_tid, email_user, subject, body_html, empresa['nombre'], 
+                    email_user, 'SENT', datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 
+                    'CERRADO', 1, 1
+                ))
+            except Exception as db_err:
+                logger.error(f"Error registrando correo enviado localmente: {db_err}")
+
+        # Actualizar estado del hilo original
         estado = data.get('estado', 'RESPONDIDO')
         cur.execute("UPDATE hilos SET estado_ticket = ?, leido = 1 WHERE thread_id = ?", (estado, thread_id))
         conn.commit()

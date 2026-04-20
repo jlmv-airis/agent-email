@@ -518,61 +518,65 @@
                 </div>
 
                 <!-- SECCIÓN DE FILTROS Y ACCIONES -->
-                <div class="flex items-end justify-between mb-4 bg-white/5 border border-white/5 rounded-2xl p-4 gap-4">
-                    <div class="flex items-center gap-6 flex-1">
-                        <div class="flex flex-col">
-                            <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Empresa</label>
-                            <select id="filter-company" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
-                                <option value="ALL" class="bg-[#1a1c1e]">TODAS LAS EMPRESAS</option>
-                            </select>
+                <div class="bg-white/5 border border-white/5 rounded-3xl p-6 mb-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- FILA 1: Selectores -->
+                        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+                            <div class="flex flex-col">
+                                <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Empresa</label>
+                                <select id="filter-company" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
+                                    <option value="ALL" class="bg-[#1a1c1e]">TODAS</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col">
+                                <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Estado</label>
+                                <select id="filter-status" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
+                                    <option value="ALL" class="bg-[#1a1c1e]">TODOS</option>
+                                    <option value="PENDIENTE" class="bg-[#1a1c1e]">PENDIENTES</option>
+                                    <option value="ASIGNADO" class="bg-[#1a1c1e]">PROCESO</option>
+                                    <option value="CERRADO" class="bg-[#1a1c1e]">RESUELTOS</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col">
+                                <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Fecha</label>
+                                <select id="filter-date" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
+                                    <option value="ALL" class="bg-[#1a1c1e]">CUALQUIERA</option>
+                                    <option value="TODAY" class="bg-[#1a1c1e]">HOY</option>
+                                    <option value="YESTERDAY" class="bg-[#1a1c1e]">AYER</option>
+                                    <option value="LAST7" class="bg-[#1a1c1e]">ÚLTIMOS 7 DÍAS</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col">
+                                <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Operador</label>
+                                <select id="filter-operator" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
+                                    <option value="ALL" class="bg-[#1a1c1e]">TODOS</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col">
+                                <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Etiqueta</label>
+                                <select id="filter-tag" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
+                                    <option value="ALL" class="bg-[#1a1c1e]">TODAS</option>
+                                    <option value="URGENTE" class="bg-[#1a1c1e]">URGENTE</option>
+                                    <option value="SOPORTE" class="bg-[#1a1c1e]">SOPORTE</option>
+                                    <option value="VENTAS" class="bg-[#1a1c1e]">VENTAS</option>
+                                    <option value="INFO" class="bg-[#1a1c1e]">INFO</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="flex flex-col">
-                            <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Estado</label>
-                            <select id="filter-status" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
-                                <option value="ALL" class="bg-[#1a1c1e]">TODOS LOS ESTADOS</option>
-                                <option value="PENDIENTE" class="bg-[#1a1c1e]">PENDIENTES</option>
-                                <option value="ASIGNADO" class="bg-[#1a1c1e]">PROCESO</option>
-                                <option value="CERRADO" class="bg-[#1a1c1e]">RESUELTOS</option>
-                            </select>
-                        </div>
-                        <div class="flex flex-col">
-                            <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Fecha</label>
-                            <select id="filter-date" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
-                                <option value="ALL" class="bg-[#1a1c1e]">CUALQUIER FECHA</option>
-                                <option value="TODAY" class="bg-[#1a1c1e]">HOY</option>
-                                <option value="YESTERDAY" class="bg-[#1a1c1e]">AYER</option>
-                                <option value="LAST7" class="bg-[#1a1c1e]">ÚLTIMOS 7 DÍAS</option>
-                            </select>
-                        </div>
-                        <div class="flex flex-col">
-                            <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Operador</label>
-                            <select id="filter-operator" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
-                                <option value="ALL" class="bg-[#1a1c1e]">TODOS LOS OPERADORES</option>
-                            </select>
-                        </div>
-                        <div class="flex flex-col">
-                            <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Etiqueta</label>
-                            <select id="filter-tag" onchange="applyFilters()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 hover:text-white transition-all">
-                                <option value="ALL" class="bg-[#1a1c1e]">TODAS LAS ETIQUETAS</option>
-                                <option value="URGENTE" class="bg-[#1a1c1e]">URGENTE</option>
-                                <option value="SOPORTE" class="bg-[#1a1c1e]">SOPORTE</option>
-                                <option value="VENTAS" class="bg-[#1a1c1e]">VENTAS</option>
-                                <option value="INFO" class="bg-[#1a1c1e]">INFO</option>
-                            </select>
-                        </div>
-                    </div>
 
-                    <div class="flex items-center gap-3 self-end">
-                        <button onclick="syncAll()" id="sync-btn" class="flex items-center justify-center px-5 h-10 rounded-xl bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white transition-all border border-blue-500/20 gap-2 active:scale-95 shadow-lg shadow-blue-600/5" title="Sincronizar">
-                            <span id="sync-icon" class="text-sm">🔄</span>
-                            <span class="text-[10px] font-bold uppercase tracking-wider">Sincronizar</span>
-                        </button>
-                        
-                        <div class="w-px h-6 bg-white/10 mx-1"></div>
+                        <!-- FILA 2: Acciones -->
+                        <div class="flex items-center justify-end gap-3 self-end">
+                            <button onclick="syncAll()" id="sync-btn" class="flex items-center justify-center px-6 h-12 rounded-2xl bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white transition-all border border-blue-500/20 gap-3 active:scale-95 shadow-lg shadow-blue-600/5" title="Sincronizar">
+                                <span id="sync-icon" class="text-sm">🔄</span>
+                                <span class="text-[10px] font-bold uppercase tracking-wider">Sincronizar Bandeja</span>
+                            </button>
+                            
+                            <div class="w-px h-8 bg-white/10 mx-2"></div>
 
-                        <button onclick="resetFilters()" class="px-5 h-10 rounded-xl bg-white/5 border border-white/10 text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:bg-blue-600/10 hover:text-blue-400 hover:border-blue-600/40 hover:shadow-[0_0_15px_rgba(52,120,246,0.2)] active:scale-95 transition-all">
-                            Limpiar Filtros
-                        </button>
+                            <button onclick="resetFilters()" class="px-6 h-12 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/40 transition-all active:scale-95">
+                                Limpiar Filtros
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -1205,18 +1209,33 @@
             });
         }
 
-        async function loadData() {
-            try { 
-                const res = await fetch(`${API_URL}/hilos`, { headers: {'Authorization': 'Bearer ' + token} });
-                hilos = await res.json(); 
-                console.log("Data fetched by loadData:", hilos);
-            } catch (e) { 
-                hilos = []; 
+        async function loadData(folder = activeFolder) {
+            try {
+                const res = await fetch(`${API_URL}/hilos?folder=${folder}`, { headers: {'Authorization': 'Bearer ' + token} });
+                hilos = await res.json();
+                console.log(`Data fetched by loadData (${folder}):`, hilos);
+            } catch (e) {
+                hilos = [];
                 console.error("Error in loadData:", e);
             }
             renderSidebar(); renderThreads(); updateStats(); updateCharts();
         }
 
+        function selectCompany(name) {
+            activeCompany = name;
+            activeFolder = 'INBOX';
+            const title = name ? name : 'Bandeja General';
+            document.getElementById('current-view-title').innerText = title;
+            loadData();
+        }
+
+        function selectFolder(folderId) {
+            activeFolder = folderId;
+            const folderLabels = { 'INBOX': 'Entrada', 'SENT': 'Enviados', 'TRASH': 'Eliminados', 'DRAFTS': 'Borradores', 'SPAM': 'Spam' };
+            const title = activeCompany ? `${activeCompany} • ${folderLabels[folderId] || folderId}` : `Bandeja General • ${folderLabels[folderId] || folderId}`;
+            document.getElementById('current-view-title').innerText = title;
+            loadData(folderId);
+        }
         async function loadEmpresas() {
             try {
                 const res = await fetch(`${API_URL}/empresas`);
@@ -1416,20 +1435,29 @@
             const filtered = getFilteredHilos();
 
             container.innerHTML = `
-                <div class="email-card-header">
-                    <div class="flex items-center px-4">
-                        <input type="checkbox" id="select-all-checkbox" onchange="toggleAllThreads(this.checked)" class="w-4 h-4 rounded border-white/10 bg-white/5 cursor-pointer accent-blue-500">
-                    </div>
-                    <div class="header-label text-center">Info</div>
-                    <div class="header-label px-4 text-left">Empresa</div>
-                    <div class="header-label px-8 text-left">Asunto / Mensaje</div>
-                    <div class="header-label px-4">Estado</div>
-                    <div class="header-label px-4">Asignación</div>
-                    <div class="header-label text-center text-[14px]">📎</div>
-                    <div class="header-label text-right pr-4">Fecha</div>
-                </div>` + filtered.map(m => {
-                const cfg = {'PENDIENTE': { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' }, 'ASIGNADO': { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' }, 'RESPONDIDO': { bg: 'bg-green-500/10', text: 'text-green-400', border: 'border-green-500/20' }, 'CERRADO': { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' }}[m.estado_ticket] || { bg: 'bg-slate-500/10', text: 'text-slate-400', border: 'border-slate-500/20' };
-                const label = getLabelForThread(m);
+            <div class="email-card-header">
+                <div class="flex items-center px-4">
+                    <input type="checkbox" id="select-all-checkbox" onchange="toggleAllThreads(this.checked)" class="w-4 h-4 rounded border-white/10 bg-white/5 cursor-pointer accent-blue-500">
+                </div>
+                <div class="header-label text-center">Info</div>
+                <div class="header-label px-4 text-left">Empresa</div>
+                <div class="header-label px-8 text-left">Asunto / Mensaje</div>
+                <div class="header-label px-4">Estado</div>
+                <div class="header-label px-4">Asignación</div>
+                <div class="header-label text-center text-[14px]">📎</div>
+                <div class="header-label text-right pr-4">Fecha</div>
+            </div>` + filtered.map(m => {
+            // Lógica de estado unificada: PENDIENTE o RESPONDIDO
+            let statusText = 'RESPONDIDO';
+            let statusClass = 'bg-green-500/10 text-green-400 border border-green-500/20';
+
+            if (m.estado_ticket === 'PENDIENTE') {
+                statusText = 'PENDIENTE';
+                statusClass = 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+            }
+
+            const label = getLabelForThread(m);
+
                 const labelHtml = label ? `<span class="ml-2 px-1.5 py-0.5 rounded text-[8px] font-black tracking-wider uppercase ${label.bg}">${label.text}</span>` : '';
                 return `
                 <div class="email-card ${m.leido ? 'read' : 'unread'} group" onclick="openInspector('${m.thread_id}')">
@@ -1447,9 +1475,10 @@
                             ${labelHtml}
                         </div>
                         <p class="text-[12px] font-medium ${m.leido ? 'text-slate-500' : 'text-slate-400'} truncate">${(m.mensaje || '').replace(/<[^>]*>?/gm, '')}</p>
-                    </div>
-                    <div class="px-4"><span class="px-3 py-1.5 rounded-full text-[9px] font-black uppercase ${cfg.bg} ${cfg.text} border ${cfg.border}">${m.estado_ticket}</span></div>
-                    <div class="px-4"><select onchange="assignTicket('${m.thread_id}', this.value)" onclick="event.stopPropagation()" class="w-full bg-transparent text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:text-white transition-colors"><option value="" class="bg-[#1a1c1e]">--</option>${operators.map(op => `<option value="${op.username}" class="bg-[#1a1c1e]" ${m.asignado_a === op.username ? 'selected' : ''}>${op.username.toUpperCase()}</option>`).join('')}</select></div>
+                        </div>
+                        <div class="px-4"><span class="px-3 py-1.5 rounded-full text-[9px] font-black uppercase ${statusClass}">${statusText}</span></div>
+                        <div class="px-4"><select onchange="assignTicket('${m.thread_id}', this.value)" onclick="event.stopPropagation()" class="w-full bg-transparent text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:text-white transition-colors">
+<option value="" class="bg-[#1a1c1e]">--</option>${operators.map(op => `<option value="${op.username}" class="bg-[#1a1c1e]" ${m.asignado_a === op.username ? 'selected' : ''}>${op.username.toUpperCase()}</option>`).join('')}</select></div>
                     <div class="text-center text-slate-500">${m.adjuntos ? '📎' : '—'}</div>
                     <div class="text-right pl-4 flex flex-col justify-center">
                         <p class="text-[11px] font-bold text-slate-400 leading-tight">${new Date(m.fecha).toLocaleDateString()}</p>

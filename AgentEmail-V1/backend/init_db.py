@@ -106,21 +106,24 @@ def init_database():
         )
     ''')
     
-    # Agregar columnas si faltan (para migraciones)
-    def add_column_if_not_exists(table, column, definition):
-        try:
-            cur.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
-            logger.info(f"✅ Columna agregada: {table}.{column}")
-        except sqlite3.OperationalError:
-            pass  # Columna ya existe
+    # Índices para hilos
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_hilos_folder ON hilos(folder)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_hilos_empresa_folder_fecha ON hilos(cuenta_empresa, folder, fecha)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_hilos_thread_id ON hilos(thread_id)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_hilos_correo_empresa ON hilos(correo_empresa)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_hilos_estado_ticket ON hilos(estado_ticket)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_hilos_asignado_a ON hilos(asignado_a)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_hilos_fecha ON hilos(fecha)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_hilos_leido ON hilos(leido)")
     
-    # Migraciones de columnas
-    add_column_if_not_exists("hilos", "folder", "TEXT DEFAULT 'INBOX'")
-    add_column_if_not_exists("hilos", "de_operador", "INTEGER DEFAULT 0")
-    add_column_if_not_exists("hilos", "fecha_resuelto", "TIMESTAMP")
-    add_column_if_not_exists("hilos", "updated_at", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    add_column_if_not_exists("usuarios", "updated_at", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    add_column_if_not_exists("empresas", "updated_at", "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    # Índices para usuarios
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_usuarios_email ON usuarios(email)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_usuarios_username ON usuarios(username)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_usuarios_activo ON usuarios(activo)")
+    
+    # Índices para empresas
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_empresas_email_user ON empresas(email_user)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_empresas_activo ON empresas(activo)")
     
     # Tabla de etiquetas personalizadas
     cur.execute('''
