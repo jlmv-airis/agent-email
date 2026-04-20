@@ -331,7 +331,8 @@ def update_hilo():
                     return jsonify({'error': 'Operador no valido o inactivo'}), 400
             updates.append("asignado_a = ?")
             params.append(asignado_a)
-            if asignado_a != "" and not estado:
+            # Si se asigna a alguien, cambiar a ASIGNADO (En Proceso)
+            if asignado_a != "":
                 updates.append("estado_ticket = 'ASIGNADO'")
 
         if leido is not None:
@@ -880,23 +881,80 @@ def update_settings():
     
     return jsonify({'status': 'ok', 'message': 'Configuración actualizada'})
 
+def generate_with_groq(prompt):
+    """Fallback con Groq si Gemini falla"""
+    import requests
+    groq_key = config.GROQ_API_KEY if hasattr(config, 'GROQ_API_KEY') and config.GROQ_API_KEY else None
+    if not groq_key:
+        return None
+    try:
+        url = 'https://api.groq.com/openai/v1/chat/completions'
+        headers = {
+            'Authorization': f'Bearer {groq_key}',
+            'Content-Type': 'application/json'
+        }
+        payload = {
+            'model': 'llama-3.3-70b-versatile',
+            'messages': [{'role': 'user', 'content': prompt}],
+            'max_tokens': 300,
+            'temperature': 0.3
+        }
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        if response.status_code == 200:
+            data = response.json()
+            return data['choices'][0]['message']['content']
+        logger.warning(f"Groq falló: {response.status_code}")
+    except Exception as e:
+        logger.warning(f"Error con Groq: {e}")
+    return None
+
+@app.route('/api/ai/polish', methods=['POST'])
+@token_required
+def polish_text():
+    """Pulir/mejorar texto escrito por el operador"""
+    data = request.json or {}
+    texto = data.get('texto', '').strip()
+    
+    if not texto or len(texto) < 5:
+        return jsonify({'error': 'Texto muy corto para pulir'}), 400
+    
+    # Intentar con Groq (más confiable)
+    groq_result = generate_with_groq(f"Mejora este texto haciéndolo más profesional, cortés y claro. Mantén el mismo significado pero exprésalo de manera más efectiva:\n\n{texto}")
+    if groq_result:
+        return jsonify({'response': groq_result, 'status': 'success', 'model': 'groq-llama'})
+    
+    return jsonify({'error': 'No se pudo procesar el texto'}), 500
+
 @app.route('/api/ai/generate-response', methods=['POST'])
 @token_required
 def generate_ai_response():
-    """Generar respuesta automatica con IA (Gemini)"""
+    """Generar respuesta automatica con IA (Gemini con fallback Groq)"""
     data = request.json or {}
     mensaje = data.get('mensaje', '').strip()
     asunto = data.get('asunto', '').strip()
+    texto_existente = data.get('texto', '').strip()  # Para pulir
+    
+    # Si hay texto existente, lo pulimos en lugar de generar completo
+    if texto_existente and len(texto_existente) > 5:
+        groq_result = generate_with_groq(f"Mejora este texto haciéndolo más breve y directo (máx 3 frases). Tono ejecutivo profesional. Sin 'atte' ni firma:\n\n{texto_existente}")
+        if groq_result:
+            return jsonify({'response': groq_result, 'status': 'success', 'model': 'groq-llama', 'mode': 'polish'})
+        # Si Groq falla, intentar con Gemini directamente sin fallback
+        pass  # Continuar al siguiente
     
     if not mensaje:
         return jsonify({'error': 'Se requiere el mensaje para generar respuesta'}), 400
     
     if not config.GEMINI_API_KEY:
-        return jsonify({'error': 'API Key de Gemini no configurada. Configurala en Config IA'}), 500
+        # Intentar Groq directamente si no hay Gemini
+        groq_result = generate_with_groq(f"Eres ejecutivo de atención al cliente. Responde CORTO y DIRECTO (máx 3 frases). Sin 'atte' ni firma.\n\nMensaje: {mensaje}")
+        if groq_result:
+            return jsonify({'response': groq_result, 'status': 'success', 'model': 'groq-llama'})
+        return jsonify({'error': 'API Keys no configuradas'}), 500
     
     try:
         import requests
-        prompt = f"Eres un asistente de soporte al cliente profesional. Genera una respuesta automatica y cortes al siguiente correo:\n\nAsunto: {asunto}\nMensaje: {mensaje}\n\nLa respuesta debe ser:\n- Profesional y amable\n- Breve pero completa\n- En espanol\n- Lista para enviar (sin lugar para firma, el sistema la anadira)\n\nRespuesta:"
+        prompt = f"Eres un ejecutivo de atención al cliente de una empresa seria. Responde de forma CORTA y DIRECTA al siguiente correo:\n\nAsunto: {asunto}\nMensaje: {mensaje}\n\nInstrucciones:\n- Sé breve (máximo 2-3 oraciones)\n- Tono profesional formality ejecutivo\n- Ve al grano, sin frases innecesarias\n- NO pongas 'atte' ni firma\n\nRespuesta:"
         # Lista de modelos y sus versiones de API preferidas
         models_configs = [
             ("gemini-1.5-pro", "v1"),
@@ -920,10 +978,22 @@ def generate_ai_response():
                 msg = error_data.get('error', {}).get('message', 'Error desconocido')
                 last_error = f"{model} ({response.status_code}): {msg}"
                 logger.warning(f"Modelo {model} fallo con code {response.status_code}: {msg}")
+                # Si es 429 (quota agotada), intentar Groq inmediatamente
+                if response.status_code == 429:
+                    logger.info("Cuota agotada en Gemini, intentando Groq...")
+                    groq_result = generate_with_groq(prompt)
+                    if groq_result:
+                        return jsonify({'response': groq_result, 'status': 'success', 'model': 'groq-llama'})
             except Exception as inner_e:
                 last_error = f"{model}: {str(inner_e)}"
                 logger.warning(f"Error con {model}: {inner_e}")
                 continue
+        # Si todos los modelos de Gemini fallan, intentar Groq como último recurso (pero con prompt correcto)
+        logger.info("Todos los modelos de Gemini fallaron, intentando Groq...")
+        fallback_prompt = f"Eres ejecutivo de atención al cliente. Responde CORTO y DIRECTO (máx 3 frases). Tono profesional. Sin 'atte' ni firma.\n\nMensaje: {asunto}\n{mensaje}"
+        groq_result = generate_with_groq(fallback_prompt)
+        if groq_result:
+            return jsonify({'response': groq_result, 'status': 'success', 'model': 'groq-llama'})
         return jsonify({'error': 'Todos los modelos de IA reportan error.', 'details': last_error, 'quota_exhausted': '429' in last_error}), 500
 
     except Exception as e:

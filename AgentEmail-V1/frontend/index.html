@@ -658,8 +658,7 @@
                     </button>
                     <!-- Navegación entre correos -->
                     <div class="w-px h-6 bg-slate-300 mx-1"></div>
-                    <button onclick="navigateInspector(-1)" class="ins-tool-btn px-2" title="Anterior (k)">▲</button>
-                    <button onclick="navigateInspector(1)" class="ins-tool-btn px-2" title="Siguiente (j)">▼</button>
+                    <!-- Botones de navegación removidos por request -->
                 </div>
                 
                 <div class="flex items-center gap-6" id="ins-admin-actions">
@@ -781,6 +780,24 @@
                  <span id="ai-loading" class="hidden text-gray-400 text-xs tracking-wide">Generando respuesta...</span>
                  <p id="response-feedback" class="text-xs ml-auto"></p>
             </div>
+            
+            <!-- Contenedor oculto para el contenido original -->
+            <div id="original-email-content" class="hidden"></div>
+            
+            <!-- Vista previa IA (antes de mostrar botones) -->
+            <div id="ai-preview-modal" class="hidden fixed inset-0 z-[400] bg-black/50 flex items-center justify-center p-4">
+                <div class="bg-white rounded-xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col shadow-2xl">
+                    <div class="bg-violet-600 px-4 py-3 flex items-center justify-between">
+                        <h3 class="text-white font-bold">📋 Vista Previa - Respuesta IA</h3>
+                        <button onclick="closeAIPreview()" class="text-white hover:text-gray-200 text-2xl">&times;</button>
+                    </div>
+                    <div id="ai-preview-content" class="p-4 overflow-y-auto text-gray-700 text-sm whitespace-pre-wrap flex-1"></div>
+                    <div class="px-4 py-3 bg-gray-50 flex justify-end gap-2 border-t">
+                        <button onclick="discardAIResponse()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold text-sm">❌ Descartar</button>
+                        <button onclick="confirmAIResponse()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold text-sm">✅ Insertar Respuesta</button>
+                    </div>
+                </div>
+            </div>
 
             <!-- Toolbar inferior y Enviar -->
             <div class="px-4 py-3 flex items-center justify-between bg-white border-t border-gray-100 rounded-b-xl">
@@ -880,27 +897,40 @@
                     <div id="companies-list-admin" class="grid grid-cols-3 gap-4"></div>
                 </section>
 
-                <!-- SECTION 3: Configuración IA -->
+                <!-- SECTION 3: Configuración IA y Firma -->
                 <section>
                     <div class="flex items-center justify-between mb-6">
-                        <h4 class="text-white text-lg font-bold tracking-tight">🤖 Configuración IA</h4>
+                        <h4 class="text-white text-lg font-bold tracking-tight">🤖 Configuración IA y Firma</h4>
                     </div>
-                    <div class="bg-white/5 border border-white/10 rounded-2xl p-6">
-                        <div class="space-y-4">
-                            <div>
-                                <label class="text-slate-400 text-sm font-semibold uppercase tracking-wider">Google Gemini API Key</label>
-                                <div class="flex gap-3 mt-2">
-                                    <input id="gemini-api-key" type="password" placeholder="Ingresa tu API Key de Gemini" class="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-green-400/60 focus:bg-white/10">
-                                    <button onclick="saveGeminiApiKey()" class="px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-lg text-sm font-bold uppercase tracking-wider transition-colors">
-                                        Guardar
-                                    </button>
-                                </div>
-                                <p id="gemini-feedback" class="text-xs font-semibold text-slate-400 mt-2"></p>
+                    <div class="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
+                        <div>
+                            <label class="text-slate-400 text-sm font-semibold uppercase tracking-wider">Firma de Correo</label>
+                            <textarea id="email-signature" placeholder="Ej: Juan Pérez&#10;Gerente de Operaciones&#10;AIRIS Administración Empresarial" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-green-400/60 focus:bg-white/10 h-24 mt-2"></textarea>
+                            <p class="text-xs text-slate-500 mt-1">Esta firma se agregará automáticamente al final de cada respuesta</p>
+                        </div>
+                        <div>
+                            <label class="text-slate-400 text-sm font-semibold uppercase tracking-wider">Groq API Key (Gratis - 200 RPM)</label>
+                            <div class="flex gap-3 mt-2">
+                                <input id="groq-api-key" type="password" placeholder="Ingresa tu API Key de Groq" class="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-green-400/60 focus:bg-white/10">
+                                <button onclick="saveGroqApiKey()" class="px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-lg text-sm font-bold uppercase tracking-wider transition-colors">
+                                    Guardar
+                                </button>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <span id="gemini-status" class="w-3 h-3 rounded-full bg-red-500"></span>
-                                <span class="text-slate-500 text-sm">API Key no configurada</span>
+                            <p id="groq-feedback" class="text-xs font-semibold text-slate-400 mt-2"></p>
+                        </div>
+                        <div>
+                            <label class="text-slate-400 text-sm font-semibold uppercase tracking-wider">Google Gemini API Key</label>
+                            <div class="flex gap-3 mt-2">
+                                <input id="gemini-api-key" type="password" placeholder="Ingresa tu API Key de Gemini" class="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-green-400/60 focus:bg-white/10">
+                                <button onclick="saveGeminiApiKey()" class="px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-lg text-sm font-bold uppercase tracking-wider transition-colors">
+                                    Guardar
+                                </button>
                             </div>
+                            <p id="gemini-feedback" class="text-xs font-semibold text-slate-400 mt-2"></p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span id="gemini-status" class="w-3 h-3 rounded-full bg-red-500"></span>
+                            <span class="text-slate-500 text-sm">Estado: No configurada</span>
                         </div>
                     </div>
                 </section>
@@ -1447,13 +1477,19 @@
                 <div class="header-label text-center text-[14px]">📎</div>
                 <div class="header-label text-right pr-4">Fecha</div>
             </div>` + filtered.map(m => {
-            // Lógica de estado unificada: PENDIENTE o RESPONDIDO
+            // Lógica de estados: PENDIENTE, ASIGNADO, RESPONDIDO, CERRADO
             let statusText = 'RESPONDIDO';
             let statusClass = 'bg-green-500/10 text-green-400 border border-green-500/20';
 
             if (m.estado_ticket === 'PENDIENTE') {
                 statusText = 'PENDIENTE';
                 statusClass = 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+            } else if (m.estado_ticket === 'ASIGNADO') {
+                statusText = 'EN PROCESO';
+                statusClass = 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
+            } else if (m.estado_ticket === 'CERRADO') {
+                statusText = 'CERRADO';
+                statusClass = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
             }
 
             const label = getLabelForThread(m);
@@ -1736,11 +1772,13 @@
             const m = hilos.find(h => h.thread_id === tid); 
             if (!m) return; 
 
+            // NO auto-asignar - el admin decide manualmente
             // Mostrar el inspector
             document.getElementById('inspector-overlay').style.display = 'flex'; 
             
             // Cargar operadores y mostrar estado
             await loadOperatorsForInspector();
+            // Actualizar con el estado actual (puede ser ASIGNADO si se auto-asignó)
             updateStatusDisplay(m.estado_ticket || 'PENDIENTE');
             document.getElementById('ins-operator-select').value = m.asignado_a || '';
             const isOperator = (currentUser.rol || '').toLowerCase() === 'operador';
@@ -1921,6 +1959,9 @@
 
         function closeResponseModal() {
             document.getElementById('response-modal').classList.add('hidden');
+            // Limpiar estados de IA al cerrar
+            document.getElementById('ai-actions').classList.add('hidden');
+            document.getElementById('original-email-content').dataset.original = '';
         }
 
         async function generateAIResponse() {
@@ -1946,13 +1987,25 @@
                     },
                     body: JSON.stringify({
                         mensaje: m.mensaje || '',
-                        asunto: m.asunto || ''
+                        asunto: m.asunto || '',
+                        texto: editor.innerText.trim() || ''
                     })
                 });
                 const data = await res.json();
                 if (res.ok) {
-                    editor.innerHTML = data.response.replace(/\n/g, '<br>');
-                    feedback.innerText = '✅ Respuesta generada con IA';
+                    const editor = document.getElementById('response-body');
+                    const currentText = editor.innerText.trim();
+                    const hasExistingText = currentText.length > 10;
+                    
+                    // Guardar respuesta de IA
+                    document.getElementById('original-email-content').dataset.aiResponse = data.response;
+                    document.getElementById('original-email-content').dataset.hasExistingText = hasExistingText;
+                    
+                    // Mostrar vista previa en modal
+                    document.getElementById('ai-preview-content').innerText = data.response;
+                    document.getElementById('ai-preview-modal').classList.remove('hidden');
+                    
+                    feedback.innerText = '✅ Respuesta generada - Revisa en la vista previa';
                     feedback.className = 'text-sm font-medium text-green-600';
                 } else {
                     feedback.innerText = '❌ ' + (data.error || 'No se pudo generar respuesta');
@@ -1962,6 +2015,7 @@
                     }
                 }
             } catch (e) {
+                console.error('Error IA:', e);
                 feedback.innerText = '❌ Error de conexión';
                 feedback.className = 'text-sm font-medium text-red-500';
             }
@@ -1969,6 +2023,74 @@
             btn.disabled = false;
             btn.classList.remove('opacity-50');
             loading.classList.add('hidden');
+        }
+        
+        function insertAIResponse() {
+            const editor = document.getElementById('response-body');
+            const aiResponse = document.getElementById('original-email-content').dataset.aiResponse || '';
+            const hasExistingText = document.getElementById('original-email-content').dataset.hasExistingText === 'true';
+            const currentContent = editor.innerHTML;
+            
+            if (hasExistingText) {
+                // CASO 2: Ya tenía texto escrito → Sustituir solo la parte del operador, mantener el correo original
+                const clientContentMatch = currentContent.match(/<blockquote[\s\S]*<\/blockquote>/i);
+                const clientContent = clientContentMatch ? clientContentMatch[0] : '';
+                editor.innerHTML = aiResponse.replace(/\n/g, '<br>') + '<br><br>' + clientContent;
+            } else {
+                // CASO 1: No tenía texto → Insertar al inicio
+                editor.innerHTML = aiResponse.replace(/\n/g, '<br>') + '<br><br>' + currentContent;
+            }
+            
+            // Cerrar vista previa
+            closeAIPreview();
+            
+            // Ocultar botones
+            document.getElementById('ai-actions').classList.add('hidden');
+            const feedback = document.getElementById('response-feedback');
+            feedback.innerText = hasExistingText ? '✅ Texto mejorado insertado' : '✅ Respuesta insertada al inicio';
+            feedback.className = 'text-sm font-medium text-green-600';
+        }
+        
+        function editAIResponse() {
+            // Permitir editar manualmente - solo ocultar botones
+            document.getElementById('ai-actions').classList.add('hidden');
+            document.getElementById('response-body').focus();
+            const feedback = document.getElementById('response-feedback');
+            feedback.innerText = '✏️ Editando...';
+            feedback.className = 'text-sm font-medium text-violet-600';
+        }
+        
+        function closeAIPreview() {
+            document.getElementById('ai-preview-modal').classList.add('hidden');
+        }
+        
+        function confirmAIResponse() {
+            // Insertar respuesta y cerrar modal
+            const editor = document.getElementById('response-body');
+            const aiResponse = document.getElementById('original-email-content').dataset.aiResponse || '';
+            const hasExistingText = document.getElementById('original-email-content').dataset.hasExistingText === 'true';
+            const currentContent = editor.innerHTML;
+            
+            if (hasExistingText) {
+                const clientContentMatch = currentContent.match(/<blockquote[\s\S]*<\/blockquote>/i);
+                const clientContent = clientContentMatch ? clientContentMatch[0] : '';
+                editor.innerHTML = aiResponse.replace(/\n/g, '<br>') + '<br><br>' + clientContent;
+            } else {
+                editor.innerHTML = aiResponse.replace(/\n/g, '<br>') + '<br><br>' + currentContent;
+            }
+            
+            // Cerrar modal
+            document.getElementById('ai-preview-modal').classList.add('hidden');
+            const feedback = document.getElementById('response-feedback');
+            feedback.innerText = '✅ Respuesta insertada';
+            feedback.className = 'text-sm font-medium text-green-600';
+        }
+        
+        function discardAIResponse() {
+            closeAIPreview();
+            const feedback = document.getElementById('response-feedback');
+            feedback.innerText = '❌ Respuesta descartada';
+            feedback.className = 'text-sm font-medium text-gray-500';
         }
 
         function execCmd(command) {
@@ -2078,7 +2200,7 @@
                         bcc: bcc,
                         subject: subject,
                         body: body,
-                        estado: 'Respondido por ' + (currentUser.username || 'Operador')
+                        estado: 'RESPONDIDO'
                     })
                 });
                 
@@ -2271,6 +2393,11 @@
                 });
                 if (res.ok) {
                     await loadData();
+                    // Actualizar el display del estado en el inspector
+                    const m = hilos.find(h => h.thread_id === currentTid);
+                    if (m) {
+                        updateStatusDisplay(m.estado_ticket || 'ASIGNADO');
+                    }
                     showToast('Operador asignado correctamente');
                 } else {
                     const err = await res.json();
@@ -2327,6 +2454,12 @@
                 });
                 if (res.ok) {
                     await loadData();
+                    // Si es el ticket actual abierto, actualizar display
+                    if (tid === currentTid) {
+                        const m = hilos.find(h => h.thread_id === tid);
+                        if (m) updateStatusDisplay(m.estado_ticket || 'ASIGNADO');
+                    }
+                    showToast('Ticket asignado');
                 } else {
                     const err = await res.json();
                     alert("Error: " + (err.error || "No se pudo asignar el ticket"));
@@ -2467,6 +2600,66 @@
             } catch (e) {
                 feedback.innerText = '❌ Error de conexión';
                 feedback.className = 'text-xs font-semibold text-red-400 mt-2';
+            }
+        }
+        
+        async function saveGroqApiKey() {
+            const input = document.getElementById('groq-api-key');
+            const feedback = document.getElementById('groq-feedback');
+            const apiKey = input.value.trim();
+            
+            if (!apiKey) {
+                feedback.innerText = '⚠️ Ingresa una API Key';
+                feedback.className = 'text-xs font-semibold text-amber-400 mt-2';
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API_URL}/admin/settings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ groq_api_key: apiKey })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    feedback.innerText = '✅ API Key de Groq guardada';
+                    feedback.className = 'text-xs font-semibold text-green-400 mt-2';
+                    input.value = '';
+                } else {
+                    feedback.innerText = '❌ Error: ' + (data.error || 'No se pudo guardar');
+                    feedback.className = 'text-xs font-semibold text-red-400 mt-2';
+                }
+            } catch (e) {
+                feedback.innerText = '❌ Error de conexión';
+                feedback.className = 'text-xs font-semibold text-red-400 mt-2';
+            }
+        }
+        
+        async function saveEmailSignature() {
+            const input = document.getElementById('email-signature');
+            const signature = input.value.trim();
+            
+            try {
+                const res = await fetch(`${API_URL}/admin/settings`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ email_signature: signature })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    localStorage.setItem('email_signature', signature);
+                    showToast('✅ Firma guardada correctamente');
+                } else {
+                    showToast('❌ Error al guardar firma');
+                }
+            } catch (e) {
+                showToast('❌ Error de conexión');
             }
         }
 

@@ -75,6 +75,9 @@ class Config:
     # Google Gemini AI
     GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '')
     
+    # Groq (fallback gratuito)
+    GROQ_API_KEY = os.getenv('GROQ_API_KEY', '')
+    
     @classmethod
     def validate(cls):
         """Valida configuración crítica"""
