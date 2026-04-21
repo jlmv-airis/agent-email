@@ -259,25 +259,52 @@ def get_stats():
 def get_hilos():
     try:
         folder = request.args.get('folder', 'INBOX').upper()
+        get_all = request.args.get('all', 'false').lower() == 'true'
+        cuenta_empresa = request.args.get('cuenta_empresa', None)
         conn = get_db_connection()
         cur = conn.cursor()
         
-        # Si es operador, solo mostrar correos asignados a él (en cualquier carpeta relevante)
+        # Si es operador, solo mostrar correos asignados a él
         user_rol = request.user.get('rol', '').lower()
         username = request.user.get('username') or request.user.get('user', '')
         
-        if user_rol == 'operador':
-            cur.execute('''
-                SELECT * FROM hilos 
-                WHERE asignado_a = ? AND folder = ? 
-                ORDER BY fecha DESC LIMIT 200
-            ''', (username, folder))
+        if get_all:
+            # Obtener todos los hilos sin filtro de folder
+            if user_rol == 'operador':
+                if cuenta_empresa:
+                    cur.execute('''
+                        SELECT * FROM hilos 
+                        WHERE asignado_a = ? AND cuenta_empresa = ?
+                        ORDER BY fecha DESC
+                    ''', (username, cuenta_empresa))
+                else:
+                    cur.execute('''
+                        SELECT * FROM hilos 
+                        WHERE asignado_a = ?
+                        ORDER BY fecha DESC
+                    ''', (username,))
+            else:
+                if cuenta_empresa:
+                    cur.execute('''
+                        SELECT * FROM hilos 
+                        WHERE cuenta_empresa = ?
+                        ORDER BY fecha DESC
+                    ''', (cuenta_empresa,))
+                else:
+                    cur.execute('SELECT * FROM hilos ORDER BY fecha DESC')
         else:
-            cur.execute('''
-                SELECT * FROM hilos 
-                WHERE folder = ? 
-                ORDER BY fecha DESC LIMIT 200
-            ''', (folder,))
+            if user_rol == 'operador':
+                cur.execute('''
+                    SELECT * FROM hilos 
+                    WHERE asignado_a = ? AND folder = ? 
+                    ORDER BY fecha DESC LIMIT 200
+                ''', (username, folder))
+            else:
+                cur.execute('''
+                    SELECT * FROM hilos 
+                    WHERE folder = ? 
+                    ORDER BY fecha DESC LIMIT 200
+                ''', (folder,))
         
         hilos = [dict(row) for row in cur.fetchall()]
         cur.close()
@@ -315,7 +342,7 @@ def update_hilo():
         params = []
         
         if estado:
-            if estado not in ('PENDIENTE', 'ASIGNADO', 'RESPONDIDO', 'CERRADO'):
+            if estado not in ('PENDIENTE', 'ASIGNADO', 'RESPONDIDO', 'CERRADO', 'TRASH'):
                 return jsonify({'error': 'Estado inválido'}), 400
             updates.append("estado_ticket = ?")
             params.append(estado)
@@ -375,6 +402,143 @@ def update_hilo():
         return jsonify({'status': 'ok', 'message': 'Ticket actualizado y sincronizado'})
     except Exception as e:
         logger.error(f"Error en update_hilo: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/hilos/<path:thread_id>', methods=['DELETE'])
+@token_required
+def delete_hilo(thread_id):
+    """Mover hilo a TRASH (papelera) en lugar de eliminar permanentemente"""
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Obtener información actual del hilo
+        cur.execute("SELECT * FROM hilos WHERE thread_id = ?", (thread_id,))
+        hilo = cur.fetchone()
+        if not hilo:
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'Hilo no encontrado'}), 404
+        
+        # Actualizar el folder a TRASH en lugar de eliminar
+        cur.execute("UPDATE hilos SET folder = 'TRASH' WHERE thread_id = ?", (thread_id,))
+        conn.commit()
+        
+        # Sincronizar con IMAP: mover a carpeta TRASH
+        try:
+            cur.execute("SELECT * FROM empresas WHERE nombre = ? LIMIT 1", (hilo['cuenta_empresa'],))
+            emp = cur.fetchone()
+            if emp:
+                password = decrypt_password(emp['email_pass'])
+                raw_uid = thread_id.replace(f"{emp['email_user']}_", "")
+                
+                with imap_tools.MailBox(emp['imap_host'], port=emp['imap_port']).login(emp['email_user'], password, initial_folder=hilo['folder'] or 'INBOX') as mailbox:
+                    # Mover el correo a TRASH
+                    folder_names = ['Trash', 'Deleted Items', '[Gmail]/Trash', 'Papelera', 'TRASH']
+                    for folder_name in folder_names:
+                        try:
+                            available_folders = [f.name for f in mailbox.folder.list()]
+                            if folder_name in available_folders:
+                                mailbox.move(raw_uid, folder_name)
+                                logger.info(f"Movido a TRASH en IMAP: {thread_id} -> {folder_name}")
+                                break
+                        except:
+                            continue
+        except Exception as imap_err:
+            logger.error(f"Error moviendo a TRASH en IMAP: {imap_err}")
+        
+        cur.close()
+        conn.close()
+        
+        return jsonify({'status': 'ok', 'message': 'Correo movido a la papelera'})
+    except Exception as e:
+        logger.error(f"Error en delete_hilo: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/hilos/<path:thread_id>/restore', methods=['POST'])
+@token_required
+def restore_hilo(thread_id):
+    """Restaurar hilo desde TRASH a INBOX"""
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        cur.execute("SELECT * FROM hilos WHERE thread_id = ?", (thread_id,))
+        hilo = cur.fetchone()
+        if not hilo:
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'Hilo no encontrado'}), 404
+        
+        if hilo['folder'] != 'TRASH':
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'El correo no está en la papelera'}), 400
+        
+        cur.execute("UPDATE hilos SET folder = 'INBOX' WHERE thread_id = ?", (thread_id,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return jsonify({'status': 'ok', 'message': 'Correo restaurado a la bandeja de entrada'})
+    except Exception as e:
+        logger.error(f"Error en restore_hilo: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/hilos/<path:thread_id>/permanent', methods=['DELETE'])
+@token_required
+def permanent_delete_hilo(thread_id):
+    """Eliminar hilo permanentemente de la papelera"""
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        cur.execute("SELECT * FROM hilos WHERE thread_id = ?", (thread_id,))
+        hilo = cur.fetchone()
+        if not hilo:
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'Hilo no encontrado'}), 404
+        
+        if hilo['folder'] != 'TRASH':
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'Solo se pueden eliminar permanentemente correos en la papelera'}), 400
+        
+        cur.execute("DELETE FROM hilos WHERE thread_id = ?", (thread_id,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return jsonify({'status': 'ok', 'message': 'Correo eliminado permanentemente'})
+    except Exception as e:
+        logger.error(f"Error en permanent_delete_hilo: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/hilos/cleanup-trash', methods=['POST'])
+@admin_required
+def cleanup_trash():
+    """Limpiar correos en TRASH mayores a 90 días"""
+    try:
+        from datetime import datetime, timedelta
+        cutoff_date = (datetime.now() - timedelta(days=90)).strftime('%Y-%m-%d %H:%M:%S')
+        
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        cur.execute("SELECT COUNT(*) FROM hilos WHERE folder = 'TRASH' AND fecha < ?", (cutoff_date,))
+        count = cur.fetchone()[0]
+        
+        cur.execute("DELETE FROM hilos WHERE folder = 'TRASH' AND fecha < ?", (cutoff_date,))
+        conn.commit()
+        
+        cur.close()
+        conn.close()
+        
+        logger.info(f"Limpiados {count} correos de TRASH mayores a 90 días")
+        return jsonify({'status': 'ok', 'deleted': count, 'message': f'Se eliminaron {count} correos permanentemente'})
+    except Exception as e:
+        logger.error(f"Error en cleanup_trash: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/empresas', methods=['GET'])
@@ -1163,13 +1327,18 @@ def get_borradores():
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
-            SELECT b.*, h.asunto as hilo_asunto, h.remitente as hilo_remitente
+            SELECT b.*, h.asunto as hilo_asunto, h.remitente as hilo_remitente, h.cuenta_empresa as hilo_cuenta
             FROM borradores b
             LEFT JOIN hilos h ON b.hilo_id = h.id
             WHERE b.created_by = ?
             ORDER BY b.updated_at DESC
         """, (request.user['id'],))
         borradores = [dict(row) for row in cur.fetchall()]
+        # Agregar info de empresa si no hay hilo_id
+        for b in borradores:
+            if not b.get('hilo_id') and b.get('cuenta_empresa'):
+                b['cuenta_empresa'] = b.get('cuenta_empresa')
+                b['email_user'] = b.get('email_user')
         cur.close()
         conn.close()
         return jsonify(borradores)
@@ -1182,8 +1351,12 @@ def create_borrador():
     data = request.json or {}
     hilo_id = data.get('hilo_id')
     destinatario = data.get('destinatario', '').strip()
+    cc = data.get('cc', '').strip()
+    bcc = data.get('bcc', '').strip()
     asunto = data.get('asunto', '').strip()
     cuerpo = data.get('cuerpo', '').strip()
+    cuenta_empresa = data.get('cuenta_empresa', '').strip()
+    email_user = data.get('email_user', '').strip()
     
     if not cuerpo and not asunto:
         return jsonify({'error': 'El cuerpo o asunto es requerido'}), 400
@@ -1192,9 +1365,9 @@ def create_borrador():
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
-            INSERT INTO borradores (hilo_id, destinatario, asunto, cuerpo, created_by)
-            VALUES (?, ?, ?, ?, ?)
-        """, (hilo_id, destinatario, asunto, cuerpo, request.user['id']))
+            INSERT INTO borradores (hilo_id, destinatario, cc, bcc, asunto, cuerpo, cuenta_empresa, email_user, created_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (hilo_id, destinatario, cc, bcc, asunto, cuerpo, cuenta_empresa, email_user, request.user['id']))
         borrador_id = cur.lastrowid
         conn.commit()
         cur.close()
@@ -1208,6 +1381,8 @@ def create_borrador():
 def update_borrador(borrador_id):
     data = request.json or {}
     destinatario = data.get('destinatario', '').strip()
+    cc = data.get('cc', '').strip()
+    bcc = data.get('bcc', '').strip()
     asunto = data.get('asunto', '').strip()
     cuerpo = data.get('cuerpo', '').strip()
     
@@ -1215,9 +1390,9 @@ def update_borrador(borrador_id):
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
-            UPDATE borradores SET destinatario = ?, asunto = ?, cuerpo = ?, updated_at = CURRENT_TIMESTAMP
+            UPDATE borradores SET destinatario = ?, cc = ?, bcc = ?, asunto = ?, cuerpo = ?, updated_at = CURRENT_TIMESTAMP
             WHERE id = ? AND created_by = ?
-        """, (destinatario, asunto, cuerpo, borrador_id, request.user['id']))
+        """, (destinatario, cc, bcc, asunto, cuerpo, borrador_id, request.user['id']))
         conn.commit()
         cur.close()
         conn.close()

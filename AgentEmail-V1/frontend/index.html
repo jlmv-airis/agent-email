@@ -143,12 +143,68 @@
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); 
             z-index: 200; align-items: center; justify-content: center;
         }
-        .inspector-window { 
-            width: 1000px; height: 90vh; background: var(--ins-bg); /* Use inspector background */
-            border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-            display: flex; flex-direction: column; overflow: hidden; color: var(--ins-text-primary); /* Use inspector primary text */
+.inspector-window { 
+            width: 1000px; height: 90vh; background: var(--ins-bg);
+            border-radius: 8px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            display: flex; flex-direction: column; overflow: hidden; color: var(--ins-text-primary);
+            position: relative;
         }
-.ins-toolbar {
+        /* Gmail-style header bar */
+        .gmail-header {
+            background: #f6f8fc;
+            border-bottom: 1px solid #e5e5e5;
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 48px;
+        }
+        .gmail-close-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #5f6368;
+            font-size: 20px;
+            transition: background 0.2s;
+        }
+        .gmail-close-btn:hover {
+            background: #e8eaed;
+        }
+        /* Response modal estilo Gmail */
+        .response-modal-window {
+            background: white;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 24px 38px 3px rgba(0,0,0,0.14), 0 50px 66px 6px rgba(0,0,0,0.12);
+        }
+        .response-modal-window .gmail-header {
+            background: #404040;
+            padding: 12px 16px;
+        }
+        .response-modal-window .gmail-header span {
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .response-modal-window .gmail-close-btn {
+            color: #9aa0a6;
+        }
+        .response-modal-window .gmail-close-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .ins-toolbar {
             height: auto; min-height: 56px; padding: 12px 20px; border-bottom: 1px solid var(--ins-border);
             display: flex; align-items: center; justify-content: space-between;
             background: var(--ins-header-bg);
@@ -260,21 +316,22 @@
         .bubble-apple a:hover { text-decoration: underline; }
 
         .ins-footer-actions { 
-            padding: 24px 0; 
-            border-top: 1px solid var(--ins-border); /* Use inspector border */
+            /* Integrado en la parte inferior de la ventana */
+            background: white;
+            border-top: 1px solid #e5e7eb;
             display: flex; 
             gap: 12px; 
-            margin-top: auto; /* Fixes position at bottom */
+            z-index: 50;
         }
         .ins-action-outline { 
-            padding: 8px 24px; 
-            border-radius: 20px; 
-            border: 1px solid var(--ins-action-outline-border); /* Use specific border */
+            padding: 12px 28px; 
+            border-radius: 24px; 
+            border: 1px solid var(--ins-action-outline-border); 
             color: var(--ins-text-secondary); 
             font-size: 14px; 
             font-weight: 600; 
             transition: all 0.2s;
-            background-color: transparent; /* Ensure no background by default */
+            background-color: transparent; 
             cursor: pointer;
         }
         .ins-action-outline:hover { 
@@ -282,8 +339,8 @@
             border-color: var(--ins-action-outline-hover-border); 
             color: #202124; 
         }
-        .ins-footer-actions span { /* Icon styling */
-            font-size: 18px; /* Slightly larger icons */
+        .ins-footer-actions span { 
+            font-size: 18px; 
             margin-right: 8px;
         }
 
@@ -580,16 +637,14 @@
                     </div>
                 </div>
 
-                <!-- BARRA DE ACCIONES MASIVAS -->
+<!-- BARRA DE ACCIONES MASIVAS -->
                 <div id="bulk-actions-bar" class="hidden flex items-center justify-between mb-4 bg-slate-800/90 backdrop-blur-md border border-white/10 px-6 py-3 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
                     <div class="flex items-center gap-6">
                         <div class="flex items-center gap-3 bg-white/5 px-4 py-1.5 rounded-xl border border-white/5">
                             <span id="selected-count-num" class="text-lg font-black text-white leading-none">0</span>
                             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em]">Seleccionados</span>
                         </div>
-                        <div class="w-px h-6 bg-white/10"></div>
-                        
-                        <div class="flex items-center gap-6">
+                        <div id="bulk-standard-actions" class="flex items-center gap-6">
                             <button onclick="prepareBulkAction('READ', true)" class="flex items-center gap-2 text-slate-300 hover:text-blue-400 transition-all group">
                                 <span class="text-xs group-hover:scale-110 transition-transform">📖</span>
                                 <span class="text-[10px] font-bold uppercase tracking-widest">Marcar Leído</span>
@@ -606,15 +661,26 @@
                                 </select>
                             </div>
                         </div>
+                        <!-- Acciones para TRASH (oculto por defecto) -->
+                        <div id="bulk-trash-actions" class="hidden flex items-center gap-4">
+                            <button onclick="bulkRestoreFromTrash()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500 hover:text-white transition-all">
+                                <span class="text-xs">↪</span>
+                                <span class="text-[10px] font-bold uppercase tracking-widest">Restaurar</span>
+                            </button>
+                            <button onclick="bulkPermanentDelete()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-all">
+                                <span class="text-xs">🗑</span>
+                                <span class="text-[10px] font-bold uppercase tracking-widest">Eliminar Permanentemente</span>
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="flex items-center gap-4">
-                        <button onclick="prepareBulkAction('DELETE', null)" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-all">
-                            <span class="text-xs">🗑</span>
-                            <span class="text-[10px] font-bold uppercase tracking-wider">Eliminar</span>
-                        </button>
                         <button onclick="deselectAll()" class="text-slate-500 hover:text-white text-xl leading-none px-2 transition-colors">×</button>
                     </div>
+                </div>
+
+                <!-- Barra de acciones rápida para TRASH (siempre visible cuando está en TRASH) -->
+                <div id="trash-quick-actions" class="hidden flex items-center justify-between mb-4 bg-amber-500/10 border border-amber-500/20 px-6 py-3 rounded-2xl">
                 </div>
 
                 <div id="thread-list"></div>
@@ -638,7 +704,7 @@
                         <!-- Derecha: App & Versión -->
                         <div class="flex flex-col items-center md:items-end text-center md:text-right">
                             <p class="text-[11px] font-bold text-slate-300 uppercase tracking-widest mb-2">Agent Email AIRIS</p>
-                            <span class="inline-block px-3 py-1 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-500 text-[9px] font-black tracking-tighter shadow-[0_0_10px_rgba(52,120,246,0.1)]">v1.0.10</span>
+                            <span class="inline-block px-3 py-1 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-500 text-[9px] font-black tracking-tighter shadow-[0_0_10px_rgba(52,120,246,0.1)]">v1.0.13</span>
                         </div>
                     </div>
                 </footer>
@@ -649,18 +715,9 @@
     <!-- INSPECTOR GMAIL STYLE -->
     <div id="inspector-overlay" class="inspector-overlay">
         <div class="inspector-window">
-            <!-- Barra de Herramientas Superior -->
-            <div class="ins-toolbar">
-                <div class="flex items-center gap-3">
-                    <button onclick="closeInspector()" class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-semibold text-sm shadow-md transition-all" title="Volver">
-                        <span>←</span>
-                        <span>Volver</span>
-                    </button>
-                    <!-- Navegación entre correos -->
-                    <div class="w-px h-6 bg-slate-300 mx-1"></div>
-                    <!-- Botones de navegación removidos por request -->
-                </div>
-                
+            <!-- Barra de Herramientas Superior estilo Gmail -->
+            <div class="gmail-header">
+                <!-- Izquierda: Estado y Asignar -->
                 <div class="flex items-center gap-6" id="ins-admin-actions">
                     <!-- Estado del Ticket (Solo lectura - se actualiza automáticamente) -->
                     <div class="flex items-center gap-2">
@@ -677,6 +734,13 @@
                             <option value="">👤 Sin asignar</option>
                         </select>
                     </div>
+                </div>
+                
+                <!-- Derecha: Botón cerrar estilo Gmail -->
+                <div class="flex items-center gap-3">
+                    <button onclick="closeInspector()" class="gmail-close-btn" title="Cerrar">
+                        ✕
+                    </button>
                 </div>
             </div>
 
@@ -718,13 +782,16 @@
                 </div>
 
                 <!-- Cuerpo del Mensaje -->
-                <div id="ins-body" class="bubble-apple mt-2 pt-2 border-t border-gray-200"></div>
+                <div id="ins-body" class="bubble-apple mt-2 pt-2 border-t border-gray-200" style="margin-bottom: 60px;"></div>
 
-                <!-- Acciones Finales -->
-                <div class="ins-footer-actions">
-                    <button id="btn-responder" onclick="prepareResponder()" class="ins-action-outline flex items-center gap-2"><span>↩</span> Responder</button>
-                    <button onclick="prepareForward()" class="ins-action-outline flex items-center gap-2"><span>↪</span> Reenviar</button>
-                    <button onclick="prepareBulkAction('DELETE', null)" class="text-slate-400 hover:text-red-600 ml-auto text-xl" title="Eliminar">
+                <!-- Acciones Finales - Integradas en la ventana -->
+                <div class="ins-footer-actions" style="position: absolute; bottom: 0; left: 0; right: 0; width: 100%; border-radius: 0; padding: 12px 16px; display: flex; gap: 12px; justify-content: space-between; align-items: center;">
+                    <!-- Izquierda: Acciones según el folder -->
+                    <div class="flex gap-2" id="ins-actions-left">
+                        <!-- Se填充ará dinámicamente según el folder -->
+                    </div>
+                    <!-- Derecha: Eliminar (solo icono) -->
+                    <button id="ins-delete-btn" onclick="deleteCurrentThread()" class="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-colors" title="Mover a papelera">
                         🗑️
                     </button>
                 </div>
@@ -734,11 +801,11 @@
 
     <!-- MODAL: Responder con IA - Estilo Gmail EXACTO -->
     <div id="response-modal" class="hidden fixed inset-0 z-[300] bg-black/40 flex items-center justify-center p-8">
-        <div class="bg-white rounded-xl w-full max-w-5xl h-[85vh] flex flex-col pointer-events-auto shadow-2xl" style="font-family: Roboto, Arial, sans-serif;">
+        <div class="response-modal-window" style="font-family: Roboto, Arial, sans-serif;">
             <!-- Header estilo Gmail Dark -->
-            <div class="bg-[#404040] px-4 py-2.5 flex items-center justify-between rounded-t-xl cursor-default">
+            <div class="gmail-header">
                 <span class="text-white text-sm font-medium tracking-wide">Mensaje nuevo</span>
-                <button onclick="closeResponseModal()" class="text-gray-300 hover:text-white text-xl font-medium leading-none focus:outline-none">×</button>
+                <button onclick="closeResponseModal()" class="gmail-close-btn">✕</button>
             </div>
             
             <!-- Campos de destino, asunto, CC y CCO -->
@@ -1050,7 +1117,7 @@
             
             <div class="flex flex-col gap-3">
                 <button id="bulk-confirm-modal-btn" class="w-full py-4 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-widest text-xs transition-all shadow-lg shadow-blue-900/40 active:scale-[0.98]">
-                    Aplicar
+                    Aceptar
                 </button>
                 <button onclick="cancelBulkAction()" class="w-full py-4 rounded-2xl bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold uppercase tracking-widest text-[10px] transition-all border border-red-500/10">
                     Cancelar
@@ -1157,6 +1224,8 @@
             setupResizer();
             await loadEmpresas(); 
             await loadData(); 
+            await loadFolderCounts();
+            renderSidebar();
             await loadOperators();
             restoreFilterState();
             applyFilters();
@@ -1251,20 +1320,49 @@
             renderSidebar(); renderThreads(); updateStats(); updateCharts();
         }
 
-        function selectCompany(name) {
+        let folderCounts = { INBOX: 0, SENT: 0, DRAFTS: 0, TRASH: 0, SPAM: 0 };
+        
+        async function loadFolderCounts() {
+            if (!activeCompany) {
+                folderCounts = { INBOX: 0, SENT: 0, DRAFTS: 0, TRASH: 0, SPAM: 0 };
+                return;
+            }
+            try {
+                const res = await fetch(`${API_URL}/hilos?all=true&cuenta_empresa=${encodeURIComponent(activeCompany)}`, { headers: {'Authorization': 'Bearer ' + token} });
+                const allHilos = await res.json();
+                folderCounts = {
+                    INBOX: allHilos.filter(h => (h.folder || 'INBOX') === 'INBOX').length,
+                    SENT: allHilos.filter(h => (h.folder || 'INBOX') === 'SENT').length,
+                    DRAFTS: allHilos.filter(h => (h.folder || 'INBOX') === 'DRAFTS').length,
+                    TRASH: allHilos.filter(h => (h.folder || 'INBOX') === 'TRASH').length,
+                    SPAM: allHilos.filter(h => (h.folder || 'INBOX') === 'SPAM').length
+                };
+                console.log('Folder counts:', folderCounts);
+            } catch (e) {
+                console.error("Error loading folder counts:", e);
+            }
+        }
+
+        async function selectCompany(name) {
             activeCompany = name;
             activeFolder = 'INBOX';
             const title = name ? name : 'Bandeja General';
             document.getElementById('current-view-title').innerText = title;
-            loadData();
+            await loadData();
+            await loadFolderCounts();
+            updateUIForFolder(activeFolder);
+            renderSidebar();
         }
 
-        function selectFolder(folderId) {
+        async function selectFolder(folderId) {
             activeFolder = folderId;
             const folderLabels = { 'INBOX': 'Entrada', 'SENT': 'Enviados', 'TRASH': 'Eliminados', 'DRAFTS': 'Borradores', 'SPAM': 'Spam' };
             const title = activeCompany ? `${activeCompany} • ${folderLabels[folderId] || folderId}` : `Bandeja General • ${folderLabels[folderId] || folderId}`;
             document.getElementById('current-view-title').innerText = title;
-            loadData(folderId);
+            await loadData(folderId);
+            await loadFolderCounts();
+            updateUIForFolder(folderId);
+            renderSidebar();
         }
         async function loadEmpresas() {
             try {
@@ -1386,11 +1484,12 @@
                     const folders = [
                         { id: 'INBOX', label: 'Entrada', icon: '📥' },
                         { id: 'SENT', label: 'Enviados', icon: '📤' },
+                        { id: 'DRAFTS', label: 'Borradores', icon: '📝' },
                         { id: 'TRASH', label: 'Eliminados', icon: '🗑️' },
                         { id: 'SPAM', label: 'Spam', icon: '🚫' }
                     ];
                     subHtml = folders.map(f => {
-                        const fCount = hilos.filter(h => h.cuenta_empresa === e.nombre && (h.folder || 'INBOX') === f.id).length;
+                        const fCount = folderCounts[f.id] || 0;
                         return `
                         <div class="sidebar-subitem ${activeFolder === f.id ? 'active' : ''}" onclick="selectFolder('${f.id}')">
                             <div class="flex items-center gap-2"><span>${f.icon}</span><span>${f.label}</span></div>
@@ -1408,18 +1507,22 @@
             container.innerHTML = html;
         }
 
-        function selectCompany(c) { 
-            activeCompany = c; 
-            activeFolder = 'INBOX';
-            document.getElementById('current-view-title').innerText = c ? c : 'Bandeja General'; 
-            renderSidebar(); 
-            renderThreads(); 
-        }
-
-        function selectFolder(f) {
-            activeFolder = f;
-            renderSidebar();
-            renderThreads();
+        function updateUIForFolder(folder) {
+            const isTrash = folder === 'TRASH';
+            const trashActions = document.getElementById('bulk-trash-actions');
+            const trashQuickActions = document.getElementById('trash-quick-actions');
+            const standardActions = document.getElementById('bulk-standard-actions');
+            
+            // Mostrar acciones según el folder
+            if (isTrash) {
+                if (trashActions) trashActions.classList.remove('hidden');
+                if (trashQuickActions) trashQuickActions.classList.remove('hidden');
+                if (standardActions) standardActions.classList.add('hidden');
+            } else {
+                if (trashActions) trashActions.classList.add('hidden');
+                if (trashQuickActions) trashQuickActions.classList.add('hidden');
+                if (standardActions) standardActions.classList.remove('hidden');
+            }
         }
 
         function toggleSubmenu(c) { selectCompany(c); }
@@ -1539,7 +1642,26 @@
             const msg = document.getElementById('bulk-confirm-modal-msg');
             const count = getSelectedThreadIds().length;
             
-            msg.innerHTML = `¿Desea aplicar cambios a <b class="text-white">${count} Correos</b>?`;
+            let actionText = '';
+            let icon = '⚡';
+            if (action === 'READ' && value === true) { actionText = 'marcar como leídos'; icon = '📖'; }
+            else if (action === 'READ' && value === false) { actionText = 'marcar como no leídos'; icon = '✉️'; }
+            else if (action === 'ASSIGN') { actionText = `asignar a <b class="text-blue-400">${value}</b>`; icon = '👤'; }
+            else if (action === 'DELETE') { 
+                actionText = 'mover a la papelera'; 
+                icon = '🗑️';
+                // Mensaje especial para eliminar
+                if (count === 1) {
+                    msg.innerHTML = `¿Desea <b class="text-white">${actionText}</b>?`;
+                } else {
+                    msg.innerHTML = `¿Desea <b class="text-white">${actionText}</b> a <b class="text-white">${count} Correos</b>?`;
+                }
+                modal.classList.remove('hidden');
+                document.getElementById('bulk-confirm-modal-btn').onclick = () => executeBulkAction();
+                return;
+            }
+            
+            msg.innerHTML = `¿Desea <b class="text-white">${actionText}</b> a <b class="text-white">${count} Correo${count > 1 ? 's' : ''}</b>?`;
 
             modal.classList.remove('hidden');
             
@@ -1628,7 +1750,62 @@
                 if (master) master.checked = false;
                 cancelBulkAction();
             }
+            
+            // Actualizar visibilidad de acciones según folder
+            updateUIForFolder(activeFolder);
         }
+
+        async function restoreSelectedFromTrash() {
+            const ids = getSelectedThreadIds();
+            if (ids.length === 0) return;
+            
+            if (!confirm(`¿Restaurar ${ids.length} correo(s) a la bandeja de entrada?`)) return;
+            
+            let count = 0;
+            for (const tid of ids) {
+                try {
+                    const res = await fetch(`${API_URL}/hilos/${tid}/restore`, {
+                        method: 'POST',
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    });
+                    if (res.ok) count++;
+                } catch (e) {
+                    console.error('Error restoring:', e);
+                }
+            }
+            
+            showToast(`${count} correo(s) restaurado(s)`);
+            deselectAll();
+            await loadData();
+        }
+
+        async function permanentDeleteSelected() {
+            const ids = getSelectedThreadIds();
+            if (ids.length === 0) return;
+            
+            if (!confirm(`¿Eliminar permanentemente ${ids.length} correo(s)? Esta acción no se puede deshacer.`)) return;
+            
+            let count = 0;
+            for (const tid of ids) {
+                try {
+                    const res = await fetch(`${API_URL}/hilos/${tid}/permanent`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    });
+                    if (res.ok) count++;
+                } catch (e) {
+                    console.error('Error deleting:', e);
+                }
+            }
+            
+            showToast(`${count} correo(s) eliminado(s) permanentemente`);
+            deselectAll();
+            await loadData();
+        }
+
+        // Alias para compatibilidad
+        function bulkRestoreFromTrash() { restoreSelectedFromTrash(); }
+        function bulkPermanentDelete() { permanentDeleteSelected(); }
 
         function getSelectedThreadIds() {
             return Array.from(document.querySelectorAll('.thread-checkbox:checked')).map(cb => cb.getAttribute('data-id'));
@@ -1772,9 +1949,11 @@
             const m = hilos.find(h => h.thread_id === tid); 
             if (!m) return; 
 
-            // NO auto-asignar - el admin decide manualmente
             // Mostrar el inspector
             document.getElementById('inspector-overlay').style.display = 'flex'; 
+            
+            // Actualizar acciones según el folder
+            updateInspectorActions(m.folder || 'INBOX');
             
             // Cargar operadores y mostrar estado
             await loadOperatorsForInspector();
@@ -1782,8 +1961,11 @@
             updateStatusDisplay(m.estado_ticket || 'PENDIENTE');
             document.getElementById('ins-operator-select').value = m.asignado_a || '';
             const isOperator = (currentUser.rol || '').toLowerCase() === 'operador';
+            const isTrash = (m.folder || 'INBOX') === 'TRASH';
+            
             if(document.getElementById('ins-admin-actions')) {
-                document.getElementById('ins-admin-actions').style.display = isOperator ? 'none' : 'flex';
+                // En TRASH ocultar acciones de admin
+                document.getElementById('ins-admin-actions').style.display = (isOperator || isTrash) ? 'none' : 'flex';
             }
             
             // Populate inspector fields with new Gmail-like styling in mind
@@ -1862,6 +2044,83 @@
 
         function closeInspector() { document.getElementById('inspector-overlay').style.display = 'none'; }
 
+        async function restoreCurrentThread() {
+            if (!currentTid) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/hilos/${currentTid}/restore`, {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                
+                if (res.ok) {
+                    showToast('Correo restaurado a la bandeja de entrada');
+                    closeInspector();
+                    await loadData();
+                } else {
+                    const data = await res.json();
+                    showToast(data.error || 'Error al restaurar correo', true);
+                }
+            } catch (e) {
+                showToast('Error al restaurar correo', true);
+            }
+        }
+
+        async function permanentDeleteCurrentThread() {
+            if (!currentTid) return;
+            
+            if (!confirm('¿Eliminar este correo permanentemente? Esta acción no se puede deshacer.')) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/hilos/${currentTid}/permanent`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                
+                if (res.ok) {
+                    showToast('Correo eliminado permanentemente');
+                    closeInspector();
+                    await loadData();
+                } else {
+                    const data = await res.json();
+                    showToast(data.error || 'Error al eliminar permanentemente', true);
+                }
+            } catch (e) {
+                showToast('Error al eliminar permanentemente', true);
+            }
+        }
+
+        async function deleteCurrentThread() {
+            if (!currentTid) return;
+            
+            // Usar el modal de confirmación existente
+            const modal = document.getElementById('bulk-confirm-modal');
+            const msg = document.getElementById('bulk-confirm-modal-msg');
+            msg.innerHTML = '¿Desea mover este correo a la papelera?';
+            modal.classList.remove('hidden');
+            
+            // Configurar el botón para eliminar este correo específico
+            document.getElementById('bulk-confirm-modal-btn').onclick = async () => {
+                try {
+                    const res = await fetch(`${API_URL}/hilos/${currentTid}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': 'Bearer ' + token }
+                    });
+                    
+                    if (res.ok) {
+                        showToast('Correo movido a la papelera');
+                        modal.classList.add('hidden');
+                        closeInspector();
+                        await loadData();
+                    } else {
+                        showToast('Error al mover correo a papelera', true);
+                    }
+                } catch (e) {
+                    showToast('Error al mover correo a papelera', true);
+                }
+            };
+        }
+
         async function loadOperatorsForInspector() {
             const select = document.getElementById('ins-operator-select');
             select.innerHTML = '<option value="">👤 Sin asignar</option>';
@@ -1879,17 +2138,59 @@
             }
         }
 
+function updateStatusDisplay(estado) {
+            const display = document.getElementById('ins-status-display');
+            const config = {
+                'PENDIENTE': { text: '⏳ Pendiente', class: 'bg-amber-500/10 text-amber-400 border border-amber-500/20' },
+                'ASIGNADO': { text: '🔄 En Proceso', class: 'bg-blue-500/10 text-blue-400 border border-blue-500/20' },
+                'RESPONDIDO': { text: '✅ Respondido', class: 'bg-green-500/10 text-green-400 border border-green-500/20' },
+                'CERRADO': { text: '🔒 Cerrado', class: 'bg-slate-500/10 text-slate-400 border border-slate-500/20' }
+            };
+            const c = config[estado] || config['PENDIENTE'];
+            display.className = `px-3 py-1.5 rounded-lg text-sm font-semibold ${c.class}`;
+            display.textContent = c.text;
+        }
+
+        function updateInspectorActions(folder) {
+            const actionsLeft = document.getElementById('ins-actions-left');
+            const deleteBtn = document.getElementById('ins-delete-btn');
+            
+            if (folder === 'TRASH') {
+                // En TRASH: mostrar botones restaurar y eliminar permanentemente
+                actionsLeft.innerHTML = `
+                    <button onclick="restoreCurrentThread()" class="ins-action-outline flex items-center justify-center gap-1 px-3 py-2 text-xs">
+                        <span>↪</span> Restaurar
+                    </button>
+                    <button onclick="permanentDeleteCurrentThread()" class="ins-action-outline flex items-center justify-center gap-1 px-3 py-2 text-xs text-red-500">
+                        <span>🗑️</span> Eliminar permanently
+                    </button>
+                `;
+                deleteBtn.style.display = 'none';
+            } else {
+                // Normal: responder y reenviar
+                actionsLeft.innerHTML = `
+                    <button id="btn-responder" onclick="prepareResponder()" class="ins-action-outline flex items-center justify-center gap-1 px-3 py-2 text-xs">
+                        <span>↩</span> Responder
+                    </button>
+                    <button onclick="prepareForward()" class="ins-action-outline flex items-center justify-center gap-1 px-3 py-2 text-xs">
+                        <span>↪</span> Reenviar
+                    </button>
+                `;
+                deleteBtn.style.display = 'flex';
+            }
+        }
+
         function updateStatusDisplay(estado) {
             const display = document.getElementById('ins-status-display');
             const config = {
                 'PENDIENTE': { text: '⏳ Pendiente', class: 'bg-amber-500/10 text-amber-400 border border-amber-500/20' },
                 'ASIGNADO': { text: '🔄 En Proceso', class: 'bg-blue-500/10 text-blue-400 border border-blue-500/20' },
                 'RESPONDIDO': { text: '✅ Respondido', class: 'bg-green-500/10 text-green-400 border border-green-500/20' },
-                'CERRADO': { text: '🔒 Cerrado', class: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' }
+                'CERRADO': { text: '🔒 Cerrado', class: 'bg-slate-500/10 text-slate-400 border border-slate-500/20' }
             };
             const c = config[estado] || config['PENDIENTE'];
             display.className = `px-3 py-1.5 rounded-lg text-sm font-semibold ${c.class}`;
-            display.innerText = c.text;
+            display.textContent = c.text;
         }
 
         let currentDraftId = null;
@@ -1900,7 +2201,7 @@
             if (!currentTid) return;
             const m = hilos.find(h => h.thread_id === currentTid);
             if (!m || !m.asignado_a) {
-                alert('⚠️ Este correo debe estar asignado a un operador para responder.');
+                showToast('⚠️ Este correo debe estar asignado a un operador para responder.', true);
                 return;
             }
             
@@ -2235,15 +2536,24 @@
             
             const body = document.getElementById('response-body').innerHTML;
             const to = document.getElementById('response-to').value;
+            const cc = document.getElementById('response-cc').value;
+            const bcc = document.getElementById('response-bcc').value;
             const subject = document.getElementById('response-subject').value;
             const plain = document.getElementById('response-body').innerText.trim();
             if (!plain) return; 
             
+            const cuenta = m.cuenta_empresa || activeCompany || empresas[0]?.nombre || '';
+            const empresaActiva = empresas.find(e => e.nombre === cuenta);
+            const currentEmail = (empresaActiva && empresaActiva.email_user) ? empresaActiva.email_user : (m.correo_empresa || '');
             const payload = {
                 hilo_id: m.id,
                 destinatario: to,
+                cc: cc || '',
+                bcc: bcc || '',
                 asunto: subject,
-                cuerpo: body
+                cuerpo: body,
+                cuenta_empresa: cuenta,
+                email_user: currentEmail
             };
             
             try {
@@ -2331,7 +2641,7 @@
            const m = hilos.find(h => h.id === draft.hilo_id);
            if (m) {
                currentTid = m.thread_id;
-               selectThread(currentTid);
+               renderThreads();
            }
            
            document.getElementById('response-modal').classList.remove('hidden');
