@@ -675,6 +675,10 @@
                     </div>
                     
                     <div class="flex items-center gap-4">
+                        <button onclick="prepareBulkAction('DELETE')" class="px-4 py-2 rounded-full bg-[#c5221f] text-white font-medium text-[13px] shadow-md transition-all hover:bg-[#b30c0a] flex items-center gap-2">
+                            <span class="font-bold">🗑️</span>
+                            <span class="text-[10px] font-bold uppercase tracking-widest">Eliminar</span>
+                        </button>
                         <button onclick="deselectAll()" class="text-slate-500 hover:text-white text-xl leading-none px-2 transition-colors">×</button>
                     </div>
                 </div>
@@ -872,7 +876,7 @@
                     <button onclick="sendResponse()" class="px-6 py-2.5 bg-[#0b57d0] hover:bg-[#0842a0] text-white rounded-full text-sm font-medium transition-colors shadow-sm">
                         Enviar
                     </button>
-                    <button onclick="saveDraft()" id="btn-save-draft" class="px-4 py-2 bg-gray-100 font-bold hover:bg-gray-200 text-gray-700 rounded-full text-[12px] transition-colors shadow-sm" title="Puedes forzar el guardado (Autoguardado activo)">
+                    <button onclick="saveDraft(true)" id="btn-save-draft" class="px-4 py-2 bg-gray-100 font-bold hover:bg-gray-200 text-gray-700 rounded-full text-[12px] transition-colors shadow-sm" title="Guardar como borrador">
                         Guardar
                     </button>
                     <!-- Funciones Extra Integradas -->
@@ -1231,7 +1235,7 @@
             applyFilters();
             // Asegurar que los colores de la gráfica se apliquen tras cargar los datos
             setTimeout(updateChartTheme, 500);
-            setInterval(loadData, 30000);
+            setInterval(() => loadData(activeFolder, true), 30000);
         }
 
         function setupResizer() {
@@ -1308,7 +1312,7 @@
             });
         }
 
-        async function loadData(folder = activeFolder) {
+        async function loadData(folder = activeFolder, skipRender = false) {
             try {
                 const res = await fetch(`${API_URL}/hilos?folder=${folder}`, { headers: {'Authorization': 'Bearer ' + token} });
                 hilos = await res.json();
@@ -1317,7 +1321,9 @@
                 hilos = [];
                 console.error("Error in loadData:", e);
             }
-            renderSidebar(); renderThreads(); updateStats(); updateCharts();
+            renderSidebar(); 
+            if (!skipRender) renderThreads(); 
+            updateStats(); updateCharts();
         }
 
         let folderCounts = { INBOX: 0, SENT: 0, DRAFTS: 0, TRASH: 0, SPAM: 0 };
@@ -1646,22 +1652,21 @@
             let icon = '⚡';
             if (action === 'READ' && value === true) { actionText = 'marcar como leídos'; icon = '📖'; }
             else if (action === 'READ' && value === false) { actionText = 'marcar como no leídos'; icon = '✉️'; }
-            else if (action === 'ASSIGN') { actionText = `asignar a <b class="text-blue-400">${value}</b>`; icon = '👤'; }
+            else if (action === 'ASSIGN') { actionText = `asignar a ${value}`; icon = '👤'; }
             else if (action === 'DELETE') { 
                 actionText = 'mover a la papelera'; 
                 icon = '🗑️';
-                // Mensaje especial para eliminar
                 if (count === 1) {
-                    msg.innerHTML = `¿Desea <b class="text-white">${actionText}</b>?`;
+                    msg.textContent = `¿Desea ${actionText}?`;
                 } else {
-                    msg.innerHTML = `¿Desea <b class="text-white">${actionText}</b> a <b class="text-white">${count} Correos</b>?`;
+                    msg.textContent = `¿Desea ${actionText} a ${count} Correos?`;
                 }
                 modal.classList.remove('hidden');
                 document.getElementById('bulk-confirm-modal-btn').onclick = () => executeBulkAction();
                 return;
             }
             
-            msg.innerHTML = `¿Desea <b class="text-white">${actionText}</b> a <b class="text-white">${count} Correo${count > 1 ? 's' : ''}</b>?`;
+            msg.textContent = `¿Desea ${actionText} a ${count} Correo${count > 1 ? 's' : ''}?`;
 
             modal.classList.remove('hidden');
             
@@ -1678,12 +1683,15 @@
 
         async function executeBulkAction() {
             const ids = getSelectedThreadIds();
-            if (ids.length === 0) return;
+            if (ids.length === 0) {
+                showToast("No hay correos seleccionados", true);
+                return;
+            }
 
             const modalBtn = document.getElementById('bulk-confirm-modal-btn');
-            modalBtn.disabled = true; modalBtn.innerText = "Sincronizando...";
+            modalBtn.disabled = true; modalBtn.innerText = "Procesando...";
             
-            showToast(`Sincronizando ${ids.length} hilos con Webmail...`);
+            showToast(`Procesando ${ids.length} correos...`);
             
             try {
                 for (const tid of ids) {
@@ -1692,10 +1700,14 @@
                     if (currentBulkAction === 'ASSIGN') { payload.asignado_a = currentBulkValue; payload.estado = 'ASIGNADO'; }
                     
                     if (currentBulkAction === 'DELETE') {
-                        await fetch(`${API_URL}/hilos/${tid}`, {
+                        const res = await fetch(`${API_URL}/hilos/${tid}`, {
                             method: 'DELETE',
                             headers: { 'Authorization': 'Bearer ' + token }
                         });
+                        if (!res.ok) {
+                            const err = await res.json();
+                            console.error('Error deleting:', err);
+                        }
                     } else {
                         await fetch(`${API_URL}/hilos/update`, {
                             method: 'PUT',
@@ -1706,10 +1718,11 @@
                 }
                 
                 await loadData();
-                showToast("Sincronización Completa");
+                showToast("Operación completada");
                 deselectAll();
             } catch (e) {
-                showToast("Error en la operación masiva", true);
+                console.error('Error bulk action:', e);
+                showToast("Error en la operación", true);
             } finally {
                 modalBtn.disabled = false; modalBtn.innerText = "Confirmar y Aplicar";
                 cancelBulkAction();
@@ -1753,6 +1766,19 @@
             
             // Actualizar visibilidad de acciones según folder
             updateUIForFolder(activeFolder);
+        }
+
+        function deselectAll() {
+            document.querySelectorAll('.thread-checkbox').forEach(cb => {
+                cb.checked = false;
+                const card = cb.closest('.email-card');
+                if (card) {
+                    card.classList.remove('ring-1', 'ring-blue-500/50', 'bg-blue-500/5');
+                }
+            });
+            const master = document.getElementById('select-all-checkbox');
+            if (master) master.checked = false;
+            updateSelectionState();
         }
 
         async function restoreSelectedFromTrash() {
@@ -2526,27 +2552,39 @@ function updateStatusDisplay(estado) {
         // Auto guardado logica
         document.getElementById('response-body').addEventListener('input', () => {
             clearTimeout(autosaveTimer);
-            autosaveTimer = setTimeout(saveDraft, 2000); 
+            autosaveTimer = setTimeout(() => saveDraft(false), 2000); 
         });
 
-        async function saveDraft() {
-            if (!currentTid) return;
-            const m = hilos.find(h => h.thread_id === currentTid);
-            if (!m) return;
-            
+        async function saveDraft(manual = false) {
             const body = document.getElementById('response-body').innerHTML;
             const to = document.getElementById('response-to').value;
             const cc = document.getElementById('response-cc').value;
             const bcc = document.getElementById('response-bcc').value;
             const subject = document.getElementById('response-subject').value;
             const plain = document.getElementById('response-body').innerText.trim();
-            if (!plain) return; 
+            if (!plain) {
+                showToast('Escribe un mensaje para guardar', 'error');
+                return;
+            }
             
-            const cuenta = m.cuenta_empresa || activeCompany || empresas[0]?.nombre || '';
-            const empresaActiva = empresas.find(e => e.nombre === cuenta);
-            const currentEmail = (empresaActiva && empresaActiva.email_user) ? empresaActiva.email_user : (m.correo_empresa || '');
+            let cuenta = '';
+            let currentEmail = '';
+            
+            if (currentTid) {
+                const m = hilos.find(h => h.thread_id === currentTid);
+                if (m) {
+                    cuenta = m.cuenta_empresa || activeCompany || empresas[0]?.nombre || '';
+                    const empresaActiva = empresas.find(e => e.nombre === cuenta);
+                    currentEmail = (empresaActiva && empresaActiva.email_user) ? empresaActiva.email_user : (m.correo_empresa || '');
+                }
+            } else {
+                cuenta = activeCompany || empresas[0]?.nombre || '';
+                const empresaActiva = empresas.find(e => e.nombre === cuenta);
+                currentEmail = (empresaActiva && empresaActiva.email_user) ? empresaActiva.email_user : '';
+            }
+            
             const payload = {
-                hilo_id: m.id,
+                hilo_id: currentTid ? hilos.find(h => h.thread_id === currentTid)?.id : null,
                 destinatario: to,
                 cc: cc || '',
                 bcc: bcc || '',
@@ -2572,13 +2610,19 @@ function updateStatusDisplay(estado) {
                 if (res.ok) {
                     const data = await res.json();
                     if (data.id) currentDraftId = data.id;
-                    const feedback = document.getElementById('response-feedback');
-                    feedback.innerText = '✓ Borrador autoguardado';
-                    feedback.className = 'text-[11px] text-emerald-500 font-bold tracking-wide ml-auto animate-pulse';
-                    setTimeout(() => { if(feedback.innerText.includes('Borrador autoguardado')) feedback.innerText = ''; }, 3000);
+                    
+                    if (manual) {
+                        showToast('Borrador guardado en bandeja', 'success');
+                    } else {
+                        const feedback = document.getElementById('response-feedback');
+                        feedback.innerText = '✓ Borrador autoguardado';
+                        feedback.className = 'text-[11px] text-emerald-500 font-bold tracking-wide ml-auto animate-pulse';
+                        setTimeout(() => { if(feedback.innerText.includes('Borrador autoguardado')) feedback.innerText = ''; }, 3000);
+                    }
                 }
             } catch (e) {
-                console.error('Error autosaving draft', e);
+                console.error('Error saving draft', e);
+                if (manual) showToast('Error al guardar borrador', 'error');
             }
         }
 
