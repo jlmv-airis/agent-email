@@ -425,32 +425,56 @@ def delete_hilo(thread_id):
         conn.commit()
         
         # Sincronizar con IMAP: mover a carpeta TRASH
+        imap_delete = False
+        imap_delete_error = None
         try:
             cur.execute("SELECT * FROM empresas WHERE nombre = ? LIMIT 1", (hilo['cuenta_empresa'],))
             emp = cur.fetchone()
             if emp:
                 password = decrypt_password(emp['email_pass'])
                 raw_uid = thread_id.replace(f"{emp['email_user']}_", "")
+                current_folder = hilo['folder'] or 'INBOX'
                 
-                with imap_tools.MailBox(emp['imap_host'], port=emp['imap_port']).login(emp['email_user'], password, initial_folder=hilo['folder'] or 'INBOX') as mailbox:
-                    # Mover el correo a TRASH
-                    folder_names = ['Trash', 'Deleted Items', '[Gmail]/Trash', 'Papelera', 'TRASH']
-                    for folder_name in folder_names:
+                # Buscar y mover a carpeta de eliminados
+                trash_folders = ['Trash', 'Deleted Items', '[Gmail]/Trash', 'Papelera', 'TRASH', 'INBOX.Trash', 'Deleted']
+                with imap_tools.MailBox(emp['imap_host'], port=emp['imap_port']).login(emp['email_user'], password) as mailbox:
+                    available_folders = [f.name for f in mailbox.folder.list()]
+                    logger.info(f"Carpetas disponibles para mover: {available_folders}")
+                    
+                    # Buscar la carpeta de eliminados
+                    target_folder = next((f for f in trash_folders if f in available_folders), None)
+                    if target_folder:
                         try:
-                            available_folders = [f.name for f in mailbox.folder.list()]
-                            if folder_name in available_folders:
-                                mailbox.move(raw_uid, folder_name)
-                                logger.info(f"Movido a TRASH en IMAP: {thread_id} -> {folder_name}")
-                                break
-                        except:
-                            continue
+                            # Intentar mover
+                            result = mailbox.move(raw_uid, target_folder)
+                            if result:
+                                imap_delete = True
+                                logger.info(f"Movido a TRASH en IMAP: {thread_id} -> {target_folder}")
+                        except Exception as move_err:
+                            # Si no se puede mover, intentar copiar y luego eliminar
+                            try:
+                                # Copiar a trash y marcar como eliminado en origen
+                                mailbox.copy(raw_uid, target_folder)
+                                imap_delete = True
+                                logger.info(f"Copiado a TRASH en IMAP: {thread_id} -> {target_folder}")
+                            except copy_err:
+                                imap_delete_error = str(copy_err)
+                                logger.error(f"No se pudo mover ni copiar a TRASH: {copy_err}")
+                    else:
+                        logger.warning(f"No se encontró carpeta de eliminados. Usando: {available_folders}")
         except Exception as imap_err:
+            imap_delete_error = str(imap_err)
             logger.error(f"Error moviendo a TRASH en IMAP: {imap_err}")
         
         cur.close()
         conn.close()
         
-        return jsonify({'status': 'ok', 'message': 'Correo movido a la papelera'})
+        return jsonify({
+            'status': 'ok', 
+            'message': 'Correo movido a la papelera',
+            'imap_delete': imap_delete,
+            'imap_delete_error': imap_delete_error
+        })
     except Exception as e:
         logger.error(f"Error en delete_hilo: {e}")
         return jsonify({'error': str(e)}), 500
@@ -1531,6 +1555,13 @@ def send_email():
         cur.execute("SELECT * FROM empresas WHERE email_user = ?", (correo_empresa,))
         row = cur.fetchone()
         empresa = dict(row) if row else None
+        
+        # Inicializar estados por defecto
+        smtp_success = False
+        smtp_error = None
+        imap_sync = False
+        local_save = False
+        sync_error = None
             
         if not empresa or not empresa.get('smtp_host'):
             logger.warning(f"Simulando envío para {correo_empresa} porque no hay credenciales SMTP")
@@ -1574,28 +1605,55 @@ def send_email():
                 server.starttls()
                 server.ehlo()
                 
-            server.login(email_user, email_pass)
-            server.sendmail(email_user, recipients, msg.as_string())
-            server.quit()
-            logger.info(f"Email SMTP enviado vía {smtp_host} a {to_email}")
-
-            # --- SINCRONIZACIÓN IMAP: Guardar en Enviados del Servidor ---
             try:
-                # Mapeo de nombres comunes para carpetas de enviados
-                sent_folder_options = ['Sent', 'Sent Messages', '[Gmail]/Sent Mail', 'Enviados']
+                server.login(email_user, email_pass)
+                server.sendmail(email_user, recipients, msg.as_string())
+                server.quit()
+                smtp_success = True
+                logger.info(f"Email SMTP enviado vía {smtp_host} a {to_email}")
+            except smtplib.SMTPFixedResponse as smtp_err:
+                # Error específico del servidor SMTP (buzón lleno, destinatario no válido, etc.)
+                smtp_success = False
+                smtp_error = str(smtp_err)
+                logger.error(f"Error SMTP enviando a {to_email}: {smtp_err}")
+            except smtplib.SMTPRecipientsRefused as smtp_err:
+                # Destinatario rechazado
+                smtp_success = False
+                smtp_error = f"Destinatario rechazado: {smtp_err}"
+                logger.error(f"Destinatario rechazado: {smtp_err}")
+            except Exception as smtp_err:
+                # Otro error de SMTP
+                smtp_success = False
+                smtp_error = str(smtp_err)
+                logger.error(f"Error SMTP general: {smtp_err}")
+            imap_sync = False
+            sync_error = None
+            try:
+                # Más opciones para carpetas de enviados (cPanel, Plesk, Gmail, Outlook, etc.)
+                sent_folder_options = [
+                    'Sent', 'Sent Messages', 'Sent Mail', 'Enviados', 
+                    '[Gmail]/Sent Mail', 'INBOX.Sent', 'Sent Items',
+                    'INBOX.Sent Messages', '.Sent', 'SentMessage'
+                ]
                 with imap_tools.MailBox(empresa['imap_host'], port=empresa['imap_port']).login(email_user, email_pass) as mailbox:
                     existing = [f.name for f in mailbox.folder.list()]
-                    target = next((f for f in sent_folder_options if f in existing), 'INBOX')
-                    
-                    # Usar el mensaje as_string() o bytes para el append
+                    logger.info(f"Carpetas disponibles en IMAP: {existing}")
+                    target = next((f for f in sent_folder_options if f in existing), None)
+                    if not target:
+                        # Si no encuentra carpeta de Enviados, usar INBOX como fallback
+                        target = 'INBOX'
+                        logger.warning(f"No se encontró carpeta Sent, usando INBOX")
                     mailbox.append(msg.as_bytes(), target)
+                    imap_sync = True
                     logger.info(f"Copia guardada en IMAP folder: {target}")
             except Exception as imap_err:
+                sync_error = str(imap_err)
                 logger.error(f"No se pudo guardar copia en IMAP: {imap_err}")
 
-            # --- REGISTRO LOCAL: Guardar en hilos locales como SENT ---
+# --- REGISTRO LOCAL: Guardar en hilos locales como SENT ---
+            local_save = False
+            local_save_error = None
             try:
-                # Usar Message-ID real o uno generado
                 raw_msg_id = msg['Message-ID'] or make_msgid()
                 new_tid = f"sent_{raw_msg_id.strip('<>')}"
                 
@@ -1603,14 +1661,17 @@ def send_email():
                     INSERT INTO hilos (
                         thread_id, remitente, asunto, mensaje, cuenta_empresa, 
                         correo_empresa, folder, fecha, estado_ticket, leido, de_operador
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''', (
                     new_tid, email_user, subject, body_html, empresa['nombre'], 
                     email_user, 'SENT', datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 
                     'CERRADO', 1, 1
                 ))
+                local_save = True
+                logger.info(f"✓ Correo guardado localmente: {new_tid}")
             except Exception as db_err:
-                logger.error(f"Error registrando correo enviado localmente: {db_err}")
+                local_save_error = str(db_err)
+                logger.error(f"✗ Error guardando correo local: {db_err}")
 
         # Actualizar estado del hilo original
         estado = data.get('estado', 'RESPONDIDO')
@@ -1618,7 +1679,15 @@ def send_email():
         conn.commit()
         conn.close()
         
-        return jsonify({'status': 'sent'})
+        # Responder con estado detallado
+        return jsonify({
+            'status': 'sent',
+            'smtp_success': smtp_success,
+            'smtp_error': smtp_error,
+            'imap_sync': imap_sync,
+            'local_save': local_save,
+            'sync_error': sync_error
+        })
     except Exception as e:
         error_msg = str(e) or repr(e)
         logger.error(f"Error enviando correo SMTP: {error_msg}")

@@ -717,7 +717,7 @@
                         <!-- Derecha: App & Versión -->
                         <div class="flex flex-col items-center md:items-end text-center md:text-right">
                             <p class="text-[11px] font-bold text-slate-300 uppercase tracking-widest mb-2">Agent Email AIRIS</p>
-                            <span class="inline-block px-3 py-1 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-500 text-[9px] font-black tracking-tighter shadow-[0_0_10px_rgba(52,120,246,0.1)]">v1.0.14</span>
+                            <span class="inline-block px-3 py-1 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-500 text-[9px] font-black tracking-tighter shadow-[0_0_10px_rgba(52,120,246,0.1)]">v1.0.16</span>
                         </div>
                     </div>
                 </footer>
@@ -1317,8 +1317,27 @@
             companyChart = new Chart(ctxCompany, {
                 type: 'doughnut',
                 data: { labels: [], datasets: [{ data: [], backgroundColor: ['#FF9500', '#FF2D55', '#5856D6', '#34C759', '#3478f6', '#AF52DE', '#FFCC00'], borderWidth: 0, hoverOffset: 10 }] },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '700', size: 10 }, usePointStyle: true, padding: 20 } } } }
-            });
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    cutout: '60%',
+                    plugins: { 
+                        legend: { position: 'bottom', labels: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '700', size: 10 }, usePointStyle: true, padding: 20 } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                    return `${label}: ${value} correos (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    layout: { padding: 20 }
+                }
+});
         }
 
         async function loadData(folder = activeFolder, skipRender = false) {
@@ -1864,6 +1883,9 @@
                 if (res.ok) count++;
             }
             await loadData();
+            await loadFolderCounts();
+            renderSidebar();
+            updateStats();
             showToast(`${count} correos marcados como ${leido ? 'leídos' : 'no leídos'}`, false);
             deselectAll();
         }
@@ -1884,6 +1906,9 @@
                 if (res.ok) count++;
             }
             await loadData();
+            await loadFolderCounts();
+            renderSidebar();
+            updateStats();
             showToast(`${count} correos asignados correctamente`, false);
             deselectAll();
         }
@@ -1891,19 +1916,35 @@
         async function bulkDelete() {
             const ids = getSelectedThreadIds();
             if (ids.length === 0) return;
-            if (!confirm(`¿Estás seguro de que deseas eliminar ${ids.length} hilos permanentemente?`)) return;
+            if (!confirm(`¿Desea enviar ${ids.length} correo(s) a la papelera?`)) return;
 
-            showToast(`Eliminando ${ids.length} hilos...`);
+            showToast(`Moviendo a papelera ${ids.length} correo(s)...`);
             let count = 0;
+            let imapCount = 0;
             for (const tid of ids) {
                 const res = await fetch(`${API_URL}/hilos/${tid}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': 'Bearer ' + token }
                 });
-                if (res.ok) count++;
+                if (res.ok) {
+                    count++;
+                    try {
+                        const data = await res.json();
+                        if (data.imap_delete) imapCount++;
+                    } catch(e) {}
+                }
             }
             await loadData();
-            showToast(`${count} hilos eliminados con éxito`, false);
+            await loadFolderCounts();
+            renderSidebar();
+            updateStats();
+            
+            // Mostrar resultado
+            let msg = count > 0 ? `${count} correo(s) movido(s) a la papelera` : 'No se movieron correos';
+            if (imapCount > 0) {
+                msg += ' (y en el servidor webmail)';
+            }
+            showToast(msg, count === 0);
             deselectAll();
         }
 
@@ -2565,10 +2606,36 @@ function updateInspectorActions(folder) {
                 });
                 
                 if (res.ok) {
+                    const result = await res.json();
                     await loadData();
-                    closeResponseModal();
-                    closeInspector();
-                    showToast('✅ Respuesta enviada con éxito');
+                    await loadFolderCounts();
+                    renderSidebar();
+                    updateStats();
+                    
+                    // Mostrar resultado detallado
+                    let msgOk = '';
+                    if (!result.smtp_success) {
+                        // Error al enviar - destinatario no válido, buzón lleno, etc.
+                        msgOk = '❌ Error al enviar';
+                        if (result.smtp_error) {
+                            msgOk += ': ' + result.smtp_error;
+                        }
+                        showToast(msgOk, true);
+                    } else {
+                        // Envío exitoso
+                        msgOk = 'Correo enviado';
+                        if (result.imap_sync) {
+                            msgOk += ' y guardado en Enviados del servidor';
+                        } else {
+                            msgOk += ' (copia local solo en proyecto)';
+                        }
+                        if (result.sync_error) {
+                            msgOk += '. Nota: ' + result.sync_error;
+                        }
+                        closeResponseModal();
+                        closeInspector();
+                        showToast(msgOk);
+                    }
                 } else {
                     const errText = await res.text();
                     let errJson = {};
