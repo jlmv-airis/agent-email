@@ -4,8 +4,9 @@ Este es el sistema SaaS unificado de gestión de correos electrónicos. Se ha re
 
 ## 📌 Estado Actual del Proyecto
 - **Versión:** V1.0.16
+- **Rama:** v1.0.16 (2FA, Rate Limiting, HTTPS, Reportes)
 - **Acceso:** [http://localhost:8000](http://localhost:8000) (Se requiere login).
-- **Flujo:** Login ➔ Redirección a Dashboard (index.html).
+- **Flujo:** Login ➔ 2FA ➔ Redirección a Dashboard (index.html).
 
 ## 📁 Estructura de Archivos
 - `/backend`: Servidor Flask (`server.py`) y llave de cifrado (`.key`).
@@ -96,6 +97,7 @@ Para habilitar la generación automática de respuestas:
 
 ---
 
-**Última actualización:** viernes, 24 de abril de 2026
+**Última actualización:** 27 de abril de 2026
 **Versión:** V1.0.16
+**Rama:** v1.0.16
 **Objetivo:** Mantener el código en `index.html` como la única fuente de verdad para el panel administrativo.

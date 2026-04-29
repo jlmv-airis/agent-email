@@ -44,6 +44,21 @@ def init_database():
         )
     ''')
     
+    # Tabla de secretos TOTP (2FA)
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS totp_secrets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER UNIQUE NOT NULL,
+            secret TEXT NOT NULL,
+            enabled INTEGER DEFAULT 0,
+            backup_codes TEXT,
+            last_used TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES usuarios(id)
+        )
+    ''')
+    
     # Tabla empresas
     cur.execute('''
         CREATE TABLE IF NOT EXISTS empresas (
@@ -120,6 +135,10 @@ def init_database():
     cur.execute("CREATE INDEX IF NOT EXISTS idx_usuarios_email ON usuarios(email)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_usuarios_username ON usuarios(username)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_usuarios_activo ON usuarios(activo)")
+    
+    # Índices para totp_secrets
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_totp_user_id ON totp_secrets(user_id)")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_totp_enabled ON totp_secrets(enabled)")
     
     # Índices para empresas
     cur.execute("CREATE INDEX IF NOT EXISTS idx_empresas_email_user ON empresas(email_user)")

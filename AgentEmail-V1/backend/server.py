@@ -13,6 +13,7 @@ import imap_tools
 import sys
 import traceback
 from pathlib import Path
+import json
 
 # Agregar backend al path para importar config y logger
 sys.path.insert(0, str(Path(__file__).parent))
@@ -25,6 +26,7 @@ from health import HealthChecker
 from database import db_manager
 from backup_manager import backup_manager
 from init_db import init_database, backup_before_migration
+from twofa import twofa
 
 # Log de configuración cargada
 logger.info(f"🔧 Configuración cargada: ENVIRONMENT={config.ENVIRONMENT}, DEBUG={config.DEBUG}")
@@ -59,6 +61,16 @@ def create_token(user_data):
         'email': user_data.get('email', ''),
         'rol': user_data.get('rol', 'operador'),
         'exp': datetime.utcnow() + timedelta(hours=JWT_EXPIRE_HOURS)
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+
+def create_2fa_token(user_id, email):
+    """Crear token temporal para completar 2FA"""
+    payload = {
+        'id': user_id,
+        'email': email,
+        'requires_2fa': True,
+        'exp': datetime.utcnow() + timedelta(minutes=10)  # Token válido por 10 minutos
     }
     return jwt.encode(payload, SECRET_KEY, algorithm='HS256')
 
@@ -182,28 +194,54 @@ def auth_login():
     
     cur.execute('SELECT id, username, nombre, email, password_hash, rol FROM usuarios WHERE email = ? AND activo = 1', (email,))
     user = cur.fetchone()
-    cur.close()
-    conn.close()
     
     if not user:
+        cur.close()
+        conn.close()
         logger.warning(f"Login failed: user not found ({email})")
         return jsonify({'error': 'Usuario no encontrado'}), 401
     
     if not check_password_hash(user['password_hash'], password):
+        cur.close()
+        conn.close()
         logger.warning(f"Login failed: invalid password ({email})")
         return jsonify({'error': 'Contraseña incorrecta'}), 401
     
-    logger.info(f"✅ Login exitoso: {email}")
-    token = create_token(dict(user))
-    return jsonify({
-        'token': token,
-        'user': {
-            'username': user['username'],
-            'nombre': user['nombre'],
-            'email': user['email'],
-            'rol': user['rol']
-        }
-    })
+    # Verificar si 2FA está habilitado
+    cur.execute('SELECT enabled FROM totp_secrets WHERE user_id = ?', (user['id'],))
+    totp_row = cur.fetchone()
+    cur.close()
+    conn.close()
+    
+    totp_enabled = totp_row and totp_row['enabled'] if totp_row else False
+    
+    if totp_enabled:
+        # Retornar token pre-2FA
+        logger.info(f"✅ Login exitoso (requiere 2FA): {email}")
+        pre_2fa_token = create_2fa_token(user['id'], email)
+        return jsonify({
+            'requires_2fa': True,
+            'temp_token': pre_2fa_token,
+            'user': {
+                'username': user['username'],
+                'nombre': user['nombre'],
+                'email': user['email']
+            }
+        })
+    else:
+        # Login normal sin 2FA
+        logger.info(f"✅ Login exitoso: {email}")
+        token = create_token(dict(user))
+        return jsonify({
+            'token': token,
+            'requires_2fa': False,
+            'user': {
+                'username': user['username'],
+                'nombre': user['nombre'],
+                'email': user['email'],
+                'rol': user['rol']
+            }
+        })
 
 @app.route('/api/auth/verify', methods=['GET'])
 def auth_verify():
@@ -212,6 +250,230 @@ def auth_verify():
     if not user_data:
         return jsonify({'error': 'Token inválido'}), 401
     return jsonify({'valid': True, 'user': user_data})
+
+# ═════════════════════════════════════════════════════════════
+# ENDPOINTS DE 2FA (Two-Factor Authentication)
+# ═════════════════════════════════════════════════════════════
+
+@app.route('/api/auth/2fa/setup', methods=['POST'])
+def setup_2fa():
+    """Iniciar configuración de 2FA para el usuario actual"""
+    data = request.json
+    
+    # Validar token temporal (pre-2FA) o token normal
+    token = request.headers.get('Authorization', '').replace('Bearer ', '')
+    user_data = verify_token(token)
+    
+    if not user_data:
+        return jsonify({'error': 'Token inválido'}), 401
+    
+    user_id = user_data.get('id')
+    email = user_data.get('email')
+    
+    if not user_id or not email:
+        return jsonify({'error': 'Token incompleto'}), 400
+    
+    try:
+        # Generar secreto y QR
+        setup_data = twofa.setup_2fa(email)
+        
+        # Guardar secreto temporalmente (no habilitado aún)
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Guardar el secreto (pero con enabled=0 hasta que se verifique)
+        backup_codes_json = json.dumps(setup_data['backup_codes'])
+        cur.execute('''
+            INSERT OR REPLACE INTO totp_secrets (user_id, secret, enabled, backup_codes)
+            VALUES (?, ?, 0, ?)
+        ''', (user_id, setup_data['secret'], backup_codes_json))
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        logger.info(f"2FA setup initiated for user {user_id}")
+        
+        return jsonify({
+            'qr_code': setup_data['qr_code'],
+            'secret': setup_data['secret'],
+            'backup_codes': setup_data['backup_codes']
+        })
+    
+    except Exception as e:
+        logger.error(f"Error in 2FA setup: {str(e)}")
+        return jsonify({'error': 'Error al configurar 2FA'}), 500
+
+@app.route('/api/auth/2fa/verify', methods=['POST'])
+def verify_2fa():
+    """Verificar token TOTP y completar login con 2FA"""
+    data = request.json
+    
+    if not data or 'token' not in data:
+        return jsonify({'error': 'Token TOTP requerido'}), 400
+    
+    totp_token = data.get('token', '').strip()
+    
+    # Obtener token temporal (pre-2FA)
+    auth_token = request.headers.get('Authorization', '').replace('Bearer ', '')
+    temp_user = verify_token(auth_token)
+    
+    if not temp_user or not temp_user.get('requires_2fa'):
+        return jsonify({'error': 'Token temporal requerido'}), 401
+    
+    user_id = temp_user.get('id')
+    
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Obtener secreto almacenado
+        cur.execute('SELECT secret FROM totp_secrets WHERE user_id = ? AND enabled = 1', (user_id,))
+        totp_row = cur.fetchone()
+        
+        if not totp_row:
+            # Intentar con backup code
+            cur.execute('SELECT backup_codes FROM totp_secrets WHERE user_id = ?', (user_id,))
+            backup_row = cur.fetchone()
+            
+            if backup_row:
+                backup_codes = json.loads(backup_row['backup_codes'])
+                valid, updated_codes = twofa.verify_backup_code(totp_token, backup_codes)
+                
+                if valid:
+                    # Actualizar códigos consumidos
+                    cur.execute('UPDATE totp_secrets SET backup_codes = ? WHERE user_id = ?',
+                              (json.dumps(updated_codes), user_id))
+                    conn.commit()
+                    
+                    # Obtener usuario para generar token completo
+                    cur.execute('SELECT id, username, nombre, email, rol FROM usuarios WHERE id = ?', (user_id,))
+                    user = cur.fetchone()
+                    cur.close()
+                    conn.close()
+                    
+                    logger.info(f"2FA verified with backup code for user {user_id}")
+                    token = create_token(dict(user))
+                    return jsonify({
+                        'token': token,
+                        'user': {
+                            'username': user['username'],
+                            'nombre': user['nombre'],
+                            'email': user['email'],
+                            'rol': user['rol']
+                        }
+                    })
+            
+            cur.close()
+            conn.close()
+            return jsonify({'error': 'Token TOTP o backup code inválido'}), 401
+        
+        secret = totp_row['secret']
+        
+        # Verificar token TOTP
+        if twofa.verify_token(secret, totp_token):
+            # Token válido - generar token de sesión completo
+            cur.execute('SELECT id, username, nombre, email, rol FROM usuarios WHERE id = ?', (user_id,))
+            user = cur.fetchone()
+            cur.close()
+            conn.close()
+            
+            logger.info(f"✅ 2FA verified successfully for user {user_id}")
+            token = create_token(dict(user))
+            return jsonify({
+                'token': token,
+                'user': {
+                    'username': user['username'],
+                    'nombre': user['nombre'],
+                    'email': user['email'],
+                    'rol': user['rol']
+                }
+            })
+        else:
+            cur.close()
+            conn.close()
+            logger.warning(f"Invalid TOTP for user {user_id}")
+            return jsonify({'error': 'Token TOTP inválido'}), 401
+    
+    except Exception as e:
+        logger.error(f"Error verifying 2FA: {str(e)}")
+        return jsonify({'error': 'Error al verificar 2FA'}), 500
+
+@app.route('/api/auth/2fa/enable', methods=['POST'])
+def enable_2fa():
+    """Habilitar 2FA después de verificación inicial"""
+    token = request.headers.get('Authorization', '').replace('Bearer ', '')
+    user_data = verify_token(token)
+    
+    if not user_data:
+        return jsonify({'error': 'Token inválido'}), 401
+    
+    user_id = user_data.get('id')
+    
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Habilitar 2FA
+        cur.execute('UPDATE totp_secrets SET enabled = 1 WHERE user_id = ?', (user_id,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        logger.info(f"2FA enabled for user {user_id}")
+        return jsonify({'message': '2FA habilitado correctamente'})
+    
+    except Exception as e:
+        logger.error(f"Error enabling 2FA: {str(e)}")
+        return jsonify({'error': 'Error al habilitar 2FA'}), 500
+
+@app.route('/api/auth/2fa/status', methods=['GET'])
+@token_required
+def get_2fa_status():
+    """Obtener estado de 2FA del usuario actual"""
+    user_id = request.user.get('id')
+    
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        cur.execute('SELECT enabled FROM totp_secrets WHERE user_id = ?', (user_id,))
+        totp_row = cur.fetchone()
+        cur.close()
+        conn.close()
+        
+        enabled = totp_row and totp_row['enabled'] if totp_row else False
+        
+        return jsonify({
+            'enabled': bool(enabled),
+            'message': '2FA activo' if enabled else '2FA no configurado'
+        })
+    
+    except Exception as e:
+        logger.error(f"Error getting 2FA status: {str(e)}")
+        return jsonify({'error': 'Error al obtener estado de 2FA'}), 500
+
+@app.route('/api/auth/2fa/disable', methods=['POST'])
+@token_required
+def disable_2fa():
+    """Deshabilitar 2FA para el usuario actual"""
+    user_id = request.user.get('id')
+    
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        cur.execute('UPDATE totp_secrets SET enabled = 0 WHERE user_id = ?', (user_id,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        logger.info(f"2FA disabled for user {user_id}")
+        return jsonify({'message': '2FA deshabilitado correctamente'})
+    
+    except Exception as e:
+        logger.error(f"Error disabling 2FA: {str(e)}")
+        return jsonify({'error': 'Error al deshabilitar 2FA'}), 500
 
 @app.route('/api/stats', methods=['GET'])
 def get_stats():
