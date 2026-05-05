@@ -214,6 +214,6 @@ powershell -ExecutionPolicy Bypass -File scripts/INICIAR-SISTEMA.ps1
 ---
 
 **Última actualización:** 5 de mayo de 2026
-**Versión:** V1.0.15
-**Rama activa:** v1.0.15
+**Versión:** V1.1
+**Rama activa:** v1.1
 **Tema:** Solo oscuro (dark mode)
