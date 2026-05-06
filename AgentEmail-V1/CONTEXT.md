@@ -46,7 +46,7 @@ AgentEmail-V1/
 ├── AGENTS.md                     # Reglas del asistente
 ├── docs/
 │   ├── plan/
-│   │   └── v1.0.15-plan.md     # Plan actual
+│   │   └── v1.1.20-plan.md     # Plan actual
 │   └── referencia/
 │       └── seguridad-auditoria.md
 ├── backend/
@@ -213,7 +213,12 @@ powershell -ExecutionPolicy Bypass -File scripts/INICIAR-SISTEMA.ps1
 
 ---
 
-**Última actualización:** 5 de mayo de 2026
-**Versión:** V1.1
-**Rama activa:** v1.1
+**Última actualización:** 6 de mayo de 2026
+**Versión:** V1.1.20
+**Rama activa:** v1.1.20
 **Tema:** Solo oscuro (dark mode)
+
+### Registro de Versiones (Historial Reciente)
+- **v1.1.20**: Implementación de analítica por operador (Enviados vs Recibidos) en el dashboard. ✅
+  - Cambios: Gráfico de barras, nuevo endpoint de API, registro de operador en envíos.
+  - Estado: Estable.

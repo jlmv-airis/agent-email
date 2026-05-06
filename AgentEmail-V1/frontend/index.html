@@ -200,6 +200,20 @@
             background: var(--primary-50);
             color: var(--primary);
         }
+
+        /* --- FILTROS DE GRÁFICO --- */
+        .chart-filter-btn {
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        .chart-filter-btn.active {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+            color: var(--primary);
+        }
         
         /* Outline Button */
         .btn-outline {
@@ -1393,24 +1407,32 @@
                         <div class="flex items-center justify-between mb-4">
                             <div>
                                 <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Analítica</p>
-                                <h3 class="text-lg font-bold text-white">Tendencia de Tickets</h3>
+                                <h3 class="text-lg font-bold text-white">Emails</h3>
                             </div>
                             <div class="flex items-center gap-2">
-                                <select id="trend-mode" onchange="onTrendModeChange()" class="bg-white/5 border border-white/10 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-300 outline-none cursor-pointer">
-                                    <option value="daily" class="bg-[#1a1c1e]">Últimos 7 días</option>
-                                    <option value="hourly" class="bg-[#1a1c1e]">Hoy por hora</option>
-                                </select>
+                                <div class="flex bg-white/5 border border-white/10 rounded-full p-1">
+                                    <button onclick="setChartFilter('all')" id="btn-filter-all" class="chart-filter-btn active px-3 py-1 text-[9px] font-bold uppercase rounded-full transition-all">Todos</button>
+                                    <button onclick="setChartFilter('received')" id="btn-filter-received" class="chart-filter-btn px-3 py-1 text-[9px] font-bold uppercase rounded-full transition-all">Recibidos</button>
+                                    <button onclick="setChartFilter('sent')" id="btn-filter-sent" class="chart-filter-btn px-3 py-1 text-[9px] font-bold uppercase rounded-full transition-all">Enviados</button>
+                                </div>
                                 <button onclick="exportReport()" class="bg-white/5 border border-white/10 text-white hover:bg-blue-600 hover:border-blue-500 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all shadow-sm">
-                                    📥 Exportar CSV
+                                    📥 Exportar
                                 </button>
                             </div>
                         </div>
                         <div class="h-[240px] w-full"><canvas id="trendChart"></canvas></div>
                     </div>
                     <div class="dash-card overflow-hidden">
-                        <div class="mb-4">
-                            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Distribución</p>
-                            <h3 class="text-lg font-bold text-white">Cuentas / Empresas</h3>
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Distribución</p>
+                                <h3 class="text-lg font-bold text-white">Cuentas</h3>
+                            </div>
+                            <div class="flex bg-white/5 border border-white/10 rounded-full p-1">
+                                <button onclick="setChartFilter('all')" id="btn-filter-all-2" class="chart-filter-btn active px-2 py-1 text-[8px] font-bold uppercase rounded-full transition-all">Todos</button>
+                                <button onclick="setChartFilter('received')" id="btn-filter-received-2" class="chart-filter-btn px-2 py-1 text-[8px] font-bold uppercase rounded-full transition-all">Recibidos</button>
+                                <button onclick="setChartFilter('sent')" id="btn-filter-sent-2" class="chart-filter-btn px-2 py-1 text-[8px] font-bold uppercase rounded-full transition-all">Enviados</button>
+                            </div>
                         </div>
                         <div class="h-[240px] w-full flex items-center justify-center"><canvas id="companyChart"></canvas></div>
                     </div>
@@ -1566,7 +1588,7 @@
                         <!-- Derecha: App & Versión -->
                         <div class="flex flex-col items-center md:items-end text-center md:text-right">
                             <p class="text-[11px] font-bold text-slate-300 uppercase tracking-widest mb-2">Agent Email AIRIS</p>
-                            <span class="inline-block px-3 py-1 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-500 text-[9px] font-black tracking-tighter shadow-[0_0_10px_rgba(52,120,246,0.1)]">v1.1</span>
+                            <span class="inline-block px-3 py-1 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-500 text-[9px] font-black tracking-tighter shadow-[0_0_10px_rgba(52,120,246,0.1)]">v1.1.20</span>
                         </div>
                     </div>
                 </footer>
@@ -2157,28 +2179,95 @@
             const textColor = '#e1e1e6';
             const ctxTrend = document.getElementById('trendChart').getContext('2d');
             trendChart = new Chart(ctxTrend, {
-                type: 'line',
-                data: { labels: [], datasets: [{ label: 'Tickets Recibidos', data: [], borderColor: '#3478f6', backgroundColor: 'rgba(52, 120, 246, 0.1)', borderWidth: 3, tension: 0.4, fill: true, pointBackgroundColor: '#3478f6', pointRadius: 4 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '700' } } } }, scales: { x: { grid: { display: false }, ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '600' } } }, y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '600' }, stepSize: 1 } } } }
+                type: 'bar',
+                data: { 
+                    labels: [], 
+                    datasets: [
+                        { 
+                            label: 'Recibidos', 
+                            data: [], 
+                            backgroundColor: '#3478f6',
+                            borderRadius: 4,
+                            barThickness: 12
+                        },
+                        { 
+                            label: 'Enviados', 
+                            data: [], 
+                            backgroundColor: '#10b981',
+                            borderRadius: 4,
+                            barThickness: 12
+                        }
+                    ] 
+                },
+                options: { 
+                    indexAxis: 'y',
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { 
+                        legend: { 
+                            display: true,
+                            position: 'top',
+                            align: 'end',
+                            labels: { 
+                                color: textColor, 
+                                boxWidth: 8,
+                                boxHeight: 8,
+                                usePointStyle: true,
+                                font: { family: 'Plus Jakarta Sans', weight: '700', size: 10 } 
+                            } 
+                        },
+                        tooltip: {
+                            backgroundColor: '#1a1c1e',
+                            titleFont: { family: 'Plus Jakarta Sans', size: 12 },
+                            bodyFont: { family: 'Plus Jakarta Sans', size: 11 },
+                            padding: 10,
+                            cornerRadius: 8,
+                            displayColors: true
+                        }
+                    }, 
+                    scales: { 
+                        x: { 
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false }, 
+                            ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '600', size: 10 }, stepSize: 1 } 
+                        }, 
+                        y: { 
+                            grid: { display: false }, 
+                            ticks: { 
+                                color: textColor, 
+                                font: { family: 'Plus Jakarta Sans', weight: '700', size: 10 },
+                                padding: 10
+                            } 
+                        } 
+                    },
+                    layout: {
+                        padding: { left: 0, right: 20, top: 0, bottom: 0 }
+                    }
+                }
             });
             const ctxCompany = document.getElementById('companyChart').getContext('2d');
             companyChart = new Chart(ctxCompany, {
                 type: 'doughnut',
-                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#FF9500', '#FF2D55', '#5856D6', '#34C759', '#3478f6', '#AF52DE', '#FFCC00'], borderWidth: 0, hoverOffset: 10 }] },
+                data: { 
+                    labels: [], 
+                    datasets: [
+                        { label: 'Recibidos', data: [], backgroundColor: [] },
+                        { label: 'Enviados', data: [], backgroundColor: [] }
+                    ]
+                },
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
-                    cutout: '60%',
+                    cutout: '50%',
                     plugins: { 
                         legend: { position: 'bottom', labels: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '700', size: 10 }, usePointStyle: true, padding: 20 } },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
-                                    const label = context.label || '';
+                                    const datasetLabel = context.dataset.label || '';
+                                    const company = context.label || '';
                                     const value = context.raw || 0;
-                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-                                    return `${label}: ${value} correos (${percentage}%)`;
+                                    return `${company} (${datasetLabel}): ${value}`;
                                 }
                             }
                         }
@@ -2258,44 +2347,97 @@
             }
         }
 
-        function updateCharts() {
+        const OP_PALETTE = ['#3478f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316', '#14b8a6', '#6366f1'];
+        
+        let currentChartFilter = 'all';
+        function setChartFilter(filter) {
+            currentChartFilter = filter;
+            // Actualizar botones de ambos paneles
+            document.querySelectorAll('.chart-filter-btn').forEach(btn => btn.classList.remove('active'));
+            
+            const btn1 = document.getElementById(`btn-filter-${filter}`);
+            const btn2 = document.getElementById(`btn-filter-${filter}-2`);
+            
+            if (btn1) btn1.classList.add('active');
+            if (btn2) btn2.classList.add('active');
+            
+            updateCharts();
+        }
+
+        async function updateCharts() {
             if(!trendChart || !companyChart) return;
-            const trendMode = document.getElementById('trend-mode') ? document.getElementById('trend-mode').value : 'daily';
-            const filtered = getFilteredHilos();
-
-            if (trendMode === 'hourly') {
-                const labels = Array.from({ length: 24 }, (_, h) => `${String(h).padStart(2, '0')}:00`);
-                const hourCounts = new Array(24).fill(0);
-                const today = new Date().toISOString().split('T')[0];
-                filtered.forEach(h => {
-                    if (!h.fecha || !h.fecha.startsWith(today)) return;
-                    const dt = new Date(h.fecha);
-                    if (!Number.isNaN(dt.getTime())) hourCounts[dt.getHours()] += 1;
+            
+            try {
+                const res = await fetch(`${API_URL}/analytics/operators`, { 
+                    headers: {'Authorization': 'Bearer ' + token} 
                 });
-                trendChart.data.labels = labels;
-                trendChart.data.datasets[0].label = 'Tickets Hoy (por hora)';
-                trendChart.data.datasets[0].data = hourCounts;
-            } else {
-                const last7Days = [];
-                for (let i = 6; i >= 0; i--) {
-                    const d = new Date();
-                    d.setDate(d.getDate() - i);
-                    last7Days.push(d.toISOString().split('T')[0]);
+                const opData = await res.json();
+                
+                if (Array.isArray(opData)) {
+                    trendChart.data.labels = opData.map(d => d.operator.toUpperCase());
+                    
+                    // Asignar colores por operador
+                    const bgRecibidos = opData.map((d, i) => {
+                        if (d.operator === 'admin') return '#ef4444'; // Admin siempre rojo fuerte
+                        return OP_PALETTE[i % OP_PALETTE.length];
+                    });
+                    
+                    const bgEnviados = opData.map((d, i) => {
+                        if (d.operator === 'admin') return '#ef444488'; 
+                        return OP_PALETTE[i % OP_PALETTE.length] + '88'; // 88 es aprox 50% opacidad
+                    });
+
+                    trendChart.data.datasets[0].backgroundColor = bgRecibidos;
+                    trendChart.data.datasets[1].backgroundColor = bgEnviados;
+                    
+                    // Aplicar filtros de visualización
+                    if (currentChartFilter === 'received') {
+                        trendChart.data.datasets[0].hidden = false;
+                        trendChart.data.datasets[1].hidden = true;
+                    } else if (currentChartFilter === 'sent') {
+                        trendChart.data.datasets[0].hidden = true;
+                        trendChart.data.datasets[1].hidden = false;
+                    } else {
+                        trendChart.data.datasets[0].hidden = false;
+                        trendChart.data.datasets[1].hidden = false;
+                    }
+
+                    trendChart.data.datasets[0].data = opData.map(d => d.received);
+                    trendChart.data.datasets[1].data = opData.map(d => d.sent);
+                    trendChart.update();
                 }
-                trendChart.data.labels = last7Days.map(date => {
-                    const d = new Date(date + 'T00:00:00');
-                    return d.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' });
-                });
-                trendChart.data.datasets[0].label = 'Tickets Recibidos (7 días)';
-                trendChart.data.datasets[0].data = last7Days.map(date => filtered.filter(h => h.fecha && h.fecha.startsWith(date)).length);
+            } catch (e) {
+                console.error("Error updating trendChart:", e);
             }
-            trendChart.update();
 
-            const companyCounts = {};
-            filtered.forEach(h => { const company = h.cuenta_empresa || 'System'; companyCounts[company] = (companyCounts[company] || 0) + 1; });
-            companyChart.data.labels = Object.keys(companyCounts);
-            companyChart.data.datasets[0].data = Object.values(companyCounts);
-            companyChart.update();
+            try {
+                // Fetch Company Analytics
+                const resComp = await fetch(`${API_URL}/analytics/companies`, { 
+                    headers: {'Authorization': 'Bearer ' + token} 
+                });
+                const compData = await resComp.json();
+                
+                if (Array.isArray(compData)) {
+                    companyChart.data.labels = compData.map(d => d.company);
+                    
+                    // Aplicar filtros de visualización a la dona (usando setDatasetVisibility para mayor fiabilidad)
+                    companyChart.setDatasetVisibility(0, currentChartFilter !== 'sent');
+                    companyChart.setDatasetVisibility(1, currentChartFilter !== 'received');
+
+                    const compColors = compData.map((_, i) => OP_PALETTE[i % OP_PALETTE.length]);
+                    const compColorsSent = compData.map((_, i) => OP_PALETTE[i % OP_PALETTE.length] + '99');
+
+                    companyChart.data.datasets[0].data = compData.map(d => d.received);
+                    companyChart.data.datasets[0].backgroundColor = compColors;
+                    
+                    companyChart.data.datasets[1].data = compData.map(d => d.sent);
+                    companyChart.data.datasets[1].backgroundColor = compColorsSent;
+                    
+                    companyChart.update();
+                }
+            } catch (e) {
+                console.error("Error updating companyChart:", e);
+            }
         }
 
         async function updateStats() {

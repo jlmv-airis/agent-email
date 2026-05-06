@@ -254,6 +254,76 @@ def get_stats():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/analytics/operators', methods=['GET'])
+@token_required
+def get_operator_analytics():
+    """Estadísticas de enviados y recibidos por operador"""
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Obtener todos los operadores activos
+        cur.execute("SELECT username FROM usuarios WHERE activo = 1 AND rol IN ('admin', 'operador')")
+        operadores = [row['username'] for row in cur.fetchall()]
+        
+        results = []
+        for op in operadores:
+            # Enviados por este operador (donde de_operador = 1 y asignado_a = op)
+            cur.execute("SELECT COUNT(*) FROM hilos WHERE de_operador = 1 AND asignado_a = ?", (op,))
+            enviados = cur.fetchone()[0]
+            
+            # Recibidos/Asignados a este operador (donde de_operador = 0 y asignado_a = op)
+            cur.execute("SELECT COUNT(*) FROM hilos WHERE de_operador = 0 AND asignado_a = ?", (op,))
+            recibidos = cur.fetchone()[0]
+            
+            results.append({
+                'operator': op,
+                'sent': enviados,
+                'received': recibidos
+            })
+            
+        cur.close()
+        conn.close()
+        return jsonify(results)
+    except Exception as e:
+        logger.error(f"Error en get_operator_analytics: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/analytics/companies', methods=['GET'])
+@token_required
+def get_company_analytics():
+    """Estadísticas de enviados y recibidos por empresa"""
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Obtener todas las empresas
+        cur.execute("SELECT nombre FROM empresas WHERE activo = 1")
+        empresas = [row['nombre'] for row in cur.fetchall()]
+        
+        results = []
+        for emp in empresas:
+            # Recibidos (de_operador = 0)
+            cur.execute("SELECT COUNT(*) FROM hilos WHERE cuenta_empresa = ? AND de_operador = 0", (emp,))
+            recibidos = cur.fetchone()[0]
+            
+            # Enviados (de_operador = 1)
+            cur.execute("SELECT COUNT(*) FROM hilos WHERE cuenta_empresa = ? AND de_operador = 1", (emp,))
+            enviados = cur.fetchone()[0]
+            
+            results.append({
+                'company': emp,
+                'received': recibidos,
+                'sent': enviados
+            })
+            
+        cur.close()
+        conn.close()
+        return jsonify(results)
+    except Exception as e:
+        logger.error(f"Error en get_company_analytics: {e}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/hilos', methods=['GET'])
 @token_required
 def get_hilos():
@@ -1660,12 +1730,13 @@ def send_email():
                 cur.execute('''
                     INSERT INTO hilos (
                         thread_id, remitente, asunto, mensaje, cuenta_empresa, 
-                        correo_empresa, folder, fecha, estado_ticket, leido, de_operador
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        correo_empresa, folder, fecha, estado_ticket, leido, 
+                        de_operador, asignado_a
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''', (
                     new_tid, email_user, subject, body_html, empresa['nombre'], 
                     email_user, 'SENT', datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 
-                    'CERRADO', 1, 1
+                    'CERRADO', 1, 1, request.user.get('username')
                 ))
                 local_save = True
                 logger.info(f"✓ Correo guardado localmente: {new_tid}")
