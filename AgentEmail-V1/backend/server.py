@@ -25,6 +25,7 @@ from health import HealthChecker
 from database import db_manager
 from backup_manager import backup_manager
 from init_db import init_database, backup_before_migration
+from apscheduler.schedulers.background import BackgroundScheduler
 
 # Log de configuración cargada
 logger.info(f"🔧 Configuración cargada: ENVIRONMENT={config.ENVIRONMENT}, DEBUG={config.DEBUG}")
@@ -1516,13 +1517,24 @@ def get_envios_programados():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute("""
-            SELECT e.*, h.asunto as hilo_asunto, h.remitente as hilo_remitente
-            FROM envios_programados e
-            LEFT JOIN hilos h ON e.hilo_id = h.id
-            WHERE e.created_by = ? AND e.estado = 'pendiente'
-            ORDER BY e.fecha_programada ASC
-        """, (request.user['id'],))
+        user_id = request.user['id']
+        is_admin = request.user.get('rol') == 'admin'
+        if is_admin:
+            cur.execute("""
+                SELECT e.*, h.asunto as hilo_asunto, h.remitente as hilo_remitente
+                FROM envios_programados e
+                LEFT JOIN hilos h ON e.hilo_id = h.id
+                WHERE e.estado IN ('pendiente', 'enviando')
+                ORDER BY e.fecha_programada ASC
+            """)
+        else:
+            cur.execute("""
+                SELECT e.*, h.asunto as hilo_asunto, h.remitente as hilo_remitente
+                FROM envios_programados e
+                LEFT JOIN hilos h ON e.hilo_id = h.id
+                WHERE e.created_by = ? AND e.estado IN ('pendiente', 'enviando')
+                ORDER BY e.fecha_programada ASC
+            """, (user_id,))
         envios = [dict(row) for row in cur.fetchall()]
         cur.close()
         conn.close()
@@ -1536,28 +1548,91 @@ def create_envio_programado():
     data = request.json or {}
     hilo_id = data.get('hilo_id')
     destinatario = data.get('destinatario', '').strip()
+    cc = data.get('cc', '').strip()
+    bcc = data.get('bcc', '').strip()
     asunto = data.get('asunto', '').strip()
     cuerpo = data.get('cuerpo', '').strip()
+    cuenta_empresa = data.get('cuenta_empresa', '').strip()
+    email_user = data.get('email_user', '').strip()
     fecha_programada = data.get('fecha_programada', '').strip()
-    
+
     if not fecha_programada:
         return jsonify({'error': 'La fecha programada es requerida'}), 400
-    
+
+    try:
+        fp = datetime.fromisoformat(fecha_programada)
+        if fp <= datetime.now():
+            return jsonify({'error': 'La fecha programada debe ser futura'}), 400
+    except ValueError:
+        return jsonify({'error': 'Formato de fecha inválido'}), 400
+
     if not cuerpo and not asunto:
         return jsonify({'error': 'El cuerpo o asunto es requerido'}), 400
-    
+
     try:
         conn = get_db_connection()
         cur = conn.cursor()
         cur.execute("""
-            INSERT INTO envios_programados (hilo_id, destinatario, asunto, cuerpo, fecha_programada, created_by)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (hilo_id, destinatario, asunto, cuerpo, fecha_programada, request.user['id']))
+            INSERT INTO envios_programados (hilo_id, destinatario, cc, bcc, asunto, cuerpo,
+                                            cuenta_empresa, email_user, fecha_programada, created_by)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (hilo_id, destinatario, cc, bcc, asunto, cuerpo,
+              cuenta_empresa, email_user, fecha_programada, request.user['id']))
         envio_id = cur.lastrowid
         conn.commit()
         cur.close()
         conn.close()
+        logger.info(f"Correo programado #{envio_id} para {destinatario} el {fecha_programada}")
         return jsonify({'id': envio_id, 'status': 'scheduled'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/envios-programados/<int:envio_id>', methods=['PUT'])
+@token_required
+def update_envio_programado(envio_id):
+    data = request.json or {}
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM envios_programados WHERE id = ? AND created_by = ?",
+                    (envio_id, request.user['id']))
+        existing = cur.fetchone()
+        if not existing:
+            return jsonify({'error': 'Programación no encontrada'}), 404
+        if existing['estado'] != 'pendiente':
+            return jsonify({'error': 'Solo se puede editar en estado pendiente'}), 400
+
+        destinatario = data.get('destinatario', existing['destinatario']).strip()
+        cc = data.get('cc', existing['cc'] or '').strip()
+        bcc = data.get('bcc', existing['bcc'] or '').strip()
+        asunto = data.get('asunto', existing['asunto']).strip()
+        cuerpo = data.get('cuerpo', existing['cuerpo']).strip()
+        cuenta_empresa = data.get('cuenta_empresa', existing['cuenta_empresa'] or '').strip()
+        email_user = data.get('email_user', existing['email_user'] or '').strip()
+        fecha_programada = data.get('fecha_programada', existing['fecha_programada']).strip()
+
+        if fecha_programada:
+            try:
+                fp = datetime.fromisoformat(fecha_programada)
+                if fp <= datetime.now():
+                    return jsonify({'error': 'La fecha programada debe ser futura'}), 400
+            except ValueError:
+                return jsonify({'error': 'Formato de fecha inválido'}), 400
+
+        cur.execute("""
+            UPDATE envios_programados SET
+                destinatario = ?, cc = ?, bcc = ?, asunto = ?, cuerpo = ?,
+                cuenta_empresa = ?, email_user = ?, fecha_programada = ?,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ? AND created_by = ?
+        """, (destinatario, cc, bcc, asunto, cuerpo,
+              cuenta_empresa, email_user, fecha_programada,
+              envio_id, request.user['id']))
+        conn.commit()
+        cur.close()
+        conn.close()
+        logger.info(f"Correo programado #{envio_id} actualizado")
+        return jsonify({'id': envio_id, 'status': 'updated'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -1567,13 +1642,204 @@ def delete_envio_programado(envio_id):
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute("DELETE FROM envios_programados WHERE id = ? AND created_by = ?", (envio_id, request.user['id']))
+        cur.execute("""
+            UPDATE envios_programados SET estado = 'cancelado', updated_at = CURRENT_TIMESTAMP
+            WHERE id = ? AND created_by = ?
+        """, (envio_id, request.user['id']))
         conn.commit()
         cur.close()
         conn.close()
-        return jsonify({'status': 'deleted'})
+        logger.info(f"Correo programado #{envio_id} cancelado")
+        return jsonify({'status': 'cancelled'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/envios-programados/<int:envio_id>/enviar', methods=['PUT'])
+@token_required
+def mark_envio_enviado(envio_id):
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            UPDATE envios_programados SET estado = 'enviado', updated_at = CURRENT_TIMESTAMP
+            WHERE id = ? AND estado = 'pendiente'
+        """, (envio_id,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        logger.info(f"Correo programado #{envio_id} marcado como enviado")
+        return jsonify({'status': 'sent'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ==================== SCHEDULER ====================
+
+def execute_scheduled_send_smtp(envio_id, envio_data):
+    import smtplib as smtp_lib
+    from email.mime.text import MIMEText as MT
+    from email.mime.multipart import MIMEMultipart as MM
+    from email.utils import formatdate, make_msgid
+    import re as re_mod
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("SELECT estado FROM envios_programados WHERE id = ?", (envio_id,))
+        row = cur.fetchone()
+        if not row or row['estado'] != 'pendiente':
+            return
+
+        cur.execute("UPDATE envios_programados SET estado = 'enviando' WHERE id = ?", (envio_id,))
+        conn.commit()
+
+        to_email = envio_data['destinatario']
+        cc_email = envio_data.get('cc', '')
+        bcc_email = envio_data.get('bcc', '')
+        subject = envio_data['asunto'] or ''
+        body_html = envio_data['cuerpo'] or ''
+        correo_empresa = envio_data.get('cuenta_empresa', '')
+        email_user = envio_data.get('email_user', '')
+
+        if not email_user:
+            cur.execute("""
+                SELECT e.* FROM empresas e
+                JOIN hilos h ON h.correo_empresa = e.email_user
+                WHERE h.id = ?
+            """, (envio_data.get('hilo_id'),))
+            emp_row = cur.fetchone()
+            if not emp_row:
+                cur.execute("SELECT * FROM empresas LIMIT 1")
+                emp_row = cur.fetchone()
+            empresa_data = dict(emp_row) if emp_row else None
+        else:
+            cur.execute("SELECT * FROM empresas WHERE email_user = ?", (email_user,))
+            emp_row = cur.fetchone()
+            empresa_data = dict(emp_row) if emp_row else None
+
+        if not empresa_data or not empresa_data.get('smtp_host'):
+            logger.warning(f"SCHEDULER #{envio_id}: Sin credenciales SMTP, simulando envío")
+            cur.execute("UPDATE envios_programados SET estado = 'enviado' WHERE id = ?", (envio_id,))
+            conn.commit()
+            cur.close()
+            conn.close()
+            return
+
+        smtp_host = empresa_data['smtp_host']
+        smtp_port = int(empresa_data.get('smtp_port', 465))
+        email_user = empresa_data['email_user']
+        email_pass_dec = decrypt_password(empresa_data['email_pass'])
+
+        msg = MM('alternative')
+        msg['Subject'] = subject
+        msg['From'] = f"{empresa_data.get('nombre', '')} <{email_user}>"
+        msg['To'] = to_email
+        if cc_email:
+            msg['Cc'] = cc_email
+        msg['Date'] = formatdate(localtime=True)
+        msg['Message-ID'] = make_msgid(domain=smtp_host)
+        msg['Reply-To'] = email_user
+        if envio_data.get('hilo_id'):
+            msg['In-Reply-To'] = str(envio_data['hilo_id'])
+            msg['References'] = str(envio_data['hilo_id'])
+        msg.attach(MT(body_html, 'html'))
+
+        recipients = [x.strip() for x in to_email.split(',') if x.strip()]
+        if cc_email:
+            recipients.extend([x.strip() for x in cc_email.split(',') if x.strip()])
+        if bcc_email:
+            recipients.extend([x.strip() for x in bcc_email.split(',') if x.strip()])
+
+        if smtp_port == 465:
+            server = smtp_lib.SMTP_SSL(smtp_host, smtp_port, timeout=30)
+        else:
+            server = smtp_lib.SMTP(smtp_host, smtp_port, timeout=30)
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+
+        server.login(email_user, email_pass_dec)
+        server.sendmail(email_user, recipients, msg.as_string())
+        server.quit()
+
+        try:
+            sent_folder_options = [
+                'Sent', 'Sent Messages', 'Sent Mail', 'Enviados',
+                '[Gmail]/Sent Mail', 'INBOX.Sent', 'Sent Items',
+                'INBOX.Sent Messages', '.Sent', 'SentMessage'
+            ]
+            with imap_tools.MailBox(
+                empresa_data.get('imap_host', smtp_host),
+                port=int(empresa_data.get('imap_port', 993))
+            ).login(email_user, email_pass_dec) as mailbox:
+                existing = [f.name for f in mailbox.folder.list()]
+                target = next((f for f in sent_folder_options if f in existing), 'INBOX')
+                mailbox.append(msg.as_bytes(), target)
+        except Exception:
+            pass
+
+        try:
+            raw_id = msg['Message-ID'].strip('<>')
+            new_tid = f"sched_{raw_id}"
+            cur.execute('''
+                INSERT INTO hilos (
+                    thread_id, remitente, asunto, mensaje, cuenta_empresa,
+                    correo_empresa, folder, fecha, estado_ticket, leido, de_operador
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                new_tid, email_user, subject, body_html,
+                empresa_data.get('nombre', ''), email_user,
+                'SENT', datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'CERRADO', 1, 1
+            ))
+        except Exception:
+            pass
+
+        cur.execute("UPDATE envios_programados SET estado = 'enviado', updated_at = CURRENT_TIMESTAMP WHERE id = ?", (envio_id,))
+        conn.commit()
+        logger.info(f"SCHEDULER: Correo #{envio_id} enviado exitosamente a {to_email}")
+
+    except smtp_lib.SMTPAuthenticationError as auth_err:
+        cur.execute("UPDATE envios_programados SET estado = 'pendiente' WHERE id = ?", (envio_id,))
+        conn.commit()
+        logger.error(f"SCHEDULER #{envio_id}: Error de autenticación SMTP: {auth_err}")
+    except smtp_lib.SMTPRecipientsRefused as ref_err:
+        cur.execute("UPDATE envios_programados SET estado = 'pendiente' WHERE id = ?", (envio_id,))
+        conn.commit()
+        logger.error(f"SCHEDULER #{envio_id}: Destinatario rechazado: {ref_err}")
+    except Exception as e:
+        cur.execute("UPDATE envios_programados SET estado = 'pendiente' WHERE id = ?", (envio_id,))
+        conn.commit()
+        logger.error(f"SCHEDULER #{envio_id}: Error de envío: {e}")
+    finally:
+        cur.close()
+        conn.close()
+
+
+def check_pending_scheduled():
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        cur.execute("""
+            SELECT * FROM envios_programados
+            WHERE estado = 'pendiente' AND fecha_programada <= ?
+            ORDER BY fecha_programada ASC
+        """, (now_str,))
+        pending = [dict(row) for row in cur.fetchall()]
+        cur.close()
+        conn.close()
+        for envio in pending:
+            logger.info(f"SCHEDULER: Ejecutando correo programado #{envio['id']} - {envio['destinatario']}")
+            execute_scheduled_send_smtp(envio['id'], envio)
+    except Exception as e:
+        logger.error(f"SCHEDULER: Error en verificación: {e}")
+
+
+scheduler = BackgroundScheduler(daemon=True)
+scheduler.add_job(check_pending_scheduled, 'interval', seconds=30, id='check_scheduled')
+scheduler.start()
+logger.info("✅ Scheduler de correos programados iniciado (cada 30s)")
 
 # ==================== SMTP SEND ====================
 import smtplib
