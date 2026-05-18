@@ -2590,9 +2590,10 @@
             const opDash = document.getElementById('operator-dashboard');
             const adminCharts = document.getElementById('admin-charts');
             
-            // Mostrar analytics/stats solo en INBOX
-            if (opDash) opDash.classList.toggle('hidden', !isInbox);
-            if (adminCharts) adminCharts.classList.toggle('hidden', !isInbox);
+            // Mostrar analytics/stats solo en Bandeja General (sin empresa seleccionada)
+            const showAnalytics = isInbox && !activeCompany;
+            if (opDash) opDash.classList.toggle('hidden', !showAnalytics);
+            if (adminCharts) adminCharts.classList.toggle('hidden', !showAnalytics);
             
             // Mostrar acciones según el folder
             if (isTrash) {
