@@ -3944,7 +3944,7 @@ function updateInspectorActions(folder) {
         }
 
         async function loadScheduled() {
-            const container = document.getElementById('thread-container');
+            const container = document.getElementById('thread-list');
             try {
                 const res = await fetch(`${API_URL}/envios-programados`, {
                     headers: { 'Authorization': 'Bearer ' + token }
@@ -3992,7 +3992,7 @@ function updateInspectorActions(folder) {
                     showToast('No se encontró el correo programado', 'error');
                     return;
                 }
-                const container = document.getElementById('thread-container');
+                const container = document.getElementById('thread-list');
                 const cuerpoHtml = (s.cuerpo || '').replace(/`/g, '\\`').replace(/\${/g, '\\${');
                 const estadoClass = s.estado === 'pendiente' ? 'bg-amber-500/20 text-amber-400' : 'bg-blue-500/20 text-blue-400';
                 const estadoText = s.estado === 'pendiente' ? '⏳ Pendiente' : '🔄 Enviando...';
