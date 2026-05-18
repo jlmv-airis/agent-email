@@ -1560,8 +1560,8 @@ def create_envio_programado():
         return jsonify({'error': 'La fecha programada es requerida'}), 400
 
     try:
-        fp = datetime.fromisoformat(fecha_programada)
-        if fp <= datetime.now():
+        fp = datetime.fromisoformat(fecha_programada.replace('Z', '+00:00'))
+        if fp <= datetime.now(fp.tzinfo or None):
             return jsonify({'error': 'La fecha programada debe ser futura'}), 400
     except ValueError:
         return jsonify({'error': 'Formato de fecha inválido'}), 400
@@ -1613,8 +1613,8 @@ def update_envio_programado(envio_id):
 
         if fecha_programada:
             try:
-                fp = datetime.fromisoformat(fecha_programada)
-                if fp <= datetime.now():
+                fp = datetime.fromisoformat(fecha_programada.replace('Z', '+00:00'))
+                if fp <= datetime.now(fp.tzinfo or None):
                     return jsonify({'error': 'La fecha programada debe ser futura'}), 400
             except ValueError:
                 return jsonify({'error': 'Formato de fecha inválido'}), 400
@@ -1743,6 +1743,7 @@ def execute_scheduled_send_smtp(envio_id, envio_data):
             msg['In-Reply-To'] = str(envio_data['hilo_id'])
             msg['References'] = str(envio_data['hilo_id'])
         msg.attach(MT(body_html, 'html'))
+        now_utc = datetime.now(datetime.timezone.utc)
 
         recipients = [x.strip() for x in to_email.split(',') if x.strip()]
         if cc_email:
@@ -1789,7 +1790,7 @@ def execute_scheduled_send_smtp(envio_id, envio_data):
             ''', (
                 new_tid, email_user, subject, body_html,
                 empresa_data.get('nombre', ''), email_user,
-                'SENT', datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'SENT', now_utc.strftime('%Y-%m-%d %H:%M:%S'),
                 'CERRADO', 1, 1
             ))
         except Exception:
@@ -1820,7 +1821,7 @@ def check_pending_scheduled():
     try:
         conn = get_db_connection()
         cur = conn.cursor()
-        now_str = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        now_str = datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
         cur.execute("""
             SELECT * FROM envios_programados
             WHERE estado = 'pendiente' AND fecha_programada <= ?
