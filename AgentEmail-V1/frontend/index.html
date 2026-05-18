@@ -3928,11 +3928,12 @@ function updateInspectorActions(folder) {
                 });
                 if (res.ok) {
                     toggleScheduleModal(false);
-                    showToast(editingScheduledId ? 'Correo reprogramado' : 'Correo programado para ' + new Date(dt).toLocaleString(), 'success');
+                    closeResponseModal();
+                    closeInspector();
+                    showToast(editingScheduledId ? 'Correo reprogramado' : 'Correo programado', 'success');
                     editingScheduledId = null;
-                    if (activeFolder === 'SCHEDULED') await loadScheduled();
-                    await loadFolderCounts();
-                    renderSidebar();
+                    currentDraftId = null;
+                    await selectFolder('INBOX');
                 } else {
                     const err = await res.json();
                     showToast(err.error || 'Error al programar', 'error');
@@ -3985,32 +3986,46 @@ function updateInspectorActions(folder) {
         }
 
         async function openScheduled(envioId) {
-            const s = scheduledData.find(x => x.id === envioId);
-            if (!s) return;
-            const container = document.getElementById('thread-container');
-            container.innerHTML = `
-                <div class="p-6 border-b border-white/10">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-lg font-bold text-white">${s.asunto || 'Sin asunto'}</h2>
-                        <span class="text-[11px] px-3 py-1 rounded-full ${s.estado === 'pendiente' ? 'bg-amber-500/20 text-amber-400' : 'bg-blue-500/20 text-blue-400'} font-bold">${s.estado === 'pendiente' ? '⏳ Pendiente' : '🔄 Enviando...'}</span>
-                    </div>
-                    <div class="space-y-2 text-sm text-slate-400">
-                        <p><span class="text-slate-500 font-bold">Para:</span> ${s.destinatario}</p>
-                        ${s.cc ? `<p><span class="text-slate-500 font-bold">CC:</span> ${s.cc}</p>` : ''}
-                        ${s.bcc ? `<p><span class="text-slate-500 font-bold">CCO:</span> ${s.bcc}</p>` : ''}
-                        <p><span class="text-slate-500 font-bold">Programado:</span> ${new Date(s.fecha_programada).toLocaleString()}</p>
-                        <p><span class="text-slate-500 font-bold">Creado:</span> ${new Date(s.created_at).toLocaleString()}</p>
-                    </div>
-                </div>
-                <div class="p-6 text-sm text-slate-300 leading-relaxed overflow-y-auto flex-1">
-                    ${s.cuerpo || 'Sin contenido'}
-                </div>
-                <div class="p-4 border-t border-white/10 flex gap-3">
-                    <button onclick="editScheduled(${s.id})" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-full text-sm font-bold transition-colors">✏️ Editar</button>
-                    <button onclick="cancelScheduled(${s.id})" class="px-5 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-full text-sm font-bold transition-colors">🗑️ Cancelar envío</button>
-                    <button onclick="selectFolder('SCHEDULED')" class="px-5 py-2 bg-white/5 hover:bg-white/10 text-slate-300 rounded-full text-sm font-bold transition-colors">⬅ Volver</button>
-                </div>
-            `;
+            try {
+                const s = scheduledData.find(x => x.id === envioId);
+                if (!s) {
+                    showToast('No se encontró el correo programado', 'error');
+                    return;
+                }
+                const container = document.getElementById('thread-container');
+                const cuerpoHtml = (s.cuerpo || '').replace(/`/g, '\\`').replace(/\${/g, '\\${');
+                const estadoClass = s.estado === 'pendiente' ? 'bg-amber-500/20 text-amber-400' : 'bg-blue-500/20 text-blue-400';
+                const estadoText = s.estado === 'pendiente' ? '⏳ Pendiente' : '🔄 Enviando...';
+                const ccHtml = s.cc ? `<p><span class="text-slate-500 font-bold">CC:</span> ${s.cc.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : '';
+                const bccHtml = s.bcc ? `<p><span class="text-slate-500 font-bold">CCO:</span> ${s.bcc.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : '';
+                const fechaProg = s.fecha_programada ? new Date(s.fecha_programada).toLocaleString() : '—';
+                const fechaCreado = s.created_at ? new Date(s.created_at).toLocaleString() : '—';
+                container.innerHTML =
+                    '<div class="p-6 border-b border-white/10">' +
+                        '<div class="flex items-center justify-between mb-4">' +
+                            '<h2 class="text-lg font-bold text-white">' + (s.asunto || 'Sin asunto').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</h2>' +
+                            '<span class="text-[11px] px-3 py-1 rounded-full ' + estadoClass + ' font-bold">' + estadoText + '</span>' +
+                        '</div>' +
+                        '<div class="space-y-2 text-sm text-slate-400">' +
+                            '<p><span class="text-slate-500 font-bold">Para:</span> ' + (s.destinatario || '').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</p>' +
+                            ccHtml +
+                            bccHtml +
+                            '<p><span class="text-slate-500 font-bold">Programado:</span> ' + fechaProg + '</p>' +
+                            '<p><span class="text-slate-500 font-bold">Creado:</span> ' + fechaCreado + '</p>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="p-6 text-sm text-slate-300 leading-relaxed overflow-y-auto flex-1">' +
+                        cuerpoHtml +
+                    '</div>' +
+                    '<div class="p-4 border-t border-white/10 flex gap-3">' +
+                        '<button onclick="editScheduled(' + s.id + ')" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-full text-sm font-bold transition-colors">✏️ Editar</button>' +
+                        '<button onclick="cancelScheduled(' + s.id + ')" class="px-5 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-full text-sm font-bold transition-colors">🗑️ Cancelar envío</button>' +
+                        '<button onclick="selectFolder(\'SCHEDULED\')" class="px-5 py-2 bg-white/5 hover:bg-white/10 text-slate-300 rounded-full text-sm font-bold transition-colors">⬅ Volver</button>' +
+                    '</div>';
+            } catch(e) {
+                console.error('Error en openScheduled:', e);
+                showToast('Error al mostrar detalle', 'error');
+            }
         }
 
         async function cancelScheduled(envioId) {
