@@ -1552,9 +1552,6 @@
                 </div>
 
                 <!-- Barra de acciones rápida para TRASH (siempre visible cuando está en TRASH) -->
-                <div id="trash-quick-actions" class="hidden flex items-center justify-between mb-4 bg-amber-500/10 border border-amber-500/20 px-6 py-3 rounded-2xl">
-                </div>
-
                 <div id="thread-list"></div>
 
                 <!-- FOOTER DEL SISTEMA -->
@@ -2584,7 +2581,6 @@
             const isInbox = folder === 'INBOX';
             const isTrash = folder === 'TRASH';
             const trashActions = document.getElementById('bulk-trash-actions');
-            const trashQuickActions = document.getElementById('trash-quick-actions');
             const standardActions = document.getElementById('bulk-standard-actions');
             const deleteContainer = document.getElementById('bulk-delete-container');
             const opDash = document.getElementById('operator-dashboard');
@@ -2598,12 +2594,10 @@
             // Mostrar acciones según el folder
             if (isTrash) {
                 if (trashActions) trashActions.classList.remove('hidden');
-                if (trashQuickActions) trashQuickActions.classList.remove('hidden');
                 if (standardActions) standardActions.classList.add('hidden');
                 if (deleteContainer) deleteContainer.classList.add('hidden');
             } else {
                 if (trashActions) trashActions.classList.add('hidden');
-                if (trashQuickActions) trashQuickActions.classList.add('hidden');
                 if (standardActions) standardActions.classList.remove('hidden');
                 if (deleteContainer) deleteContainer.classList.remove('hidden');
             }
