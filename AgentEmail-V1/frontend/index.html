@@ -2581,8 +2581,8 @@
         }
 
         function updateUIForFolder(folder) {
+            const isInbox = folder === 'INBOX';
             const isTrash = folder === 'TRASH';
-            const isScheduled = folder === 'SCHEDULED';
             const trashActions = document.getElementById('bulk-trash-actions');
             const trashQuickActions = document.getElementById('trash-quick-actions');
             const standardActions = document.getElementById('bulk-standard-actions');
@@ -2590,14 +2590,9 @@
             const opDash = document.getElementById('operator-dashboard');
             const adminCharts = document.getElementById('admin-charts');
             
-            // Mostrar/ocultar analytics y stats
-            if (isScheduled) {
-                if (opDash) opDash.classList.add('hidden');
-                if (adminCharts) adminCharts.classList.add('hidden');
-            } else {
-                if (opDash) opDash.classList.remove('hidden');
-                if (adminCharts) adminCharts.classList.remove('hidden');
-            }
+            // Mostrar analytics/stats solo en INBOX
+            if (opDash) opDash.classList.toggle('hidden', !isInbox);
+            if (adminCharts) adminCharts.classList.toggle('hidden', !isInbox);
             
             // Mostrar acciones según el folder
             if (isTrash) {
