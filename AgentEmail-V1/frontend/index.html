@@ -2152,7 +2152,7 @@
             await loadOperators();
             restoreFilterState();
             applyFilters();
-            setInterval(() => loadData(activeFolder, true), 30000);
+            setInterval(() => { if (activeFolder !== 'SCHEDULED') loadData(activeFolder, true); }, 30000);
         }
 
         function setupResizer() {
@@ -2582,10 +2582,22 @@
 
         function updateUIForFolder(folder) {
             const isTrash = folder === 'TRASH';
+            const isScheduled = folder === 'SCHEDULED';
             const trashActions = document.getElementById('bulk-trash-actions');
             const trashQuickActions = document.getElementById('trash-quick-actions');
             const standardActions = document.getElementById('bulk-standard-actions');
             const deleteContainer = document.getElementById('bulk-delete-container');
+            const opDash = document.getElementById('operator-dashboard');
+            const adminCharts = document.getElementById('admin-charts');
+            
+            // Mostrar/ocultar analytics y stats
+            if (isScheduled) {
+                if (opDash) opDash.classList.add('hidden');
+                if (adminCharts) adminCharts.classList.add('hidden');
+            } else {
+                if (opDash) opDash.classList.remove('hidden');
+                if (adminCharts) adminCharts.classList.remove('hidden');
+            }
             
             // Mostrar acciones según el folder
             if (isTrash) {
@@ -4049,30 +4061,40 @@ function updateInspectorActions(folder) {
         }
 
         async function editScheduled(envioId) {
-            const s = scheduledData.find(x => x.id === envioId);
-            if (!s) return;
-            const m = hilos.find(h => h.id === s.hilo_id);
-            if (m) {
-                currentTid = m.thread_id;
-                renderThreads();
-            }
-            document.getElementById('response-modal').classList.remove('hidden');
-            document.getElementById('response-to').value = s.destinatario || '';
-            document.getElementById('response-cc').value = s.cc || '';
-            document.getElementById('response-bcc').value = s.bcc || '';
-            document.getElementById('response-subject').value = s.asunto || '';
-            document.getElementById('response-body').innerHTML = s.cuerpo || '';
-            document.getElementById('response-from').innerText = currentUser.email || 'admin@airis.com';
-            editingScheduledId = s.id;
-            toggleScheduleModal(true);
-            document.getElementById('schedule-preview-subject').textContent = s.asunto || 'Sin asunto';
-            document.getElementById('schedule-preview-to').textContent = 'Para: ' + (s.destinatario || 'Sin destinatario');
             try {
-                const d = new Date(s.fecha_programada);
-                const localStr = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-                document.getElementById('schedule-datetime').value = localStr;
-            } catch (e) {}
-            showToast('Editando correo programado', 'success');
+                const res = await fetch(`${API_URL}/envios-programados`, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) { showToast('Error al obtener datos', 'error'); return; }
+                const allData = await res.json();
+                scheduledData = allData;
+                const s = allData.find(x => x.id === envioId);
+                if (!s) { showToast('Correo no encontrado', 'error'); return; }
+
+                const m = hilos.find(h => h.id === s.hilo_id);
+                if (m) {
+                    currentTid = m.thread_id;
+                    renderThreads();
+                }
+                document.getElementById('response-modal').classList.remove('hidden');
+                document.getElementById('response-to').value = s.destinatario || '';
+                document.getElementById('response-cc').value = s.cc || '';
+                document.getElementById('response-bcc').value = s.bcc || '';
+                document.getElementById('response-subject').value = s.asunto || '';
+                document.getElementById('response-body').innerHTML = s.cuerpo || '';
+                document.getElementById('response-from').innerText = currentUser.email || 'admin@airis.com';
+                editingScheduledId = s.id;
+                toggleScheduleModal(true);
+                document.getElementById('schedule-preview-subject').textContent = s.asunto || 'Sin asunto';
+                document.getElementById('schedule-preview-to').textContent = 'Para: ' + (s.destinatario || 'Sin destinatario');
+                try {
+                    const d = new Date(s.fecha_programada);
+                    const localStr = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+                    document.getElementById('schedule-datetime').value = localStr;
+                } catch (e) {}
+            } catch (e) {
+                showToast('Error al editar programado', 'error');
+            }
         }
 
         function toggleScheduledModal(show) {
