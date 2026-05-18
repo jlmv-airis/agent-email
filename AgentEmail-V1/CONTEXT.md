@@ -47,7 +47,8 @@ AgentEmail-V1/
 ├── docs/
 │   ├── plan/
 │   │   ├── v1.1.20-plan.md     # Historial
-│   │   └── v1.1.21-plan.md     # Plan actual
+│   │   ├── v1.1.21-plan.md     # Historial
+│   │   └── v1.1.22-plan.md     # Plan actual
 │   └── referencia/
 │       └── seguridad-auditoria.md
 ├── backend/
@@ -215,11 +216,14 @@ powershell -ExecutionPolicy Bypass -File scripts/INICIAR-SISTEMA.ps1
 ---
 
 **Última actualización:** 18 de mayo de 2026  
-**Versión:** V1.1.21  
-**Rama activa:** v1.1.21  
+**Versión:** V1.1.22  
+**Rama activa:** v1.1.22  
 **Tema:** Solo oscuro (dark mode)
 
 ### Registro de Versiones (Historial Reciente)
+- **v1.1.22**: Agregadas 8 nuevas cuentas IMAP y ocultado scrollbar del sidebar. ✅
+  - Cambios: Nuevas cuentas (PushLine, Iron Inmobiliaria, Edificadora Peralta, Publicidad Rocha, Vintte, CIO Publicidad, Eventos FT, Inbox MD), scrollbar oculto en sidebar.
+  - Estado: Estable.
 - **v1.1.21**: Implementación de programación de correos (Send Later) estilo Gmail con APScheduler. ✅
   - Cambios: Nuevos endpoints CRUD para programados, scheduler automático, UI con carpeta y modales.
   - Estado: Estable.
