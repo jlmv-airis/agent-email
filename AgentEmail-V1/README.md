@@ -1,101 +1,119 @@
-# 📧 Agent Email AIRIS - Versión V1.0.16
+# 📧 Agent Email AIRIS V1.1.21
 
-Este es el sistema SaaS unificado de gestión de correos electrónicos. Se ha refactorizado para eliminar dependencias externas (como n8n) y utilizar una arquitectura limpia de **Python (Flask) + SQLite**.
+Sistema SaaS de gestión de correos electrónicos estilo Gmail con inteligencia artificial integrada. Arquitectura **Python (Flask) + SQLite + JavaScript vanilla**.
 
-## 📌 Estado Actual del Proyecto
-- **Versión:** V1.0.16
-- **Acceso:** [http://localhost:8000](http://localhost:8000) (Se requiere login).
-- **Flujo:** Login ➔ Redirección a Dashboard (index.html).
+## 📌 Estado Actual
 
-## 📁 Estructura de Archivos
-- `/backend`: Servidor Flask (`server.py`) y llave de cifrado (`.key`).
-- `/frontend`: Interfaz de usuario (`login.html` e `index.html`).
-- `/database`: Base de datos local SQLite (`agent_email.db`).
-- `/logs`: Archivos de log del sistema.
+- **Versión:** V1.1.21
+- **Acceso:** [http://localhost:8000](http://localhost:8000)
+- **Credenciales:** `admin@airis.com` / `admin123`
 
-## 🔐 Credenciales por Defecto
-- **Email:** `admin@airis.com`
-- **Contraseña:** `admin`
+## 🚀 Inicio Rápido
 
-## 🚀 Cómo Iniciar el Sistema
-
-### Opción 1: Script de PowerShell (Recomendado)
 ```powershell
-.\INICIAR-SISTEMA.ps1
+# Windows (PowerShell)
+powershell -ExecutionPolicy Bypass -File .\INICIAR-SISTEMA.ps1
+
+# Manual
+cd AgentEmail-V1
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python backend\server.py
 ```
 
-### Opción 2: Manual
 ```bash
-cd backend
-python server.py
+# macOS / Linux
+source .venv/bin/activate
+pip install -r requirements.txt
+python backend/server.py
 ```
-Luego accede a: http://localhost:8000
 
-## ✨ Características Implementadas (V1.0.16)
+## ✨ Características
 
-### 🖥️ Interfaz de Usuario
-- [x] **Dashboard Estilo Gmail:** Panel de correos con diseño moderno similar a Gmail
-- [x] **Inspector de Correos:** Vista detallada del correo con estilo Gmail (De, Para, Fecha)
-- [x] **Gestión de Cc y Cco (BCC):** Modal de respuesta con campos editables y soporte multi-destinatario.
-- [x] **Sidebar con Empresas:** Navegación por buzones de empresas
-- [x] **Gráficos de Tendencias:** Estadísticas visuales de tickets
-- [x] **Gestión de Adjuntos:** Barra visual de archivos adjuntos con eliminación individual y previsualización.
-- [x] **UI de Operador Simplificada:** Interfaz limpia que oculta controles de gestión para operadores.
-- [x] **Mensajes de Confirmación:** Al enviar, responder o borrar correos se muestra resultado detallado.
+### 🖥️ Dashboard
+- [x] Interfaz estilo Gmail con modo oscuro
+- [x] Inspector de correos con vista detallada
+- [x] Sidebar multi-empresa con carpetas (Entrada, Enviados, Borradores, Programados, Papelera, Spam)
+- [x] Contadores por carpeta en tiempo real
+- [x] Editor de respuesta con CC/CCO y formato de texto
+- [x] Bandeja de borradores con autoguardado (2s)
+- [x] Gráficos de analytics por operador y empresa
+- [x] Búsqueda global con debounce
+- [x] Gestión de adjuntos con previsualización
 
-### 📧 Gestión de Correos
-- [x] **Sincronización IMAP:** Sincronización transparente de correos de múltiples cuentas
-- [x] **Copia Automática en Enviados:** Al enviar, se guarda copia en carpeta Enviados del servidor webmail
-- [x] **Entregabilidad Optimizada (SMTP):** Cabeceras profesionales (`Message-ID`, `Date`, `Reply-To`)
-- [x] **Soporte Multi-correo:** Envío a múltiples destinatarios separados por comas.
-- [x] **Estados Automáticos:** Pendiente → Asignado → Respondido → Cerrado
-- [x] **Bandeja de Borradores:** Autoguardado silencioso del editor
-- [x] **Papelera Local y Webmail:** Al borrar se mueve a Trash en ambos sistemas
-- [x] **Control de Errores:** Mensaje detallado si el destinatario no existe o buzón lleno
+### 📧 Correos Programados (Nuevo en v1.1.21)
+- [x] **Programar envío:** Botón "Programar" junto a "Enviar" con selector de fecha/hora
+- [x] **Carpeta Programados:** Visualización en sidebar con contador
+- [x] **Cancelar:** Soft-delete con confirmación
+- [x] **Editar:** Modificar contenido, destinatario, CC, fecha antes del envío
+- [x] **Envío automático:** APScheduler con polling cada 30s
+- [x] **Modal de listado:** Todos los programados en un solo vistazo
 
-### 🤖 Inteligencia Artificial (Engine 3.1)
-- [x] **Cascada Inteligente de IA:** Soporte dinámico para **Gemini 3.1 Pro**, **Gemini 2.5 Flash** y **Gemini 1.5 Flash**.
-- [x] **Identificación de Modelos por Llave:** Soporte para llaves `AQ.` y `AIzaSy` con detección automática.
+### 📬 Gestión de Correos
+- [x] Sincronización IMAP multi-cuenta
+- [x] Envío SMTP con SSL/STARTTLS
+- [x] Copia en carpeta Enviados del servidor (Sent Mail)
+- [x] Cabeceras profesionales (Message-ID, Date, Reply-To, In-Reply-To)
+- [x] Estados de tickets: Pendiente → Asignado → Respondido → Cerrado
+- [x] Papelera local y remota (IMAP Trash)
+
+### 🤖 Inteligencia Artificial
+- [x] Cascada de modelos Gemini (Pro, Flash, 1.5 Flash)
+- [x] Detección automática de API Key (prefijo `AQ.` o `AIzaSy`)
+- [x] Autocompletar respuestas desde el editor
 
 ### ⚙️ Administración
-- [x] **Gestión de Colaboradores:** Crear/editar/eliminar operadores
-- [x] **Gestión de Empresas:** Agregar cuentas de correo IMAP
-- [x] **Cifrado AES de Credenciales:** Seguridad mediante llave `.key` local.
-- [x] **Actualización de Contadores:** Se actualizan automáticamente después de acciones en masivo
+- [x] CRUD de operadores y empresas
+- [x] Cifrado Fernet (AES) de credenciales IMAP
+- [x] Backups automáticos y manuales con retención
+- [x] Seguridad: JWT, CSP headers, rate limiting, validación de inputs
 
-### 🎨 Mejoras Visuales Recientes
-- [x] Botón Eliminar con estilo Gmail (solo icono)
-- [x] Línea divisoria entre header y cuerpo del mensaje
-- [x] "PARA:" en negrita color oscuro
-- [x] Botón de eliminar en barra de acciones inferiores
+## 🔧 Configuración IA
 
-## 🔧 Configuración de API de IA
-
-Para habilitar la generación automática de respuestas:
-
-1. Obtén una API Key de **Google Gemini** en: https://aistudio.google.com/app/apikey
-2. Abre **⚙️ Configuración** en el panel
-3. En la sección "Configuración IA", ingresa tu API Key
-4. Guarda y verifica que el estado muestre "API Key funcionando"
+1. Obtén API Key en https://aistudio.google.com/app/apikey
+2. Ve a ⚙️ Configuración → Sección IA
+3. Ingresa la API Key y guarda
 
 ## 📊 Estados de Tickets
 
 | Estado | Descripción |
 |--------|-------------|
 | ⏳ Pendiente | Correo nuevo, sin asignar |
-| 🔄 En Proceso | Asignado a un operador |
-| ✅ Respondido | Operator ha respondido |
+| 🔄 Asignado | Asignado a un operador |
+| ✅ Respondido | Operador ha respondido |
 | 🔒 Cerrado | Ticket completado |
 
-## 🛠️ Tecnologías Usadas
+## 🛠️ Stack Tecnológico
 
-- **Backend:** Python, Flask, SQLite
-- **Frontend:** HTML, TailwindCSS, JavaScript
-- **Seguridad:** JWT, Fernet Encryption
-- **Email:** IMAP/SMTP
+| Capa | Tecnología |
+|------|------------|
+| Backend | Python 3.11+, Flask, SQLite, APScheduler |
+| Frontend | HTML5, TailwindCSS (CDN), JavaScript vanilla, Chart.js |
+| Seguridad | JWT, Fernet (AES), CSP Headers |
+| Email | IMAP (imap_tools), SMTP (smtplib) |
+| IA | Google Gemini API |
+
+## 📁 Estructura
+
+```
+AgentEmail-V1/
+├── backend/
+│   ├── server.py          # API Flask (~2100 líneas)
+│   ├── config.py          # Configuración centralizada
+│   ├── security.py        # Headers + validación
+│   ├── init_db.py         # Migraciones BD
+│   ├── database.py        # Optimización índices
+│   ├── backup_manager.py  # Backups
+│   └── logs/              # Logs del servidor
+├── frontend/
+│   ├── index.html         # Dashboard (~5000 líneas)
+│   └── login.html         # Página de login
+├── docs/plan/             # Historial de planes
+├── scripts/               # PowerShell, CMD, Bash
+└── requirements.txt
+```
 
 ---
 
-**Última actualización:** viernes, 24 de abril de 2026
-**Versión:** V1.0.16
-**Objetivo:** Mantener el código en `index.html` como la única fuente de verdad para el panel administrativo.
+**Última actualización:** 18 de mayo de 2026
+**Versión:** V1.1.21
