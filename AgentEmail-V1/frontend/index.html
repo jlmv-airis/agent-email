@@ -9,357 +9,161 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            /* ============================================
-               DESIGN TOKENS - SISTEMA UNIFICADO
-               ============================================ */
-            
-            /* --- COLORES PRIMARIOS --- */
-            --primary: #3b82f6;
-            --primary-light: #60a5fa;
-            --primary-dark: #2563eb;
-            --primary-50: rgba(59, 130, 246, 0.05);
-            --primary-100: rgba(59, 130, 246, 0.1);
-            --primary-200: rgba(59, 130, 246, 0.2);
-            
-            /* --- COLORES DE ESTADO --- */
+        :root {
+            --primary: #2563eb;
+            --primary-light: #3b82f6;
+            --primary-dark: #1d4ed8;
+            --primary-50: rgba(37, 99, 235, 0.08);
+            --primary-100: rgba(37, 99, 235, 0.15);
+            --primary-200: rgba(37, 99, 235, 0.25);
+            --accent: #0ea5e9;
+            --accent-light: #38bdf8;
             --success: #10b981;
-            --success-light: rgba(16, 185, 129, 0.1);
+            --success-light: rgba(16, 185, 129, 0.15);
             --warning: #f59e0b;
-            --warning-light: rgba(245, 158, 11, 0.1);
+            --warning-light: rgba(245, 158, 11, 0.15);
             --error: #ef4444;
-            --error-light: rgba(239, 68, 68, 0.1);
+            --error-light: rgba(239, 68, 68, 0.15);
             --info: #3b82f6;
-            --info-light: rgba(59, 130, 246, 0.1);
+            --info-light: rgba(59, 130, 246, 0.15);
             
-            /* --- ESPACIADO (4px base) --- */
-            --space-1: 4px;
-            --space-2: 8px;
-            --space-3: 12px;
-            --space-4: 16px;
-            --space-5: 20px;
-            --space-6: 24px;
-            --space-8: 32px;
-            --space-10: 40px;
+            --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+            --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+            --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem;
+            --text-lg: 1.125rem; --text-xl: 1.25rem; --text-2xl: 1.5rem; --text-3xl: 1.875rem;
+            --font-light: 300; --font-normal: 400; --font-medium: 500;
+            --font-semibold: 600; --font-bold: 700; --font-extrabold: 800;
+            --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px;
+            --radius-xl: 20px; --radius-2xl: 24px; --radius-full: 9999px;
             
-            /* --- TIPOGRAFÍA ESCALONADA --- */
-            --text-xs: 0.75rem;
-            --text-sm: 0.875rem;
-            --text-base: 1rem;
-            --text-lg: 1.125rem;
-            --text-xl: 1.25rem;
-            --text-2xl: 1.5rem;
-            --text-3xl: 1.875rem;
-            
-            --font-light: 300;
-            --font-normal: 400;
-            --font-medium: 500;
-            --font-semibold: 600;
-            --font-bold: 700;
-            --font-extrabold: 800;
-            
-            /* --- BORDER RADIUS --- */
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --radius-xl: 20px;
-            --radius-2xl: 24px;
-            --radius-full: 9999px;
-            
-            /* --- SOMBRAS --- */
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-            --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.05);
-            --shadow-2xl: 0 25px 50px -12px rgba(0,0,0,0.25);
-            
-            /* --- TEMA OSCURO (Default) --- */
-            --bg-primary: #0f1117;
-            --bg-secondary: #1a1c1e;
-            --bg-card: #25282c;
-            --bg-card-hover: #2e3238;
-            --bg-sidebar: #121416;
-            
-            --text-primary: #e1e1e6;
-            --text-secondary: #9ba1a6;
-            --text-dim: #6b7280;
-            
-            --border-color: rgba(255,255,255,0.06);
-            --border-color-hover: rgba(255,255,255,0.1);
-            
-            --accent-color: var(--primary);
-            --accent-soft: var(--primary-100);
-            
-            /* --- INSPECTOR (Light Mode) --- */
+            --bg-primary: #f8fafc;
+            --bg-secondary: #f1f5f9;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f8fafc;
+            --bg-sidebar: #0f172a;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --text-dim: #94a3b8;
+            --border-color: rgba(0,0,0,0.06);
+            --border-color-hover: rgba(0,0,0,0.12);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
+            --shadow-xl: 0 16px 48px rgba(0,0,0,0.12);
+            --shadow-2xl: 0 24px 64px rgba(0,0,0,0.15);
+            --sidebar-bg: #0f172a;
+            --sidebar-text: #94a3b8;
+            --sidebar-text-active: #ffffff;
+            --sidebar-hover: rgba(255,255,255,0.06);
+            --sidebar-active: rgba(37, 99, 235, 0.2);
+            --header-bg: rgba(255,255,255,0.85);
             --ins-bg: #ffffff;
-            --ins-text-primary: #111827;
-            --ins-text-secondary: #6b7280;
+            --ins-text-primary: #0f172a;
+            --ins-text-secondary: #64748b;
             --ins-border: rgba(0,0,0,0.06);
-            --ins-header-bg: #f9fafb;
-            --ins-action-outline-border: #d1d5db;
-            --ins-action-outline-hover-bg: rgba(59, 130, 246, 0.04);
-            --ins-action-outline-hover-border: #9ca3af;
-            --ins-avatar-bg: #111827;
-            --ins-sender-info-text: #111827;
-            --ins-date-text: #6b7280;
-            --ins-bubble-text: #374151;
+            --ins-header-bg: #f8fafc;
+            --ins-avatar-bg: #0f172a;
+            --ins-bubble-text: #334155;
         }
         
-/* ============================================
-           SOLO TEMA OSCURO (Limpio y funcional)
-           ============================================ */
-        /* Tema claro desactivado temporalmente - usar tema oscuro */
+        .dark-mode #theme-icon-sun { display: none; }
+        .dark-mode #theme-icon-moon { display: block; }
+        #theme-icon-moon { display: none; }
+        #theme-icon-sun { display: block; }
         
-/* ============================================
-           HYBRID LIGHT THEME - MINIMAL FIXES
-           ============================================ */
+        .dark-mode {
+            --bg-primary: #090b10;
+            --bg-secondary: #0f1117;
+            --bg-card: #16181e;
+            --bg-card-hover: #1c1f26;
+            --bg-sidebar: #07080c;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-dim: #64748b;
+            --border-color: rgba(255,255,255,0.06);
+            --border-color-hover: rgba(255,255,255,0.12);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
+            --shadow-xl: 0 16px 48px rgba(0,0,0,0.6);
+            --shadow-2xl: 0 24px 64px rgba(0,0,0,0.7);
+            --sidebar-bg: #07080c;
+            --sidebar-text: #64748b;
+            --sidebar-text-active: #e2e8f0;
+            --sidebar-hover: rgba(255,255,255,0.04);
+            --sidebar-active: rgba(37, 99, 235, 0.15);
+            --header-bg: rgba(9,11,16,0.85);
+            --ins-bg: #ffffff;
+            --ins-text-primary: #0f172a;
+            --ins-text-secondary: #64748b;
+            --ins-border: rgba(0,0,0,0.06);
+            --ins-header-bg: #f8fafc;
+            --ins-avatar-bg: #0f172a;
+            --ins-bubble-text: #334155;
+        }
         
-        /* --- COMPATIBILITY CLASSES (to avoid breaking existing code) --- */
-        .spark-bg { background-color: var(--bg-secondary); }
-        .spark-sidebar { background-color: var(--bg-sidebar); }
-        .spark-card { background-color: var(--bg-card); }
-        .spark-card-hover { background-color: var(--bg-card-hover); }
+        .text-body { color: var(--text-primary); }
+        .text-muted { color: var(--text-secondary); }
+        .text-dim { color: var(--text-dim); }
+        .text-sidebar { color: var(--sidebar-text); }
+        .text-sidebar-active { color: var(--sidebar-text-active); }
+        .text-heading { color: var(--text-primary); font-weight: 700; }
+        .text-label { color: var(--text-secondary); font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+        .text-primary { color: var(--primary); }
+        .spark-bg { background: var(--bg-secondary); }
+        .spark-card-bg { background: var(--bg-card); }
         .spark-border { border-color: var(--border-color); }
-        .spark-text-main { color: var(--text-primary); }
-        .spark-text-dim { color: var(--text-secondary); }
-        .spark-accent { color: var(--accent-color); }
-        .spark-accent-soft { background-color: var(--accent-soft); }
+        .checkbox-custom { background: var(--bg-secondary); border-color: var(--border-color); }
         
-        /* ============================================
-           BOTONES MODERNOS
-           ============================================ */
         .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: var(--space-2);
-            padding: var(--space-3) var(--space-5);
-            font-weight: var(--font-semibold);
-            font-size: var(--text-sm);
-            border-radius: var(--radius-md);
-            border: 1px solid transparent;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-            overflow: hidden;
+            display: inline-flex; align-items: center; justify-content: center;
+            gap: var(--space-2); padding: var(--space-3) var(--space-6);
+            font-weight: var(--font-semibold); font-size: var(--text-sm);
+            border-radius: var(--radius-full); border: 1px solid var(--border-color);
+            cursor: pointer; transition: all 0.2s ease;
+            background: var(--bg-card); color: var(--text-primary);
         }
+        .btn:hover { background: var(--bg-card-hover); border-color: var(--border-color-hover); transform: translateY(-1px); }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+        .btn-primary:hover { background: var(--primary-light); }
+        .btn-secondary { background: var(--bg-secondary); color: var(--text-primary); border-color: var(--border-color); }
+        .btn-secondary:hover { background: var(--bg-card-hover); }
+        .btn-ghost { background: transparent; border-color: transparent; color: var(--text-secondary); }
+        .btn-ghost:hover { background: var(--primary-50); color: var(--primary); }
+        .btn-outline { background: transparent; color: var(--primary); border-color: var(--primary); }
+        .btn-outline:hover { background: var(--primary-100); }
+        .btn-danger { background: var(--error); color: white; border-color: var(--error); }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-success { background: var(--success); color: white; border-color: var(--success); }
+        .btn-success:hover { background: #059669; }
+        .btn-sm { padding: var(--space-2) var(--space-4); font-size: var(--text-xs); }
+        .btn-lg { padding: var(--space-4) var(--space-8); font-size: var(--text-base); }
+        .btn-icon { width: 40px; height: 40px; padding: 0; border-radius: var(--radius-full); display: inline-flex; align-items: center; justify-content: center; }
+        .btn-icon-sm { width: 32px; height: 32px; padding: 0; border-radius: var(--radius-full); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
         
-        .btn::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-            transform: translateX(-100%);
-            transition: transform 0.6s ease;
-        }
+        .chart-filter-btn { color: var(--text-secondary); cursor: pointer; transition: all 0.2s ease; }
+        .chart-filter-btn:hover { color: var(--text-primary); }
+        .chart-filter-btn.active { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(59,130,246,0.3); }
         
-        .btn:hover::before {
-            transform: translateX(100%);
-        }
-        
-        .btn:active {
-            transform: scale(0.98);
-        }
-        
-        /* Primary Button */
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.25);
-        }
-        
-        .btn-primary:hover {
-            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
-            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
-            transform: translateY(-1px);
-        }
-        
-        .btn-primary:active {
-            transform: translateY(0) scale(0.98);
-        }
-        
-        /* Secondary Button */
-        .btn-secondary {
-            background: var(--bg-card);
-            color: var(--text-primary);
-            border-color: var(--border-color);
-        }
-        
-        .btn-secondary:hover {
-            background: var(--bg-card-hover);
-            border-color: var(--border-color-hover);
-        }
-        
-        /* Ghost Button */
-        .btn-ghost {
-            background: transparent;
-            color: var(--text-secondary);
-        }
-        
-        .btn-ghost:hover {
-            background: var(--primary-50);
-            color: var(--primary);
-        }
-
-        /* --- FILTROS DE GRÁFICO --- */
-        .chart-filter-btn {
-            color: var(--text-secondary);
-            cursor: pointer;
-        }
-        .chart-filter-btn.active {
-            background-color: var(--primary);
-            color: white;
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-        }
-
-            color: var(--primary);
-        }
-        
-        /* Outline Button */
-        .btn-outline {
-            background: transparent;
-            color: var(--primary);
-            border-color: var(--primary);
-        }
-        
-        .btn-outline:hover {
-            background: var(--primary-100);
-        }
-        
-        /* Danger Button */
-        .btn-danger {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: white;
-            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25);
-        }
-        
-        .btn-danger:hover {
-            background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
-            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35);
-            transform: translateY(-1px);
-        }
-        
-        /* Success Button */
-        .btn-success {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
-        }
-        
-        .btn-success:hover {
-            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
-            transform: translateY(-1px);
-        }
-        
-        /* Button Sizes */
-        .btn-sm {
-            padding: var(--space-2) var(--space-3);
-            font-size: var(--text-xs);
-        }
-        
-        .btn-lg {
-            padding: var(--space-4) var(--space-6);
-            font-size: var(--text-base);
-        }
-        
-        /* Icon Button */
-        .btn-icon {
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            border-radius: var(--radius-md);
-        }
-        
-        .btn-icon-sm {
-            width: 32px;
-            height: 32px;
-            padding: 0;
-            border-radius: var(--radius-sm);
-        }
-        
-        /* Disabled State */
-        .btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-        
-        .btn:disabled::before {
-            display: none;
-        }
-        
-        /* Loading Spinner */
-        .btn-loading {
-            position: relative;
-            color: transparent !important;
-        }
-        
+        .btn-loading { position: relative; color: transparent !important; }
         .btn-loading::after {
-            content: '';
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            top: 50%;
-            left: 50%;
-            margin-left: -8px;
-            margin-top: -8px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: white;
-            border-radius: 50%;
+            content: ''; position: absolute; width: 16px; height: 16px; top: 50%; left: 50%;
+            margin-left: -8px; margin-top: -8px;
+            border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%;
             animation: btn-spin 0.8s linear infinite;
         }
+        @keyframes btn-spin { to { transform: rotate(360deg); } }
         
-        @keyframes btn-spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideInLeft { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
         
-        /* ============================================
-           ANIMACIONES DE ENTRADA
-           ============================================ */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+        .animate-fade-in-up { animation: fadeInUp 0.4s ease-out forwards; opacity: 0; }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; opacity: 0; }
+        .animate-slide-in-left { animation: slideInLeft 0.3s ease-out forwards; opacity: 0; }
         
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        @keyframes slideInLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        .animate-fade-in-up {
-            animation: fadeInUp 0.4s ease-out forwards;
-            opacity: 0;
-        }
-        
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease-out forwards;
-            opacity: 0;
-        }
-        
-        .animate-slide-in-left {
-            animation: slideInLeft 0.3s ease-out forwards;
-            opacity: 0;
-        }
-        
-        /* Stagger animation for lists */
         .email-card:nth-child(1) { animation-delay: 0.05s; }
         .email-card:nth-child(2) { animation-delay: 0.1s; }
         .email-card:nth-child(3) { animation-delay: 0.15s; }
@@ -371,20 +175,10 @@
         .email-card:nth-child(9) { animation-delay: 0.45s; }
         .email-card:nth-child(10) { animation-delay: 0.5s; }
         
-        /* Scale on hover for interactive elements */
-        .scale-hover {
-            transition: transform 0.2s ease;
-        }
+        .scale-hover { transition: transform 0.2s ease; }
+        .scale-hover:hover { transform: scale(1.05); }
         
-        .scale-hover:hover {
-            transform: scale(1.05);
-        }
-        
-        /* Pulse animation for notifications */
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
         
         /* ============================================
            RESPONSIVE & MOBILE
@@ -525,292 +319,127 @@
         
         /* Mobile menu button (hidden by default) */
         .mobile-menu-btn {
-            display: none;
-            width: 40px;
-            height: 40px;
-            border-radius: var(--radius-md);
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            color: var(--text-primary);
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            display: none; width: 40px; height: 40px; border-radius: var(--radius-full);
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            color: var(--text-primary); align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s ease;
         }
-        
-        .mobile-menu-btn:hover {
-            background: var(--bg-card-hover);
-            border-color: var(--primary);
-        }
+        .mobile-menu-btn:hover { background: var(--bg-card-hover); border-color: var(--primary); }
         
         /* ============================================
            TOAST NOTIFICATIONS
            ============================================ */
         .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            pointer-events: none;
+            position: fixed; top: 20px; right: 20px; z-index: 9999;
+            display: flex; flex-direction: column; gap: 10px; pointer-events: none;
         }
-        
         .toast {
             background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 16px 20px;
-            box-shadow: var(--shadow-xl);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            min-width: 300px;
-            max-width: 400px;
-            pointer-events: auto;
-            animation: toast-in 0.3s ease-out forwards;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            position: relative;
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color); border-radius: 14px;
+            padding: 14px 18px; box-shadow: var(--shadow-lg);
+            display: flex; align-items: center; gap: 12px;
+            min-width: 300px; max-width: 400px;
+            pointer-events: auto; position: relative;
+            animation: toast-in 0.3s ease forwards;
         }
-        
-        .toast.toast-out {
-            animation: toast-out 0.3s ease-in forwards;
-        }
-        
-        @keyframes toast-in {
-            from {
-                opacity: 0;
-                transform: translateX(100px) scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0) scale(1);
-            }
-        }
-        
-        @keyframes toast-out {
-            from {
-                opacity: 1;
-                transform: translateX(0) scale(1);
-            }
-            to {
-                opacity: 0;
-                transform: translateX(100px) scale(0.9);
-            }
-        }
-        
-        .toast-icon {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            font-size: 14px;
-        }
-        
-        .toast-success .toast-icon {
-            background: rgba(34, 197, 94, 0.6);
-            color: #bbf7d0;
-            box-shadow: 0 0 25px rgba(34, 197, 94, 0.8);
-        }
-        
-        .toast-success {
-            background: rgba(34, 197, 94, 0.5);
-            border-color: rgba(34, 197, 94, 0.95);
-            box-shadow: 0 8px 40px rgba(34, 197, 94, 0.5);
-        }
-        
-        .toast-error .toast-icon {
-            background: rgba(239, 68, 68, 0.6);
-            color: #fecaca;
-            box-shadow: 0 0 25px rgba(239, 68, 68, 0.8);
-        }
-        
-        .toast-error {
-            background: rgba(239, 68, 68, 0.5);
-            border-color: rgba(239, 68, 68, 0.95);
-            box-shadow: 0 8px 40px rgba(239, 68, 68, 0.5);
-        }
-        
-        .toast-info .toast-icon {
-            background: rgba(59, 130, 246, 0.6);
-            color: #bfdbfe;
-            box-shadow: 0 0 25px rgba(59, 130, 246, 0.8);
-        }
-        
-        .toast-info {
-            background: rgba(59, 130, 246, 0.5);
-            border-color: rgba(59, 130, 246, 0.95);
-            box-shadow: 0 8px 40px rgba(59, 130, 246, 0.5);
-        }
-        
-        .toast-warning .toast-icon {
-            background: rgba(234, 179, 8, 0.6);
-            color: #fef08a;
-            box-shadow: 0 0 25px rgba(234, 179, 8, 0.8);
-        }
-        
-        .toast-warning {
-            background: rgba(234, 179, 8, 0.5);
-            border-color: rgba(234, 179, 8, 0.95);
-            box-shadow: 0 8px 40px rgba(234, 179, 8, 0.5);
-        }
-        
-        .toast-success .toast-content .toast-message,
-        .toast-error .toast-content .toast-message,
-        .toast-info .toast-content .toast-message,
-        .toast-warning .toast-content .toast-message {
-            color: #ffffff !important;
-            font-size: var(--text-xs);
-            line-height: 1.4;
-        }
-        
-        .toast-title {
-            font-size: var(--text-sm);
-            font-weight: var(--font-semibold);
-            color: #ffffff;
-            margin-bottom: 2px;
-        }
-        
-        .toast-close {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: #ffffff;
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: var(--radius-sm);
-            transition: all 0.2s ease;
-            flex-shrink: 0;
-            font-size: 18px;
-            line-height: 1;
-            z-index: 10;
-        }
-        
-        .toast-close:hover {
-            background: rgba(255, 255, 255, 0.2);
-            color: #ffffff;
-        }
-        
-        .toast-close:hover {
-            background: rgba(0,0,0,0.05);
-            color: var(--text-primary);
-        }
+        .toast.toast-out { animation: toast-out 0.3s ease forwards; }
+        @keyframes toast-in { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes toast-out { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100px); } }
+        .toast-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+        .toast-success .toast-icon { background: rgba(16,185,129,0.2); color: #34d399; }
+        .toast-success { border-color: rgba(16,185,129,0.3); }
+        .toast-error .toast-icon { background: rgba(239,68,68,0.2); color: #f87171; }
+        .toast-error { border-color: rgba(239,68,68,0.3); }
+        .toast-info .toast-icon { background: rgba(59,130,246,0.2); color: #60a5fa; }
+        .toast-info { border-color: rgba(59,130,246,0.3); }
+        .toast-warning .toast-icon { background: rgba(234,179,8,0.2); color: #fbbf24; }
+        .toast-warning { border-color: rgba(234,179,8,0.3); }
+        .toast-message { color: var(--text-primary); font-size: var(--text-xs); line-height: 1.4; }
+        .toast-title { font-size: var(--text-sm); font-weight: var(--font-semibold); color: var(--text-primary); margin-bottom: 2px; }
+        .toast-close { position: absolute; top: 8px; right: 8px; background: transparent; border: none; color: var(--text-dim); cursor: pointer; padding: 4px; border-radius: 6px; transition: all 0.2s; font-size: 16px; line-height: 1; z-index: 10; }
+        .toast-close:hover { background: rgba(0,0,0,0.05); color: var(--text-primary); }
         
         .pulse {
             animation: pulse 2s ease-in-out infinite;
         }
         
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            background-color: var(--bg-primary); 
+            background: var(--bg-primary); 
             color: var(--text-primary); 
-            overflow: hidden; 
-            height: 100vh; 
-            display: flex; 
+            overflow: hidden; height: 100vh; display: flex; 
             -webkit-font-smoothing: antialiased;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: background 0.3s ease, color 0.3s ease;
         }
 
         .apple-sidebar { 
-            width: 320px; 
-            background: var(--spark-sidebar); 
-            border-right: 1px solid var(--spark-border); 
-            display: flex; 
-            flex-direction: column; 
-            z-index: 40; 
-            flex-shrink: 0; 
-            position: relative;
+            width: 300px; 
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color); 
+            display: flex; flex-direction: column; 
+            z-index: 40; flex-shrink: 0; position: relative;
         }
         
         .sidebar-resizer { 
-            position: absolute; 
-            right: -3px; 
-            top: 0; 
-            bottom: 0; 
-            width: 6px; 
-            cursor: col-resize; 
-            z-index: 50; 
-            transition: background 0.2s;
+            position: absolute; right: -3px; top: 0; bottom: 0; width: 6px; 
+            cursor: col-resize; z-index: 50; transition: background 0.2s;
         }
-        .sidebar-resizer:hover { background: var(--spark-accent); opacity: 0.5; }
+        .sidebar-resizer:hover { background: var(--primary); opacity: 0.3; border-radius: 3px; }
 
         .sidebar-item { 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            padding: 12px 20px; 
-            border-radius: 12px; 
-            margin: 2px 16px; 
-            transition: all 0.2s ease; 
-            cursor: pointer; 
-            color: var(--spark-text-dim);
-            font-weight: 600;
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 10px 18px; border-radius: 10px; margin: 2px 14px; 
+            transition: all 0.2s ease; cursor: pointer; 
+            color: var(--sidebar-text); font-weight: 500; font-size: 14px;
         }
-        .sidebar-item:hover { background: rgba(255,255,255,0.04); color: var(--spark-text-main); }
-        .sidebar-item.active { background: var(--spark-accent-soft); color: var(--spark-accent); }
+        .sidebar-item:hover { background: var(--sidebar-hover); color: var(--sidebar-text-active); }
+        .sidebar-item.active { background: var(--sidebar-active); color: var(--sidebar-text-active); }
         
         .sidebar-subitem {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 8px 20px 8px 44px;
-            border-radius: 10px;
-            margin: 1px 16px;
-            transition: all 0.2s ease;
-            cursor: pointer;
-            color: var(--spark-text-dim);
-            font-size: 12px;
-            font-weight: 500;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 7px 18px 7px 40px; border-radius: 8px; margin: 1px 14px;
+            transition: all 0.2s ease; cursor: pointer;
+            color: var(--sidebar-text); font-size: 13px; font-weight: 400;
         }
-        .sidebar-subitem:hover { background: rgba(255,255,255,0.02); color: var(--spark-text-main); }
-        .sidebar-subitem.active { color: var(--spark-accent); font-weight: 700; background: rgba(52, 120, 246, 0.05); }
+        .sidebar-subitem:hover { background: var(--sidebar-hover); color: var(--sidebar-text-active); }
+        .sidebar-subitem.active { color: var(--sidebar-text-active); font-weight: 600; background: var(--sidebar-active); }
         
         .company-badge {
-            background: #2e3238; color: var(--spark-text-dim); min-width: 20px; height: 20px; border-radius: 6px;
+            background: rgba(255,255,255,0.08); color: var(--sidebar-text); min-width: 20px; height: 20px; border-radius: 6px;
             display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; padding: 0 5px;
         }
-        .sidebar-item.active .company-badge { background: var(--spark-accent); color: white; }
+        .sidebar-item.active .company-badge { background: var(--primary); color: white; }
 
-        .main-stage { flex: 1; display: flex; flex-direction: column; overflow: hidden; background-color: var(--spark-bg); }
+        .main-stage { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-secondary); }
         .glass-header { 
-            background: var(--spark-bg);
-            border-bottom: 1px solid var(--spark-border); padding: 0 40px; height: 80px;
+            background: var(--header-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-color); 
+            padding: 0 32px; height: 72px;
             display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 30;
         }
 
         .email-card { 
-            background: var(--bg-card); 
+            background: var(--bg-card);
             border-radius: var(--radius-lg); 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s ease;
             margin-bottom: var(--space-2);
             display: grid; 
             grid-template-columns: 50px 60px 180px 1fr 120px 120px 80px 140px;
             align-items: center; 
             padding: var(--space-4) var(--space-5); 
             border: 1px solid var(--border-color);
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
+            position: relative; overflow: hidden; cursor: pointer;
             box-shadow: var(--shadow-sm);
         }
         
         .email-card::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 3px;
-            background: var(--primary);
-            opacity: 0;
-            transition: opacity 0.2s ease;
+            content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+            background: var(--primary); opacity: 0; transition: opacity 0.2s ease;
         }
         
         .email-card:hover { 
@@ -819,34 +448,18 @@
             border-color: var(--border-color-hover); 
             box-shadow: var(--shadow-md);
         }
-        
-        .email-card:hover::before {
-            opacity: 1;
-        }
-        
-        .email-card.read { 
-            opacity: 0.6; 
-        }
-        
-        .email-card.read::before {
-            background: var(--text-dim);
-        }
-        
-        .email-card.selected {
-            border-color: var(--primary);
-            background: var(--primary-50);
-        }
-        
-        .email-card.selected::before {
-            opacity: 1;
-        }
+        .email-card:hover::before { opacity: 1; }
+        .email-card.read { opacity: 0.55; }
+        .email-card.read::before { background: var(--text-dim); }
+        .email-card.selected { border-color: var(--primary); background: var(--primary-50); }
+        .email-card.selected::before { opacity: 1; }
         
         .avatar-circle {
             width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
             font-weight: 700; font-size: 13px; color: white; text-transform: uppercase;
         }
 
-        .header-label { font-size: 10px; font-weight: 700; color: var(--spark-text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+        .header-label { font-size: 10px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
         .email-card-header {
             display: grid; grid-template-columns: 50px 60px 180px 1fr 120px 120px 80px 140px; align-items: center;
             padding: 10px 20px; margin-bottom: 4px;
@@ -857,387 +470,171 @@
             border: 1px solid var(--border-color); 
             border-radius: var(--radius-xl); 
             padding: var(--space-5);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex; 
-            flex-direction: column; 
-            gap: var(--space-3);
-            box-shadow: var(--shadow-sm);
-            position: relative;
-            overflow: hidden;
+            transition: all 0.2s ease;
+            display: flex; flex-direction: column; gap: var(--space-3);
+            box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
         }
-        
-        .dash-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, transparent, var(--primary), transparent);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
         .dash-card:hover {
             background: var(--bg-card-hover);
             border-color: var(--border-color-hover);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px); box-shadow: var(--shadow-md);
         }
-        
-        .dash-card:hover::before {
-            opacity: 1;
-        }
-        
         .dash-icon { 
-            width: 40px; 
-            height: 40px; 
-            border-radius: var(--radius-md); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 18px;
+            width: 40px; height: 40px; border-radius: var(--radius-md); 
+            display: flex; align-items: center; justify-content: center; font-size: 18px;
             transition: transform 0.2s ease;
         }
-        
-        .dash-card:hover .dash-icon {
-            transform: scale(1.1);
-        }
+        .dash-card:hover .dash-icon { transform: scale(1.1); }
 
         .inspector-overlay { 
             display: none; position: fixed; inset: 0; 
             background: rgba(0,0,0,0.5); 
-            backdrop-filter: blur(12px); 
-            -webkit-backdrop-filter: blur(12px);
-            z-index: 200; 
-            align-items: center; 
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px);
+            z-index: 200; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.3s ease;
         }
-        .inspector-overlay.show {
-            display: flex;
-            opacity: 1;
-        }
+        .inspector-overlay.show { display: flex; opacity: 1; }
         
-.inspector-window { 
-            width: 1000px; 
-            height: 90vh; 
+        .inspector-window { 
+            width: 1000px; height: 90vh; 
             background: var(--ins-bg);
             border-radius: var(--radius-2xl); 
-            box-shadow: var(--shadow-2xl), 0 0 0 1px rgba(0,0,0,0.05);
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden; 
-            color: var(--ins-text-primary);
-            position: relative;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+            display: flex; flex-direction: column; overflow: hidden; 
+            color: var(--ins-text-primary); position: relative;
             transform: scale(0.95) translateY(20px);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.3s ease;
         }
+        .inspector-overlay.show .inspector-window { transform: scale(1) translateY(0); }
         
-.inspector-overlay.show .inspector-window {
-            transform: scale(1) translateY(0);
-        }
-        /* Gmail-style header bar */
         .gmail-header {
-            background: #f6f8fc;
-            border-bottom: 1px solid #e5e5e5;
-            padding: 8px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            min-height: 48px;
-            flex-shrink: 0;
+            background: var(--ins-header-bg);
+            border-bottom: 1px solid var(--ins-border);
+            padding: 8px 16px; display: flex; align-items: center;
+            justify-content: space-between; min-height: 48px; flex-shrink: 0;
         }
         .gmail-close-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            border: none;
-            background: transparent;
-            color: #5f6368;
-            font-size: 18px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
+            width: 32px; height: 32px; border-radius: 50%; border: none;
+            background: transparent; color: #5f6368; font-size: 18px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; transition: all 0.2s ease;
         }
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #5f6368;
-            font-size: 20px;
-            transition: background 0.2s;
-        }
-        .gmail-close-btn:hover {
-            background: #e8eaed;
-        }
-        /* Response modal estilo Gmail */
+        .gmail-close-btn:hover { background: rgba(0,0,0,0.06); }
+        
         .response-modal-window {
-            background: white;
-            border-radius: 8px;
-            width: 100%;
-            max-width: 900px;
-            height: 90vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 24px 38px 3px rgba(0,0,0,0.14), 0 50px 66px 6px rgba(0,0,0,0.12);
+            background: white; border-radius: 12px; width: 100%; max-width: 900px; height: 90vh;
+            display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.2);
         }
-        .response-modal-window .gmail-header {
-            background: #404040;
-            padding: 12px 16px;
-        }
-        .response-modal-window .gmail-header span {
-            color: white;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        .response-modal-window .gmail-close-btn {
-            color: #9aa0a6;
-        }
-        .response-modal-window .gmail-close-btn:hover {
-            background: rgba(255,255,255,0.1);
-            color: white;
-        }
+        .response-modal-window .gmail-header { background: #404040; padding: 12px 16px; }
+        .response-modal-window .gmail-header span { color: white; font-size: 14px; font-weight: 500; }
+        .response-modal-window .gmail-close-btn { color: #9aa0a6; }
+        .response-modal-window .gmail-close-btn:hover { background: rgba(255,255,255,0.1); color: white; }
         .ins-toolbar {
-            height: auto; min-height: 56px; padding: 12px 20px; border-bottom: 1px solid var(--ins-border);
+            min-height: 56px; padding: 12px 20px; border-bottom: 1px solid var(--ins-border);
             display: flex; align-items: center; justify-content: space-between;
-            background: var(--ins-header-bg);
-            gap: 16px; flex-wrap: wrap;
+            background: var(--ins-header-bg); gap: 16px; flex-wrap: wrap;
         }
         .ins-tool-btn {
             display: inline-flex; align-items: center; justify-content: center;
-            padding: 8px 16px; border-radius: 8px;
+            padding: 8px 16px; border-radius: var(--radius-full);
             color: var(--ins-text-secondary); transition: all 0.2s; cursor: pointer; font-size: 14px;
             border: none; background: transparent;
         }
-        .ins-tool-btn:hover { background: rgba(60,64,67,0.08); color: #202124; }
+        .ins-tool-btn:hover { background: var(--ins-hover-bg); color: var(--ins-text-primary); }
         
         .ins-content-area { 
             flex: 1; overflow-y: auto; padding: 0 40px 40px 40px; 
-            font-family: 'Google Sans', Roboto, RobotoDraft, Helvetica, Arial, sans-serif; /* Similar font stack */
-            color: var(--ins-text-primary);
-            display: flex;
-            flex-direction: column;
+            font-family: 'Google Sans', Roboto, RobotoDraft, Helvetica, Arial, sans-serif;
+            color: var(--ins-text-primary); display: flex; flex-direction: column;
         }
-        .ins-subject-line { 
-            padding: 32px 0 24px 0; 
-            border-bottom: 1px solid var(--ins-border); /* Add a separator below subject */
-            margin-bottom: 24px; /* Space after the separator */
-        }
-        .ins-subject-line h2 { /* Style for the subject itself */
-            font-size: 26px; /* Larger subject font */
-            font-weight: 500; /* Slightly less bold than current */
-            color: var(--ins-text-primary);
-            line-height: 1.2; /* Tighter line height for subject */
-        }
-        .ins-message-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: flex-start; 
-            margin-bottom: 24px; 
-            border-bottom: 1px solid var(--ins-border); /* Separator before message body */
-            padding-bottom: 24px; /* Space below the header */
-        }
-        .ins-sender-info { 
-            display: flex; 
-            gap: 16px; 
-            align-items: center; 
-        }
-        .ins-avatar-circle { /* Larger avatar for sender in inspector */
-            width: 48px; /* Increased size */
-            height: 48px; /* Increased size */
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            color: white; 
-            font-weight: 700; 
-            font-size: 18px; /* Larger font for initials */
-            background-color: var(--ins-avatar-bg); /* Placeholder color */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow */
-        }
-        .ins-sender-details p { /* Style for sender name and 'from' info */
-            color: var(--ins-sender-info-text);
-            font-size: 15px;
-            line-height: 1.4;
-        }
-        .ins-sender-details p:first-child { /* Sender Name */
-            font-weight: 600; /* Slightly bold for name */
-        }
-        .ins-sender-details .ins-from { /* 'from:' part */
-            font-weight: 400;
-            font-size: 13px;
-            color: var(--ins-text-secondary);
-        }
-        .ins-to-me { /* 'to me' part, mimic Gmail dropdown */
-            font-size: 12px;
-            color: var(--ins-text-secondary);
-            cursor: pointer;
-            margin-top: 2px;
-            transition: color 0.2s;
-        }
-        .ins-to-me:hover { color: #202124; }
-
-        .ins-date-info { /* Container for the date */
-            text-align: right;
-        }
-        .ins-date-info p { /* The date itself */
-            font-size: 13px;
-            color: var(--ins-date-text);
-            font-weight: 500;
-        }
-        
-        /* Styling for the message body, mimicking Gmail's readability */
-        .bubble-apple { 
-            font-size: 15px; 
-            line-height: 1.6; 
-            color: var(--ins-bubble-text);
-            word-wrap: break-word; /* Ensure long words break */
-            white-space: pre-wrap; /* Preserve whitespace and line breaks from backend */
-        }
-        /* Basic styling for inline HTML elements within the message body */
-        .bubble-apple p, .bubble-apple div, .bubble-apple span { 
-            margin-bottom: 1em; /* Standard paragraph spacing */
-            line-height: 1.6; 
-        }
-        .bubble-apple h1, .bubble-apple h2, .bubble-apple h3 { /* Headings */
-            font-size: 1.4em; margin-bottom: 0.8em; color: var(--ins-text-primary); font-weight: 600;
-        }
-        .bubble-apple a { 
-            color: #1a73e8; /* Gmail blue for links */
-            text-decoration: none; 
-        }
+        .ins-subject-line { padding: 32px 0 24px 0; border-bottom: 1px solid var(--ins-border); margin-bottom: 24px; }
+        .ins-subject-line h2 { font-size: 26px; font-weight: 500; color: var(--ins-text-primary); line-height: 1.2; }
+        .ins-message-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; border-bottom: 1px solid var(--ins-border); padding-bottom: 24px; }
+        .ins-sender-info { display: flex; gap: 16px; align-items: center; }
+        .ins-avatar-circle { width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 18px; background-color: var(--ins-avatar-bg); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .ins-sender-details p { color: var(--ins-sender-info-text); font-size: 15px; line-height: 1.4; }
+        .ins-sender-details p:first-child { font-weight: 600; }
+        .ins-sender-details .ins-from { font-weight: 400; font-size: 13px; color: var(--ins-text-secondary); }
+        .ins-to-me { font-size: 12px; color: var(--ins-text-secondary); cursor: pointer; margin-top: 2px; transition: color 0.2s; }
+        .ins-to-me:hover { color: var(--ins-text-primary); }
+        .ins-date-info { text-align: right; }
+        .ins-date-info p { font-size: 13px; color: var(--ins-date-text); font-weight: 500; }
+        .bubble-apple { font-size: 15px; line-height: 1.6; color: var(--ins-bubble-text); word-wrap: break-word; white-space: pre-wrap; }
+        .bubble-apple p, .bubble-apple div, .bubble-apple span { margin-bottom: 1em; line-height: 1.6; }
+        .bubble-apple h1, .bubble-apple h2, .bubble-apple h3 { font-size: 1.4em; margin-bottom: 0.8em; color: var(--ins-text-primary); font-weight: 600; }
+        .bubble-apple a { color: #1a73e8; text-decoration: none; }
         .bubble-apple a:hover { text-decoration: underline; }
 
         .ins-footer-actions { 
-            /* Integrado en la parte inferior de la ventana */
-            background: white;
-            border-top: 1px solid #e5e7eb;
-            display: flex; 
-            gap: 12px; 
-            z-index: 50;
+            background: var(--ins-header-bg);
+            border-top: 1px solid var(--ins-border);
+            display: flex; gap: 12px; z-index: 50;
         }
         .ins-action-outline { 
-            padding: 12px 28px; 
-            border-radius: 24px; 
+            padding: 12px 28px; border-radius: 24px; 
             border: 1px solid var(--ins-action-outline-border); 
-            color: var(--ins-text-secondary); 
-            font-size: 14px; 
-            font-weight: 600; 
-            transition: all 0.2s;
-            background-color: transparent; 
-            cursor: pointer;
+            color: var(--ins-text-secondary); font-size: 14px; font-weight: 600; 
+            transition: all 0.2s; background: transparent; cursor: pointer;
         }
         .ins-action-outline:hover { 
-            background: var(--ins-action-outline-hover-bg); 
+            background: var(--ins-hover-bg); 
             border-color: var(--ins-action-outline-hover-border); 
-            color: #202124; 
+            color: var(--ins-text-primary); 
         }
-        .ins-footer-actions span { 
-            font-size: 18px; 
-            margin-right: 8px;
-        }
+        .ins-footer-actions span { font-size: 18px; margin-right: 8px; }
 
-        /* ============================================
-           SELECTORES PERSONALIZADOS (DROPDOWNS)
-           ============================================ */
         .custom-select {
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
+            appearance: none; -webkit-appearance: none; -moz-appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239CA3AF' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            background-size: 12px;
-            padding-right: 36px !important;
-            cursor: pointer;
-            transition: all 0.2s ease;
+            background-repeat: no-repeat; background-position: right 12px center; background-size: 12px;
+            padding-right: 36px !important; cursor: pointer; transition: all 0.2s ease;
         }
+        .custom-select:hover { border-color: var(--primary) !important; }
+        .custom-select:focus { border-color: var(--primary) !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+        .custom-select option { background: var(--bg-card); color: var(--text-primary); padding: 8px; }
         
-        .custom-select:hover {
-            border-color: var(--primary) !important;
-            color: var(--text-primary) !important;
-        }
-        
-        .custom-select:focus {
-            border-color: var(--primary) !important;
-            box-shadow: 0 0 0 3px var(--primary-100);
-        }
-        
-        .custom-select option {
-            background-color: var(--bg-card);
-            color: var(--text-primary);
-            padding: 8px;
-        }
-        
-        /* Gmail-like status buttons within inspector toolbar */
         .ins-status-btn {
-            padding: 8px 18px;
-            border-radius: var(--radius-full);
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: 1px solid transparent;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            letter-spacing: 0.05em;
+            padding: 8px 18px; border-radius: var(--radius-full);
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            cursor: pointer; transition: all 0.2s ease; border: 1px solid transparent;
+            display: inline-flex; align-items: center; gap: 6px; letter-spacing: 0.05em;
         }
+        .ins-status-btn::before { content: ''; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        .ins-status-btn.pending { background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.3); color: var(--warning); }
+        .ins-status-btn.pending::before { background: var(--warning); animation: pulse 2s ease-in-out infinite; }
+        .ins-status-btn.pending:hover { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.5); }
+        .ins-status-btn.processing { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: var(--primary); }
+        .ins-status-btn.processing::before { background: var(--primary); }
+        .ins-status-btn.processing:hover { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.5); }
+        .ins-status-btn.closed { background: rgba(40,167,69,0.1); border-color: rgba(40,167,69,0.3); color: #28a745; }
+        .ins-status-btn.closed:hover { background: rgba(40,167,69,0.15); border-color: rgba(40,167,69,0.5); }
         
-        .ins-status-btn::before {
-            content: '';
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.3); border-radius: 3px; transition: background 0.2s; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(128,128,128,0.5); }
+        .custom-scrollbar { scrollbar-width: thin; scrollbar-color: rgba(128,128,128,0.3) transparent; }
         
-        .ins-status-btn.pending {
-            background-color: var(--warning-light);
-            border-color: rgba(245, 158, 11, 0.3);
-            color: var(--warning);
+        .context-menu {
+            position: fixed; z-index: 9999; min-width: 200px;
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg); padding: 4px;
+            box-shadow: var(--shadow-xl); display: none;
+            animation: fadeIn 0.15s ease;
         }
-        .ins-status-btn.pending::before {
-            background-color: var(--warning);
-            animation: pulse 2s ease-in-out infinite;
+        .context-menu.show { display: block; }
+        .context-menu-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 12px; border-radius: var(--radius-sm);
+            cursor: pointer; font-size: 13px; color: var(--text-primary);
+            transition: background 0.15s ease; border: none; background: transparent;
+            width: 100%; text-align: left;
         }
-        .ins-status-btn.pending:hover {
-            background-color: rgba(245, 158, 11, 0.2);
-            border-color: rgba(245, 158, 11, 0.5);
-            transform: translateY(-1px);
-        }
-        
-        .ins-status-btn.processing {
-            background-color: var(--primary-100);
-            border-color: rgba(59, 130, 246, 0.3);
-            color: var(--primary);
-        }
-        .ins-status-btn.processing::before {
-            background-color: var(--primary);
-        }
-        .ins-status-btn.processing:hover {
-            background-color: var(--primary-200);
-            border-color: rgba(59, 130, 246, 0.5);
-            transform: translateY(-1px);
-        }
-        
-        .ins-status-btn.closed {
-            background-color: rgba(40,167,69,0.1); /* Green light */
-            border-color: rgba(40,167,69,0.3);
-            color: #28a745; /* Green */
-        }
-        .ins-status-btn.closed:hover {
-            background-color: rgba(40,167,69,0.2);
-            border-color: rgba(40,167,69,0.5);
-        }
-        .custom-scrollbar::-webkit-scrollbar { display: none; }
-        .custom-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .context-menu-item:hover { background: var(--primary-50); color: var(--primary); }
+        .context-menu-item .ctx-icon { width: 20px; text-align: center; font-size: 14px; flex-shrink: 0; }
+        .context-menu-divider { height: 1px; background: var(--border-color); margin: 4px 0; }
     </style>
 </head>
 <body>
@@ -1260,8 +657,8 @@
                         ??
                     </div>
                     <div class="flex-1 overflow-hidden">
-                        <p id="user-name" class="text-[12px] font-bold truncate">Cargando...</p>
-                        <p id="user-id-display" class="text-[9px] font-medium opacity-70">ID: ---</p>
+                        <p id="user-name" class="text-[12px] font-bold truncate text-sidebar-active">Cargando...</p>
+                        <p id="user-id-display" class="text-[10px] font-semibold text-slate-300">ID: ---</p>
                     </div>
                     <button id="settings-btn" onclick="toggleCollaboratorsModal(true)" class="hidden w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-all" title="Configuración">
                         <span class="text-[16px]">⚙️</span>
@@ -1284,13 +681,24 @@
                     </button>
                     
                     <div class="flex flex-col">
-                        <h2 class="text-lg font-bold tracking-tight text-white leading-none uppercase tracking-[0.2em]">Dashboard</h2>
-                        <p class="text-[9px] font-bold text-slate-500 uppercase mt-1 tracking-widest">Panel de Control General</p>
+                        <h2 class="text-lg font-bold tracking-tight text-heading leading-none uppercase tracking-[0.2em]">Dashboard</h2>
+                        <p class="text-[9px] font-bold text-muted uppercase mt-1 tracking-widest">Panel de Control General</p>
                     </div>
                 </div>
                 
                 <!-- Sidebar Overlay (Mobile) -->
                 <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+                
+                <div class="flex items-center gap-3">
+                    <button id="theme-toggle" onclick="toggleTheme()" class="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 hover:bg-black/10" title="Cambiar tema">
+                        <svg id="theme-icon-sun" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: #64748b">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                        <svg id="theme-icon-moon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: #94a3b8">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                        </svg>
+                    </button>
+                </div>
             </header>
             
             <!-- Sidebar Overlay (Mobile) -->
@@ -1305,9 +713,9 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Total Hilos</p>
+                                <p class="text-[9px] font-bold text-muted uppercase tracking-widest truncate">Total Hilos</p>
                             </div>
-                            <p id="dash-total" class="text-xl font-bold text-white tracking-tight">0</p>
+                            <p id="dash-total" class="text-xl font-bold text-heading tracking-tight">0</p>
                         </div>
                     </div>
 
@@ -1318,9 +726,9 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Pendientes</p>
+                                <p class="text-[9px] font-bold text-muted uppercase tracking-widest truncate">Pendientes</p>
                             </div>
-                            <p id="dash-pending" class="text-xl font-bold text-white tracking-tight">0</p>
+                            <p id="dash-pending" class="text-xl font-bold text-heading tracking-tight">0</p>
                         </div>
                     </div>
 
@@ -1331,9 +739,9 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">En Gestión</p>
+                                <p class="text-[9px] font-bold text-muted uppercase tracking-widest truncate">En Gestión</p>
                             </div>
-                            <p id="dash-assigned" class="text-xl font-bold text-white tracking-tight">0</p>
+                            <p id="dash-assigned" class="text-xl font-bold text-heading tracking-tight">0</p>
                         </div>
                     </div>
 
@@ -1344,9 +752,9 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Resueltos</p>
+                                <p class="text-[9px] font-bold text-muted uppercase tracking-widest truncate">Resueltos</p>
                             </div>
-                            <p id="dash-resolved" class="text-xl font-bold text-white tracking-tight">0%</p>
+                            <p id="dash-resolved" class="text-xl font-bold text-heading tracking-tight">0%</p>
                         </div>
                     </div>
                 </div>
@@ -1360,9 +768,9 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Pendientes</p>
+                                <p class="text-[9px] font-bold text-muted uppercase tracking-widest truncate">Pendientes</p>
                             </div>
-                            <p id="op-pending" class="text-xl font-bold text-white tracking-tight">0</p>
+                            <p id="op-pending" class="text-xl font-bold text-heading tracking-tight">0</p>
                         </div>
                     </div>
                     <!-- En Proceso -->
@@ -1372,9 +780,9 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">En Proceso</p>
+                                <p class="text-[9px] font-bold text-muted uppercase tracking-widest truncate">En Proceso</p>
                             </div>
-                            <p id="op-process" class="text-xl font-bold text-white tracking-tight">0</p>
+                            <p id="op-process" class="text-xl font-bold text-heading tracking-tight">0</p>
                         </div>
                     </div>
                     <!-- Respondidos Hoy -->
@@ -1384,9 +792,9 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest truncate">Respondidos Hoy</p>
+                                <p class="text-[9px] font-bold text-muted uppercase tracking-widest truncate">Respondidos Hoy</p>
                             </div>
-                            <p id="op-responded" class="text-xl font-bold text-white tracking-tight">0</p>
+                            <p id="op-responded" class="text-xl font-bold text-heading tracking-tight">0</p>
                         </div>
                     </div>
                 </div>
@@ -1396,16 +804,16 @@
                     <div class="dash-card col-span-2 overflow-hidden">
                         <div class="flex items-center justify-between mb-4">
                             <div>
-                                <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Analítica</p>
-                                <h3 class="text-lg font-bold text-white">Emails</h3>
+                                <p class="text-[9px] font-bold text-muted uppercase tracking-widest">Analítica</p>
+                                <h3 class="text-lg font-bold text-heading">Emails</h3>
                             </div>
                             <div class="flex items-center gap-2">
-                                <div class="flex bg-white/5 border border-white/10 rounded-full p-1">
+                                <div class="flex spark-bg spark-border rounded-full p-1">
                                     <button onclick="setChartFilter('all')" id="btn-filter-all" class="chart-filter-btn active px-3 py-1 text-[9px] font-bold uppercase rounded-full transition-all">Todos</button>
                                     <button onclick="setChartFilter('received')" id="btn-filter-received" class="chart-filter-btn px-3 py-1 text-[9px] font-bold uppercase rounded-full transition-all">Recibidos</button>
                                     <button onclick="setChartFilter('sent')" id="btn-filter-sent" class="chart-filter-btn px-3 py-1 text-[9px] font-bold uppercase rounded-full transition-all">Enviados</button>
                                 </div>
-                                <button onclick="exportReport()" class="bg-white/5 border border-white/10 text-white hover:bg-blue-600 hover:border-blue-500 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all shadow-sm">
+                                <button onclick="exportReport()" class="spark-bg spark-border text-body hover:bg-blue-600 hover:text-white hover:border-blue-500 rounded-full px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-all shadow-sm">
                                     📥 Exportar
                                 </button>
                             </div>
@@ -1416,9 +824,9 @@
                         <div class="flex items-center justify-between mb-4">
                             <div>
                                 <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Distribución</p>
-                                <h3 class="text-lg font-bold text-white">Cuentas</h3>
+                                <h3 class="text-lg font-bold text-heading">Cuentas</h3>
                             </div>
-                            <div class="flex bg-white/5 border border-white/10 rounded-full p-1">
+                            <div class="flex spark-bg spark-border rounded-full p-1">
                                 <button onclick="setChartFilter('all')" id="btn-filter-all-2" class="chart-filter-btn active px-2 py-1 text-[8px] font-bold uppercase rounded-full transition-all">Todos</button>
                                 <button onclick="setChartFilter('received')" id="btn-filter-received-2" class="chart-filter-btn px-2 py-1 text-[8px] font-bold uppercase rounded-full transition-all">Recibidos</button>
                                 <button onclick="setChartFilter('sent')" id="btn-filter-sent-2" class="chart-filter-btn px-2 py-1 text-[8px] font-bold uppercase rounded-full transition-all">Enviados</button>
@@ -1429,78 +837,78 @@
                 </div>
 
                 <div class="flex flex-col mb-6">
-                    <h2 id="current-view-title" class="text-2xl font-extrabold tracking-tight text-white leading-none">Bandeja General</h2>
-                    <p id="filter-status-indicator" class="text-[10px] font-bold text-blue-400 uppercase mt-2 tracking-[0.2em]">Todos los estados</p>
+                    <h2 id="current-view-title" class="text-2xl font-extrabold tracking-tight text-heading leading-none">Bandeja General</h2>
+                    <p id="filter-status-indicator" class="text-[10px] font-bold text-primary uppercase mt-2 tracking-[0.2em]">Todos los estados</p>
                 </div>
 
                 <!-- BARRA DE BÚSQUEDA GLOBAL (ANCHO COMPLETO) -->
                 <div class="mb-6">
                     <div class="relative group">
-                        <span class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500 text-sm group-focus-within:text-primary transition-colors duration-200">🔍</span>
-                        <input id="global-search" oninput="debounceApplyFilters(); updateClearButton()" type="text" placeholder="Buscar por asunto, remitente o contenido del mensaje..." class="w-full bg-white/5 border border-white/10 rounded-2xl pl-12 pr-12 py-4 text-sm font-medium outline-none focus:bg-white/10 focus:border-primary/50 text-white transition-all shadow-lg hover:border-white/20">
-                        <button onclick="clearSearch()" id="clear-search-btn" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors opacity-0 pointer-events-none transition-opacity duration-200">
+                        <span class="absolute left-5 top-1/2 -translate-y-1/2 text-muted text-sm">🔍</span>
+                        <input id="global-search" oninput="debounceApplyFilters(); updateClearButton()" type="text" placeholder="Buscar por asunto, remitente o contenido del mensaje..." class="w-full spark-bg spark-border rounded-2xl pl-12 pr-12 py-4 text-sm font-medium outline-none focus:border-primary/50 text-body transition-all shadow-lg">
+                        <button onclick="clearSearch()" id="clear-search-btn" class="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-body transition-colors opacity-0 pointer-events-none transition-opacity duration-200">
                             <span class="text-lg">×</span>
                         </button>
                     </div>
                 </div>
 
                 <!-- SECCIÓN DE FILTROS Y ACCIONES -->
-                <div class="bg-white/5 border border-white/5 rounded-3xl p-6 mb-6">
+                <div class="spark-card-bg spark-border rounded-3xl p-6 mb-6">
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- FILA 1: Selectores -->
 <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
                              <div class="flex flex-col">
-                                 <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Empresa</label>
-                                 <select id="filter-company" onchange="applyFilters()" class="custom-select bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[11px] font-bold text-slate-300 outline-none cursor-pointer transition-all">
-                                     <option value="ALL" class="bg-[#1a1c1e]">TODAS</option>
+                                 <label class="text-[9px] font-black text-muted uppercase tracking-widest mb-2 ml-1">Empresa</label>
+                                 <select id="filter-company" onchange="applyFilters()" class="custom-select spark-bg spark-border rounded-xl px-4 py-3 text-[11px] font-bold text-body outline-none cursor-pointer transition-all">
+                                     <option value="ALL" class="spark-card-bg">TODAS</option>
                                  </select>
                              </div>
                              <div class="flex flex-col">
-                                 <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Estado</label>
-                                 <select id="filter-status" onchange="applyFilters()" class="custom-select bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[11px] font-bold text-slate-300 outline-none cursor-pointer transition-all">
-                                     <option value="ALL" class="bg-[#1a1c1e]">TODOS</option>
-                                     <option value="PENDIENTE" class="bg-[#1a1c1e]">PENDIENTES</option>
-                                     <option value="ASIGNADO" class="bg-[#1a1c1e]">PROCESO</option>
-                                     <option value="CERRADO" class="bg-[#1a1c1e]">RESUELTOS</option>
+                                 <label class="text-[9px] font-black text-muted uppercase tracking-widest mb-2 ml-1">Estado</label>
+                                 <select id="filter-status" onchange="applyFilters()" class="custom-select spark-bg spark-border rounded-xl px-4 py-3 text-[11px] font-bold text-body outline-none cursor-pointer transition-all">
+                                     <option value="ALL" class="spark-card-bg">TODOS</option>
+                                     <option value="PENDIENTE" class="spark-card-bg">PENDIENTES</option>
+                                     <option value="ASIGNADO" class="spark-card-bg">PROCESO</option>
+                                     <option value="CERRADO" class="spark-card-bg">RESUELTOS</option>
                                  </select>
                              </div>
                              <div class="flex flex-col">
-                                 <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Fecha</label>
-                                 <select id="filter-date" onchange="applyFilters()" class="custom-select bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[11px] font-bold text-slate-300 outline-none cursor-pointer transition-all">
-                                     <option value="ALL" class="bg-[#1a1c1e]">CUALQUIERA</option>
-                                     <option value="TODAY" class="bg-[#1a1c1e]">HOY</option>
-                                     <option value="YESTERDAY" class="bg-[#1a1c1e]">AYER</option>
-                                     <option value="LAST7" class="bg-[#1a1c1e]">ÚLTIMOS 7 DÍAS</option>
+                                 <label class="text-[9px] font-black text-muted uppercase tracking-widest mb-2 ml-1">Fecha</label>
+                                 <select id="filter-date" onchange="applyFilters()" class="custom-select spark-bg spark-border rounded-xl px-4 py-3 text-[11px] font-bold text-body outline-none cursor-pointer transition-all">
+                                     <option value="ALL" class="spark-card-bg">CUALQUIERA</option>
+                                     <option value="TODAY" class="spark-card-bg">HOY</option>
+                                     <option value="YESTERDAY" class="spark-card-bg">AYER</option>
+                                     <option value="LAST7" class="spark-card-bg">ÚLTIMOS 7 DÍAS</option>
                                  </select>
                              </div>
                              <div class="flex flex-col">
-                                 <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Operador</label>
-                                 <select id="filter-operator" onchange="applyFilters()" class="custom-select bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[11px] font-bold text-slate-300 outline-none cursor-pointer transition-all">
-                                     <option value="ALL" class="bg-[#1a1c1e]">TODOS</option>
+                                 <label class="text-[9px] font-black text-muted uppercase tracking-widest mb-2 ml-1">Operador</label>
+                                 <select id="filter-operator" onchange="applyFilters()" class="custom-select spark-bg spark-border rounded-xl px-4 py-3 text-[11px] font-bold text-body outline-none cursor-pointer transition-all">
+                                     <option value="ALL" class="spark-card-bg">TODOS</option>
                                  </select>
                              </div>
                              <div class="flex flex-col">
-                                 <label class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Etiqueta</label>
-                                 <select id="filter-tag" onchange="applyFilters()" class="custom-select bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[11px] font-bold text-slate-300 outline-none cursor-pointer transition-all">
-                                     <option value="ALL" class="bg-[#1a1c1e]">TODAS</option>
-                                     <option value="URGENTE" class="bg-[#1a1c1e]">URGENTE</option>
-                                     <option value="SOPORTE" class="bg-[#1a1c1e]">SOPORTE</option>
-                                     <option value="VENTAS" class="bg-[#1a1c1e]">VENTAS</option>
-                                     <option value="INFO" class="bg-[#1a1c1e]">INFO</option>
+                                 <label class="text-[9px] font-black text-muted uppercase tracking-widest mb-2 ml-1">Etiqueta</label>
+                                 <select id="filter-tag" onchange="applyFilters()" class="custom-select spark-bg spark-border rounded-xl px-4 py-3 text-[11px] font-bold text-body outline-none cursor-pointer transition-all">
+                                     <option value="ALL" class="spark-card-bg">TODAS</option>
+                                     <option value="URGENTE" class="spark-card-bg">URGENTE</option>
+                                     <option value="SOPORTE" class="spark-card-bg">SOPORTE</option>
+                                     <option value="VENTAS" class="spark-card-bg">VENTAS</option>
+                                     <option value="INFO" class="spark-card-bg">INFO</option>
                                  </select>
                              </div>
                          </div>
 
                         <!-- FILA 2: Acciones -->
                         <div class="flex items-center justify-end gap-3 self-end">
-                            <button onclick="syncAll()" id="sync-btn" class="flex items-center justify-center px-6 h-12 rounded-2xl bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white transition-all border border-blue-500/20 gap-3 active:scale-95 shadow-lg shadow-blue-600/5" title="Sincronizar">
+                            <button onclick="syncAll()" id="sync-btn" class="flex items-center justify-center px-8 h-12 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all border border-primary/20 gap-3 active:scale-95 shadow-lg shadow-primary/5" title="Sincronizar">
                                 <span id="sync-icon" class="text-sm">🔄</span>
                                 <span class="text-[10px] font-bold uppercase tracking-wider">Sincronizar Bandeja</span>
                             </button>
                             
-                            <div class="w-px h-8 bg-white/10 mx-2"></div>
+                            <div class="w-px h-8 spark-border" style="border-left-width:1px"></div>
 
-                            <button onclick="resetFilters()" class="px-6 h-12 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:bg-red-500/10 hover:text-red-400 hover:border-red-500/40 transition-all active:scale-95">
+                            <button onclick="resetFilters()" class="px-8 h-12 rounded-full spark-bg spark-border text-[10px] font-bold text-muted uppercase tracking-widest hover:bg-red-500/10 hover:text-red-600 hover:border-red-500/40 transition-all active:scale-95">
                                 Limpiar Filtros
                             </button>
                         </div>
@@ -1508,36 +916,35 @@
                 </div>
 
 <!-- BARRA DE ACCIONES MASIVAS -->
-                <div id="bulk-actions-bar" class="hidden flex items-center justify-between mb-4 bg-slate-800/90 backdrop-blur-md border border-white/10 px-6 py-3 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
+                <div id="bulk-actions-bar" class="hidden flex items-center justify-between mb-4 backdrop-blur-2xl spark-border px-6 py-3 rounded-2xl shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300" style="background: var(--bg-card);">
                     <div class="flex items-center gap-6">
-                        <div class="flex items-center gap-3 bg-white/5 px-4 py-1.5 rounded-xl border border-white/5">
-                            <span id="selected-count-num" class="text-lg font-black text-white leading-none">0</span>
-                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em]">Seleccionados</span>
+                        <div class="flex items-center gap-3 px-4 py-1.5 rounded-xl spark-border" style="background: var(--bg-secondary);">
+                            <span id="selected-count-num" class="text-lg font-black text-heading leading-none">0</span>
+                            <span class="text-[10px] font-bold text-muted uppercase tracking-[0.1em]">Seleccionados</span>
                         </div>
                         <div id="bulk-standard-actions" class="flex items-center gap-6">
-                            <button onclick="prepareBulkAction('READ', true)" class="flex items-center gap-2 text-slate-300 hover:text-blue-400 transition-all group">
+                            <button onclick="prepareBulkAction('READ', true)" class="flex items-center gap-2 text-body hover:text-primary transition-all group">
                                 <span class="text-xs group-hover:scale-110 transition-transform">📖</span>
                                 <span class="text-[10px] font-bold uppercase tracking-widest">Marcar Leído</span>
                             </button>
-                            <button onclick="prepareBulkAction('READ', false)" class="flex items-center gap-2 text-slate-300 hover:text-blue-400 transition-all group">
+                            <button onclick="prepareBulkAction('READ', false)" class="flex items-center gap-2 text-body hover:text-primary transition-all group">
                                 <span class="text-xs group-hover:scale-110 transition-transform">✉️</span>
                                 <span class="text-[10px] font-bold uppercase tracking-widest">Marcar No Leído</span>
                             </button>
-                            <div class="w-px h-4 bg-white/10"></div>
+                            <div class="w-px h-4 spark-border" style="border-left-width:1px"></div>
                             <div class="flex items-center gap-3">
-                                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Asignar a</span>
-                                <select id="bulk-assign-select" onchange="if(this.value) prepareBulkAction('ASSIGN', this.value)" class="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-[10px] font-bold text-slate-300 outline-none cursor-pointer hover:border-blue-500/50 transition-all">
-                                    <option value="" class="bg-slate-800">-- SELECCIONAR --</option>
+                                <span class="text-[10px] font-bold text-muted uppercase tracking-wider">Asignar a</span>
+                                <select id="bulk-assign-select" onchange="if(this.value) prepareBulkAction('ASSIGN', this.value)" class="spark-bg spark-border rounded-full px-4 py-1.5 text-[10px] font-bold text-body outline-none cursor-pointer hover:border-primary/50 transition-all">
+                                    <option value="" class="spark-card-bg">-- SELECCIONAR --</option>
                                 </select>
                             </div>
                         </div>
-                        <!-- Acciones para TRASH (oculto por defecto) -->
                         <div id="bulk-trash-actions" class="hidden flex items-center gap-4">
-                            <button onclick="bulkRestoreFromTrash()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 hover:bg-green-500 hover:text-white transition-all">
+                            <button onclick="bulkRestoreFromTrash()" class="flex items-center gap-2 px-5 py-2 rounded-full bg-green-500/15 border border-green-500/25 text-green-600 hover:bg-green-500 hover:text-white transition-all">
                                 <span class="text-xs">↪</span>
                                 <span class="text-[10px] font-bold uppercase tracking-widest">Restaurar</span>
                             </button>
-                            <button onclick="bulkPermanentDelete()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-all">
+                            <button onclick="bulkPermanentDelete()" class="flex items-center gap-2 px-5 py-2 rounded-full bg-red-500/15 border border-red-500/25 text-red-600 hover:bg-red-500 hover:text-white transition-all">
                                 <span class="text-xs">🗑</span>
                                 <span class="text-[10px] font-bold uppercase tracking-widest">Eliminar Permanentemente</span>
                             </button>
@@ -1545,11 +952,11 @@
                     </div>
                     
                     <div id="bulk-delete-container" class="flex items-center gap-4">
-                        <button onclick="prepareBulkAction('DELETE')" class="px-4 py-2 rounded-full bg-[#c5221f] text-white font-medium text-[13px] shadow-md transition-all hover:bg-[#b30c0a] flex items-center gap-2">
+                        <button onclick="prepareBulkAction('DELETE')" class="px-5 py-2 rounded-full bg-red-500/20 text-red-600 font-bold text-[13px] shadow-md transition-all hover:bg-red-500 hover:text-white flex items-center gap-2 border border-red-500/30">
                             <span class="font-bold">🗑️</span>
                             <span class="text-[10px] font-bold uppercase tracking-widest">Eliminar</span>
                         </button>
-                        <button onclick="deselectAll()" class="text-slate-500 hover:text-white text-xl leading-none px-2 transition-colors">×</button>
+                        <button onclick="deselectAll()" class="text-muted hover:text-body text-xl leading-none px-2 transition-colors">×</button>
                     </div>
                 </div>
 
@@ -1575,7 +982,7 @@
                         <!-- Derecha: App & Versión -->
                         <div class="flex flex-col items-center md:items-end text-center md:text-right">
                             <p class="text-[11px] font-bold text-slate-300 uppercase tracking-widest mb-2">Agent Email AIRIS</p>
-                            <span class="inline-block px-3 py-1 rounded-full bg-blue-600/10 border border-blue-500/20 text-blue-500 text-[9px] font-black tracking-tighter shadow-[0_0_10px_rgba(52,120,246,0.1)]">v1.1.22</span>
+                            <span class="inline-block px-3 py-1 rounded-full bg-blue-600/15 border border-blue-500/25 text-blue-400 text-[9px] font-black tracking-tighter backdrop-blur-sm shadow-[0_0_10px_rgba(52,120,246,0.1)]">v1.1.23</span>
                         </div>
                     </div>
                 </footer>
@@ -1662,7 +1069,7 @@
                         <!-- Se填充ará dinámicamente según el folder -->
                     </div>
                     <!-- Derecha: Eliminar (solo icono) -->
-                    <button id="ins-delete-btn" onclick="deleteCurrentThread()" class="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 transition-colors" title="Mover a papelera">
+                    <button id="ins-delete-btn" onclick="deleteCurrentThread()" class="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-red-500 hover:text-white transition-all" title="Mover a papelera">
                         🗑️
                     </button>
                 </div>
@@ -1671,7 +1078,7 @@
     </div>
 
     <!-- MODAL: Responder con IA - Estilo Gmail EXACTO -->
-    <div id="response-modal" class="hidden fixed inset-0 z-[300] bg-black/40 flex items-center justify-center p-8">
+    <div id="response-modal" class="hidden fixed inset-0 z-[300] bg-black/50 backdrop-blur-sm flex items-center justify-center p-8">
         <div class="response-modal-window" style="font-family: Roboto, Arial, sans-serif;">
             <!-- Header estilo Gmail Dark -->
             <div class="gmail-header">
@@ -1723,8 +1130,8 @@
             <div id="original-email-content" class="hidden"></div>
             
             <!-- Vista previa IA (antes de mostrar botones) -->
-            <div id="ai-preview-modal" class="hidden fixed inset-0 z-[400] bg-black/50 flex items-center justify-center p-4">
-                <div class="bg-white rounded-xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col shadow-2xl">
+            <div id="ai-preview-modal" class="hidden fixed inset-0 z-[400] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+                <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col shadow-2xl">
                     <div class="bg-violet-600 px-4 py-3 flex items-center justify-between">
                         <h3 class="text-white font-bold">📋 Vista Previa - Respuesta IA</h3>
                         <button onclick="closeAIPreview()" class="text-white hover:text-gray-200 text-2xl">&times;</button>
@@ -1738,7 +1145,7 @@
             </div>
 
             <!-- Toolbar inferior y Enviar -->
-            <div class="px-4 py-3 flex items-center justify-between bg-white border-t border-gray-100 rounded-b-xl">
+            <div class="px-4 py-3 flex items-center justify-between border-t border-gray-100 rounded-b-xl" style="background: rgba(255,255,255,0.9); backdrop-filter: blur(12px);">
                 <div class="flex items-center gap-4">
                     <button onclick="sendResponse()" class="px-6 py-2.5 bg-[#0b57d0] hover:bg-[#0842a0] text-white rounded-full text-sm font-medium transition-colors shadow-sm">
                         Enviar
@@ -1754,25 +1161,23 @@
                          <button onclick="generateAIResponse()" id="btn-generate-ai" class="text-[12px] font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 px-4 py-2 rounded-full flex items-center gap-1.5 transition-colors mr-2">
                             ✨ Autocompletar con IA
                          </button>
-                         <button onclick="formatText('bold')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded" title="Negrita"><span class="font-bold">B</span></button>
-                         <button onclick="formatText('italic')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded" title="Cursiva"><span class="italic font-serif">I</span></button>
-                         <button onclick="formatText('underline')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded" title="Subrayado"><span class="underline">U</span></button>
+                         <button onclick="formatText('bold')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-full" title="Negrita"><span class="font-bold">B</span></button>
+                         <button onclick="formatText('italic')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-full" title="Cursiva"><span class="italic font-serif">I</span></button>
+                         <button onclick="formatText('underline')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-full" title="Subrayado"><span class="underline">U</span></button>
                          
-                         <!-- Selector de color -->
-                         <div class="relative flex items-center justify-center w-8 h-8 hover:bg-gray-100 rounded overflow-hidden" title="Color de texto">
+                         <div class="relative flex items-center justify-center w-8 h-8 hover:bg-gray-100 rounded-full overflow-hidden" title="Color de texto">
                              <span class="font-bold border-b-[3px] border-black leading-none text-gray-600 pointer-events-none mt-1">A</span>
                              <input type="color" onchange="formatText('color', this.value)" class="absolute inset-x-0 bottom-0 top-0 opacity-0 w-full h-full cursor-pointer">
                          </div>
                          
                          <div class="w-px h-5 bg-gray-300 mx-1"></div>
                          
-                         <!-- Nuevos iconos Gmail -->
-                         <button onclick="formatText('attach')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded" title="Adjuntar archivos">📎</button>
+                         <button onclick="formatText('attach')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-full" title="Adjuntar archivos">📎</button>
                          <input type="file" id="attach-file-input" class="hidden" multiple onchange="handleFileSelection(this)">
                          
-                         <button onclick="formatText('link')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded" title="Insertar enlace">🔗</button>
-                         <button onclick="formatText('emoji')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded text-lg" title="Insertar emoticono">😀</button>
-                         <button onclick="formatText('image')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded" title="Insertar imagen">🖼️</button>
+                         <button onclick="formatText('link')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-full" title="Insertar enlace">🔗</button>
+                         <button onclick="formatText('emoji')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-full text-lg" title="Insertar emoticono">😀</button>
+                         <button onclick="formatText('image')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-full" title="Insertar imagen">🖼️</button>
                     </div>
                 </div>
                 <button onclick="closeResponseModal()" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded" title="Descartar borrador">
@@ -1786,9 +1191,9 @@
     </div>
 
     <!-- MODAL: Bandeja de Borradores -->
-    <div id="drafts-modal" class="hidden fixed inset-0 z-[400] bg-black/60 backdrop-blur-sm flex items-center justify-center p-8">
-        <div class="w-full max-w-4xl rounded-3xl border border-white/10 bg-[#111315] shadow-2xl overflow-hidden flex flex-col h-[75vh]">
-            <header class="px-8 py-5 border-b border-white/10 flex items-center justify-between bg-[#1a1c1e]">
+    <div id="drafts-modal" class="hidden fixed inset-0 z-[400] bg-black/40 backdrop-blur-md flex items-center justify-center p-8">
+        <div class="w-full max-w-4xl rounded-3xl border border-white/10 bg-[#111315] bg-opacity-70 shadow-2xl overflow-hidden flex flex-col h-[75vh]" style="background: rgba(17,19,21,0.75); backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);">
+            <header class="px-8 py-5 border-b border-white/10 flex items-center justify-between" style="background: rgba(26,28,30,0.7); backdrop-filter: blur(16px);">
                 <div>
                     <h3 class="text-white text-xl font-bold tracking-tight flex items-center gap-2">📝 Mis Borradores Guardados</h3>
                 </div>
@@ -1803,9 +1208,9 @@
     </div>
 
     <!-- MODAL: Programar envío -->
-    <div id="schedule-modal" class="hidden fixed inset-0 z-[400] bg-black/60 backdrop-blur-sm flex items-center justify-center p-8">
-        <div class="w-full max-w-lg rounded-3xl border border-white/10 bg-[#111315] shadow-2xl overflow-hidden">
-            <header class="px-8 py-5 border-b border-white/10 flex items-center justify-between bg-[#1a1c1e]">
+    <div id="schedule-modal" class="hidden fixed inset-0 z-[400] bg-black/40 backdrop-blur-md flex items-center justify-center p-8">
+        <div class="w-full max-w-lg rounded-3xl border border-white/10 shadow-2xl overflow-hidden" style="background: rgba(17,19,21,0.75); backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);">
+            <header class="px-8 py-5 border-b border-white/10 flex items-center justify-between" style="background: rgba(26,28,30,0.7); backdrop-filter: blur(16px);">
                 <h3 class="text-white text-xl font-bold tracking-tight flex items-center gap-2">⏰ Programar Envío</h3>
                 <button onclick="toggleScheduleModal(false)" class="text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
             </header>
@@ -1814,7 +1219,7 @@
                 <div>
                     <label class="text-slate-300 text-sm font-bold block mb-2">📅 Fecha y hora de envío</label>
                     <input type="datetime-local" id="schedule-datetime"
-                           class="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50"
+                           class="w-full px-4 py-3 rounded-xl spark-bg spark-border text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50"
                            min="">
                 </div>
                 <div class="bg-white/5 rounded-xl p-4 border border-white/10">
@@ -1823,7 +1228,7 @@
                     <p class="text-slate-400 text-xs truncate" id="schedule-preview-to">Para: destinatario</p>
                 </div>
             </div>
-            <div class="px-6 py-4 border-t border-white/10 flex justify-end gap-3 bg-[#1a1c1e]">
+            <div class="px-6 py-4 border-t border-white/10 flex justify-end gap-3" style="background: rgba(26,28,30,0.7); backdrop-filter: blur(16px);">
                 <button onclick="toggleScheduleModal(false)" class="px-5 py-2.5 text-sm font-bold text-slate-400 hover:text-white transition-colors">Cancelar</button>
                 <button onclick="confirmSchedule()" class="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-full text-sm font-bold transition-colors shadow-sm">✅ Programar</button>
             </div>
@@ -1831,9 +1236,9 @@
     </div>
 
     <!-- MODAL: Bandeja de Programados -->
-    <div id="scheduled-modal" class="hidden fixed inset-0 z-[400] bg-black/60 backdrop-blur-sm flex items-center justify-center p-8">
-        <div class="w-full max-w-4xl rounded-3xl border border-white/10 bg-[#111315] shadow-2xl overflow-hidden flex flex-col h-[75vh]">
-            <header class="px-8 py-5 border-b border-white/10 flex items-center justify-between bg-[#1a1c1e]">
+    <div id="scheduled-modal" class="hidden fixed inset-0 z-[400] bg-black/40 backdrop-blur-md flex items-center justify-center p-8">
+        <div class="w-full max-w-4xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden flex flex-col h-[75vh]" style="background: rgba(17,19,21,0.75); backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);">
+            <header class="px-8 py-5 border-b border-white/10 flex items-center justify-between" style="background: rgba(26,28,30,0.7); backdrop-filter: blur(16px);">
                 <div>
                     <h3 class="text-white text-xl font-bold tracking-tight flex items-center gap-2">⏰ Correos Programados</h3>
                 </div>
@@ -1847,9 +1252,9 @@
         </div>
     </div>
 
-    <div id="collaborators-modal" class="hidden fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm">
-        <div class="max-w-6xl mx-auto mt-8 rounded-3xl border border-white/10 bg-[#111315] shadow-2xl overflow-hidden">
-            <header class="px-8 py-5 border-b border-white/10 flex items-center justify-between">
+    <div id="collaborators-modal" class="hidden fixed inset-0 z-[100] bg-black/40 backdrop-blur-md">
+        <div class="max-w-6xl mx-auto mt-8 rounded-3xl border border-white/10 shadow-2xl overflow-hidden" style="background: rgba(17,19,21,0.75); backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);">
+            <header class="px-8 py-5 border-b border-white/10 flex items-center justify-between" style="background: rgba(26,28,30,0.7); backdrop-filter: blur(16px);">
                 <div>
                     <h3 class="text-white text-xl font-bold tracking-tight">⚙️ Configuración</h3>
                 </div>
@@ -1888,16 +1293,16 @@
                     <div class="flex items-center justify-between mb-6">
                         <h4 class="text-white text-lg font-bold tracking-tight">🤖 Configuración IA y Firma</h4>
                     </div>
-                    <div class="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
+                    <div class="spark-bg spark-border rounded-2xl p-6 space-y-4">
                         <div>
                             <label class="text-slate-400 text-sm font-semibold uppercase tracking-wider">Firma de Correo</label>
-                            <textarea id="email-signature" placeholder="Ej: Juan Pérez&#10;Gerente de Operaciones&#10;AIRIS Administración Empresarial" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-green-400/60 focus:bg-white/10 h-24 mt-2"></textarea>
+                            <textarea id="email-signature" placeholder="Ej: Juan Pérez&#10;Gerente de Operaciones&#10;AIRIS Administración Empresarial" class="w-full spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-green-400/60 focus:bg-white/10 h-24 mt-2"></textarea>
                             <p class="text-xs text-slate-500 mt-1">Esta firma se agregará automáticamente al final de cada respuesta</p>
                         </div>
                         <div>
                             <label class="text-slate-400 text-sm font-semibold uppercase tracking-wider">Groq API Key (Gratis - 200 RPM)</label>
                             <div class="flex gap-3 mt-2">
-                                <input id="groq-api-key" type="password" placeholder="Ingresa tu API Key de Groq" class="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-green-400/60 focus:bg-white/10">
+                                <input id="groq-api-key" type="password" placeholder="Ingresa tu API Key de Groq" class="flex-1 spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-green-400/60 focus:bg-white/10">
                                 <button onclick="saveGroqApiKey()" class="px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-lg text-sm font-bold uppercase tracking-wider transition-colors">
                                     Guardar
                                 </button>
@@ -1907,7 +1312,7 @@
                         <div>
                             <label class="text-slate-400 text-sm font-semibold uppercase tracking-wider">Google Gemini API Key</label>
                             <div class="flex gap-3 mt-2">
-                                <input id="gemini-api-key" type="password" placeholder="Ingresa tu API Key de Gemini" class="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-green-400/60 focus:bg-white/10">
+                                <input id="gemini-api-key" type="password" placeholder="Ingresa tu API Key de Gemini" class="flex-1 spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-green-400/60 focus:bg-white/10">
                                 <button onclick="saveGeminiApiKey()" class="px-6 py-3 bg-green-600 hover:bg-green-500 text-white rounded-lg text-sm font-bold uppercase tracking-wider transition-colors">
                                     Guardar
                                 </button>
@@ -1923,15 +1328,15 @@
             </div>
 
             <!-- MODAL: Nueva Colaborador -->
-            <div id="modal-col-create" class="hidden fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                <div class="bg-[#1a1c1e] border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl">
+            <div id="modal-col-create" class="hidden fixed inset-0 z-[200] bg-black/40 backdrop-blur-md flex items-center justify-center">
+                <div class="border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl" style="background: rgba(26,28,30,0.75); backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);">
                     <h3 class="text-white text-lg font-bold mb-6">👥 Nuevo Colaborador</h3>
                     <form id="collaborator-form" onsubmit="createCollaborator(event)" class="space-y-4">
-                        <input id="col-name" type="text" placeholder="Nombre" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
-                        <input id="col-username" type="text" placeholder="Username" required class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
-                        <input id="col-email" type="email" placeholder="Email" required class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
-                        <input id="col-password" type="text" placeholder="Password" required class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
-                        <select id="col-role" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                        <input id="col-name" type="text" placeholder="Nombre" class="w-full spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                        <input id="col-username" type="text" placeholder="Username" required class="w-full spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                        <input id="col-email" type="email" placeholder="Email" required class="w-full spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                        <input id="col-password" type="text" placeholder="Password" required class="w-full spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                        <select id="col-role" class="w-full spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
                             <option value="operador" class="bg-[#1a1c1e]">Operador</option>
                             <option value="admin" class="bg-[#1a1c1e]">Admin</option>
                         </select>
@@ -1949,17 +1354,17 @@
             </div>
 
             <!-- MODAL: Editar Colaborador -->
-            <div id="modal-col-edit" class="hidden fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                <div class="bg-[#1a1c1e] border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl">
+            <div id="modal-col-edit" class="hidden fixed inset-0 z-[200] bg-black/40 backdrop-blur-md flex items-center justify-center">
+                <div class="border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl" style="background: rgba(26,28,30,0.75); backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);">
                     <h3 class="text-white text-lg font-bold mb-6">✏️ Editar Colaborador</h3>
                     <form id="collaborator-edit-form" onsubmit="submitCollaboratorEdit(event)" class="space-y-4">
-                        <input id="edit-col-name" type="text" placeholder="Nombre" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
-                        <input id="edit-col-email" type="email" placeholder="Email" required class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
-                        <select id="edit-col-role" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                        <input id="edit-col-name" type="text" placeholder="Nombre" class="w-full spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                        <input id="edit-col-email" type="email" placeholder="Email" required class="w-full spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                        <select id="edit-col-role" class="w-full spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
                             <option value="operador" class="bg-[#1a1c1e]">Operador</option>
                             <option value="admin" class="bg-[#1a1c1e]">Admin</option>
                         </select>
-                        <input id="edit-col-password" type="text" placeholder="Password (opcional)" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
+                        <input id="edit-col-password" type="text" placeholder="Password (opcional)" class="w-full spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-violet-400/60 focus:bg-white/10">
                         <div class="flex gap-3 pt-4">
                             <button type="submit" class="flex-1 bg-violet-600 hover:bg-violet-500 text-white rounded-lg py-3 text-sm font-bold uppercase tracking-wider transition-colors">
                                 Guardar
@@ -1973,18 +1378,18 @@
             </div>
 
             <!-- MODAL: Nueva Empresa -->
-            <div id="modal-cmp-create" class="hidden fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                <div class="bg-[#1a1c1e] border border-white/10 rounded-3xl p-8 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div id="modal-cmp-create" class="hidden fixed inset-0 z-[200] bg-black/40 backdrop-blur-md flex items-center justify-center">
+                <div class="border border-white/10 rounded-3xl p-8 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar" style="background: rgba(26,28,30,0.75); backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);">
                     <h3 class="text-white text-lg font-bold mb-6">📧 Nueva Empresa</h3>
                     <form id="company-form" onsubmit="createCompany(event)" class="grid grid-cols-2 gap-4">
-                        <input id="cmp-nombre" type="text" placeholder="Nombre" required class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                        <input id="cmp-alias" type="text" placeholder="Alias" class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                        <input id="cmp-imap-host" type="text" placeholder="IMAP host" required class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                        <input id="cmp-imap-port" type="number" placeholder="IMAP port" value="993" class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                        <input id="cmp-email-user" type="email" placeholder="Correo" required class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                        <input id="cmp-email-pass" type="text" placeholder="Password" required class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                        <input id="cmp-smtp-host" type="text" placeholder="SMTP host" class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                        <input id="cmp-smtp-port" type="number" placeholder="SMTP port" value="465" class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="cmp-nombre" type="text" placeholder="Nombre" required class="spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="cmp-alias" type="text" placeholder="Alias" class="spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="cmp-imap-host" type="text" placeholder="IMAP host" required class="spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="cmp-imap-port" type="number" placeholder="IMAP port" value="993" class="spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="cmp-email-user" type="email" placeholder="Correo" required class="spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="cmp-email-pass" type="text" placeholder="Password" required class="spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="cmp-smtp-host" type="text" placeholder="SMTP host" class="spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="cmp-smtp-port" type="number" placeholder="SMTP port" value="465" class="spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
                         <p id="company-feedback" class="col-span-2 text-xs font-semibold text-slate-300 min-h-5"></p>
                         <button type="submit" class="col-span-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-3 text-sm font-bold uppercase tracking-wider transition-colors">
                             Crear
@@ -1997,18 +1402,18 @@
             </div>
 
             <!-- MODAL: Editar Empresa -->
-            <div id="modal-cmp-edit" class="hidden fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                <div class="bg-[#1a1c1e] border border-white/10 rounded-3xl p-8 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div id="modal-cmp-edit" class="hidden fixed inset-0 z-[200] bg-black/40 backdrop-blur-md flex items-center justify-center">
+                <div class="border border-white/10 rounded-3xl p-8 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar" style="background: rgba(26,28,30,0.75); backdrop-filter: blur(32px); -webkit-backdrop-filter: blur(32px);">
                     <h3 class="text-white text-lg font-bold mb-6">✏️ Editar Empresa</h3>
                     <form id="company-edit-form" onsubmit="submitCompanyEdit(event)" class="grid grid-cols-2 gap-4">
-                        <input id="edit-cmp-nombre" type="text" placeholder="Nombre" required class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                        <input id="edit-cmp-alias" type="text" placeholder="Alias" class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                        <input id="edit-cmp-imap-host" type="text" placeholder="IMAP host" required class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                        <input id="edit-cmp-imap-port" type="number" placeholder="IMAP port" class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                        <input id="edit-cmp-email-user" type="email" placeholder="Correo" required class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                        <input id="edit-cmp-email-pass" type="text" placeholder="Password (opcional)" class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                        <input id="edit-cmp-smtp-host" type="text" placeholder="SMTP host" class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
-                        <input id="edit-cmp-smtp-port" type="number" placeholder="SMTP port" class="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="edit-cmp-nombre" type="text" placeholder="Nombre" required class="spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="edit-cmp-alias" type="text" placeholder="Alias" class="spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="edit-cmp-imap-host" type="text" placeholder="IMAP host" required class="spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="edit-cmp-imap-port" type="number" placeholder="IMAP port" class="spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="edit-cmp-email-user" type="email" placeholder="Correo" required class="spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="edit-cmp-email-pass" type="text" placeholder="Password (opcional)" class="spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="edit-cmp-smtp-host" type="text" placeholder="SMTP host" class="spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
+                        <input id="edit-cmp-smtp-port" type="number" placeholder="SMTP port" class="spark-bg spark-border rounded-lg px-4 py-3 text-sm text-white outline-none focus:border-blue-400/60 focus:bg-white/10">
                         <label class="col-span-2 flex items-center gap-2 text-slate-300 text-sm font-semibold">
                             <input id="edit-cmp-activo" type="checkbox" class="accent-blue-500" checked>
                             Mantener cuenta activa
@@ -2047,6 +1452,19 @@
 
     <script>
         const API_URL = '/api';
+        
+        // Theme toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            html.classList.toggle('dark-mode');
+            localStorage.setItem('theme', html.classList.contains('dark-mode') ? 'dark' : 'light');
+        }
+        function applyTheme() {
+            const saved = localStorage.getItem('theme') || 'light';
+            if (saved === 'dark') document.documentElement.classList.add('dark-mode');
+        }
+        applyTheme();
+        
         let hilos = [], operators = [], empresas = [], activeCompany = null, activeFolder = 'INBOX', currentTid = null;
         let trendChart = null, companyChart = null;
         let token = localStorage.getItem('token');
@@ -2213,7 +1631,11 @@
         }
 
         function initCharts() {
-            const textColor = '#e1e1e6';
+            const isDark = document.documentElement.classList.contains('dark-mode');
+            const textColor = isDark ? '#e2e8f0' : '#334155';
+            const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
+            const tooltipBg = isDark ? '#1a1c1e' : '#f8fafc';
+            const tooltipText = isDark ? '#e2e8f0' : '#0f172a';
             const ctxTrend = document.getElementById('trendChart').getContext('2d');
             trendChart = new Chart(ctxTrend, {
                 type: 'bar',
@@ -2254,7 +1676,9 @@
                             } 
                         },
                         tooltip: {
-                            backgroundColor: '#1a1c1e',
+                            backgroundColor: tooltipBg,
+                            titleColor: tooltipText,
+                            bodyColor: tooltipText,
                             titleFont: { family: 'Plus Jakarta Sans', size: 12 },
                             bodyFont: { family: 'Plus Jakarta Sans', size: 11 },
                             padding: 10,
@@ -2265,7 +1689,7 @@
                     scales: { 
                         x: { 
                             beginAtZero: true,
-                            grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false }, 
+                            grid: { color: gridColor, drawBorder: false }, 
                             ticks: { color: textColor, font: { family: 'Plus Jakarta Sans', weight: '600', size: 10 }, stepSize: 1 } 
                         }, 
                         y: { 
@@ -2545,9 +1969,9 @@
                     <div class="flex items-center gap-3"><span>📬</span><span class="font-extrabold text-sm uppercase">Bandeja General</span></div>
                     <span class="company-badge">${hilos.length}</span>
                 </div>
-                <div style="padding: 24px 0 12px 40px;"><p class="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">Mis Cuentas</p></div>
+                <div style="padding: 24px 0 12px 40px;"><p class="text-[9px] font-black text-sidebar uppercase tracking-[0.3em]">Mis Cuentas</p></div>
             `;
-            html += empresas.map(e => {
+            html += [...empresas].sort((a, b) => a.nombre.localeCompare(b.nombre)).map(e => {
                 const count = hilos.filter(h => h.cuenta_empresa === e.nombre).length;
                 const isActive = activeCompany === e.nombre;
                 let subHtml = '';
@@ -2679,29 +2103,29 @@
 
                 const labelHtml = label ? `<span class="ml-2 px-1.5 py-0.5 rounded text-[8px] font-black tracking-wider uppercase ${label.bg}">${label.text}</span>` : '';
                 return `
-                <div class="email-card ${m.leido ? 'read' : 'unread'} group" onclick="openInspector('${m.thread_id}')">
+                <div class="email-card ${m.leido ? 'read' : 'unread'} group" onclick="openInspector('${m.thread_id}')" oncontextmenu="showContextMenu(event, '${m.thread_id}')">
                     <div class="flex items-center px-4" onclick="event.stopPropagation()">
-                        <input type="checkbox" data-id="${m.thread_id}" onchange="updateSelectionState()" class="thread-checkbox w-4 h-4 rounded border-white/10 bg-white/5 cursor-pointer accent-blue-500">
+                        <input type="checkbox" data-id="${m.thread_id}" onchange="updateSelectionState()" class="thread-checkbox w-4 h-4 rounded spark-border cursor-pointer accent-blue-500" style="background: var(--bg-secondary);">
                     </div>
                     <div class="flex justify-center relative">
-                        ${!m.leido ? '<span class="absolute -top-1 -left-1 w-3.5 h-3.5 bg-blue-500 rounded-full border-[2.5px] border-[#1a1c1e] z-10 shadow-[0_0_12px_rgba(59,130,246,0.6)]"></span>' : ''}
+                        ${!m.leido ? '<span class="absolute -top-1 -left-1 w-3.5 h-3.5 bg-blue-500 rounded-full border-[2.5px] z-10" style="border-color: var(--bg-card); box-shadow: 0 0 12px rgba(59,130,246,0.6);"></span>' : ''}
                         <div class="avatar-circle" style="background:${getAvatarColor(m.remitente)}">${m.remitente[0].toUpperCase()}</div>
                     </div>
-                    <div class="px-4"><p class="text-[11px] font-bold ${m.leido ? 'text-slate-400' : 'text-white'} uppercase truncate tracking-wider">${m.cuenta_empresa || 'System'}</p></div>
-                    <div class="px-8 border-l border-white/5 overflow-hidden text-left flex flex-col justify-center gap-0.5">
+                    <div class="px-4"><p class="text-[11px] font-bold text-muted uppercase truncate tracking-wider">${m.cuenta_empresa || 'System'}</p></div>
+                    <div class="px-8 spark-border" style="border-left-width:1px; overflow:hidden; text-align:left; display:flex; flex-direction:column; justify-content:center; gap:2px;">
                         <div class="flex items-center">
-                            <p class="text-[14px] ${m.leido ? 'font-medium text-slate-400' : 'font-extrabold text-white'} truncate" style="max-width: ${label ? 'calc(100% - 70px)' : '100%'}">${m.asunto || '(Sin Asunto)'}</p>
+                            <p class="text-[14px] ${m.leido ? 'font-medium text-muted' : 'font-extrabold text-heading'} truncate" style="max-width: ${label ? 'calc(100% - 70px)' : '100%'}">${m.asunto || '(Sin Asunto)'}</p>
                             ${labelHtml}
                         </div>
-                        <p class="text-[12px] font-medium ${m.leido ? 'text-slate-500' : 'text-slate-400'} truncate">${(m.mensaje || '').replace(/<[^>]*>?/gm, '')}</p>
+                        <p class="text-[12px] font-medium text-muted truncate">${(m.mensaje || '').replace(/<[^>]*>?/gm, '')}</p>
                         </div>
                         <div class="px-4"><span class="px-3 py-1.5 rounded-full text-[9px] font-black uppercase ${statusClass}">${statusText}</span></div>
-                        <div class="px-4"><select onchange="assignTicket('${m.thread_id}', this.value)" onclick="event.stopPropagation()" class="w-full bg-transparent text-[11px] font-bold text-slate-300 outline-none cursor-pointer hover:text-white transition-colors">
-<option value="" class="bg-[#1a1c1e]">--</option>${operators.map(op => `<option value="${op.username}" class="bg-[#1a1c1e]" ${m.asignado_a === op.username ? 'selected' : ''}>${op.username.toUpperCase()}</option>`).join('')}</select></div>
-                    <div class="text-center text-slate-500">${m.adjuntos ? '📎' : '—'}</div>
+                        <div class="px-4"><select onchange="assignTicket('${m.thread_id}', this.value)" onclick="event.stopPropagation()" class="w-full bg-transparent text-[11px] font-bold text-body outline-none cursor-pointer hover:text-heading transition-colors">
+<option value="" class="spark-card-bg">--</option>${operators.map(op => `<option value="${op.username}" class="spark-card-bg" ${m.asignado_a === op.username ? 'selected' : ''}>${op.username.toUpperCase()}</option>`).join('')}</select></div>
+                    <div class="text-center text-muted">${m.adjuntos ? '📎' : '—'}</div>
                     <div class="text-right pl-4 flex flex-col justify-center">
-                        <p class="text-[11px] font-bold text-slate-400 leading-tight">${new Date(m.fecha).toLocaleDateString()}</p>
-                        <p class="text-[11px] font-bold text-white leading-tight mt-0.5">${new Date(m.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        <p class="text-[11px] font-bold text-muted leading-tight">${new Date(m.fecha).toLocaleDateString()}</p>
+                        <p class="text-[11px] font-bold text-body leading-tight mt-0.5">${new Date(m.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
                 </div>`;
             }).join('');
@@ -2806,7 +2230,6 @@
         function toggleAllThreads(checked) {
             document.querySelectorAll('.thread-checkbox').forEach(cb => {
                 cb.checked = checked;
-                // Forzar feedback visual de selección
                 const card = cb.closest('.email-card');
                 if (card) {
                     if (checked) card.classList.add('ring-1', 'ring-blue-500/50', 'bg-blue-500/5');
@@ -2814,6 +2237,71 @@
                 }
             });
             updateSelectionState();
+        }
+
+        // --- RIGHT-CLICK CONTEXT MENU ---
+        let ctxThreadId = null;
+        
+        document.addEventListener('click', () => {
+            document.getElementById('context-menu').classList.remove('show');
+        });
+        
+        function showContextMenu(e, tid) {
+            e.preventDefault();
+            e.stopPropagation();
+            ctxThreadId = tid;
+            const menu = document.getElementById('context-menu');
+            const x = Math.min(e.clientX, window.innerWidth - 210);
+            const y = Math.min(e.clientY, window.innerHeight - 220);
+            menu.style.left = x + 'px';
+            menu.style.top = y + 'px';
+            menu.classList.add('show');
+        }
+        
+        async function ctxMarkRead(leido) {
+            document.getElementById('context-menu').classList.remove('show');
+            if (!ctxThreadId) return;
+            try {
+                await fetch(`${API_URL}/hilos/update`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ thread_id: ctxThreadId, leido: leido })
+                });
+                await loadData();
+                updateStats();
+                showToast(leido ? 'Marcado como leído' : 'Marcado como no leído');
+            } catch(e) {
+                showToast('Error', true);
+            }
+        }
+        
+        function ctxAssign() {
+            document.getElementById('context-menu').classList.remove('show');
+            if (!ctxThreadId || !operators.length) return;
+            const usernames = operators.map(o => o.username);
+            const choice = prompt('Asignar a:\n' + usernames.join(', '));
+            if (choice && usernames.includes(choice)) {
+                assignTicket(ctxThreadId, choice);
+            } else if (choice) {
+                showToast('Operador no encontrado', true);
+            }
+        }
+        
+        async function ctxDelete() {
+            document.getElementById('context-menu').classList.remove('show');
+            if (!ctxThreadId) return;
+            if (!confirm('¿Mover a la papelera?')) return;
+            try {
+                await fetch(`${API_URL}/hilos/${ctxThreadId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                await loadData();
+                updateStats();
+                showToast('Movido a la papelera');
+            } catch(e) {
+                showToast('Error', true);
+            }
         }
 
         function updateSelectionState() {
@@ -3796,7 +3284,7 @@ function updateInspectorActions(folder) {
                      return;
                  }
                  list.innerHTML = borradores.map(b => `
-                    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 hover:bg-white/10 transition-colors cursor-pointer flex justify-between items-center group" onclick="openDraft(${b.id})">
+                    <div class="spark-bg spark-border rounded-2xl p-4 hover:bg-white/10 transition-colors cursor-pointer flex justify-between items-center group" onclick="openDraft(${b.id})">
                         <div class="flex-1 truncate pr-4">
                             <h4 class="text-white font-bold text-sm truncate">${b.asunto || 'Sin asunto'}</h4>
                             <p class="text-slate-400 text-xs mt-1 truncate">Para: ${b.destinatario || 'Sin destinatario'}</p>
@@ -4112,7 +3600,7 @@ function updateInspectorActions(folder) {
                     return;
                 }
                 list.innerHTML = data.filter(s => s.estado === 'pendiente' || s.estado === 'enviando').map(s => `
-                    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 hover:bg-white/10 transition-colors cursor-pointer flex justify-between items-center group" onclick="editScheduled(${s.id})">
+                    <div class="spark-bg spark-border rounded-2xl p-4 hover:bg-white/10 transition-colors cursor-pointer flex justify-between items-center group" onclick="editScheduled(${s.id})">
                         <div class="flex-1 truncate pr-4">
                             <h4 class="text-white font-bold text-sm truncate">${s.asunto || 'Sin asunto'}</h4>
                             <p class="text-slate-400 text-xs mt-1 truncate">Para: ${s.destinatario || 'Sin destinatario'}</p>
@@ -5018,5 +4506,22 @@ function updateInspectorActions(folder) {
     <!-- Toast Container -->
     <div id="toast-container" class="toast-container"></div>
     
+    <!-- Context Menu -->
+    <div id="context-menu" class="context-menu">
+        <button class="context-menu-item" onclick="ctxMarkRead(true)">
+            <span class="ctx-icon">📖</span> Marcar como leído
+        </button>
+        <button class="context-menu-item" onclick="ctxMarkRead(false)">
+            <span class="ctx-icon">✉️</span> Marcar como no leído
+        </button>
+        <div class="context-menu-divider"></div>
+        <button class="context-menu-item" onclick="ctxAssign()">
+            <span class="ctx-icon">👤</span> Asignar
+        </button>
+        <div class="context-menu-divider"></div>
+        <button class="context-menu-item" onclick="ctxDelete()" style="color: var(--error);">
+            <span class="ctx-icon">🗑️</span> Eliminar
+        </button>
+    </div>
 </body>
 </html>
