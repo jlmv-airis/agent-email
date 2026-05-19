@@ -348,13 +348,17 @@
         @keyframes toast-out { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(100px); } }
         .toast-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
         .toast-success .toast-icon { background: rgba(16,185,129,0.2); color: #34d399; }
-        .toast-success { border-color: rgba(16,185,129,0.3); }
+        .toast-success { border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.06); }
         .toast-error .toast-icon { background: rgba(239,68,68,0.2); color: #f87171; }
-        .toast-error { border-color: rgba(239,68,68,0.3); }
+        .toast-error { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.06); }
         .toast-info .toast-icon { background: rgba(59,130,246,0.2); color: #60a5fa; }
-        .toast-info { border-color: rgba(59,130,246,0.3); }
+        .toast-info { border-color: rgba(59,130,246,0.3); background: rgba(59,130,246,0.06); }
         .toast-warning .toast-icon { background: rgba(234,179,8,0.2); color: #fbbf24; }
-        .toast-warning { border-color: rgba(234,179,8,0.3); }
+        .toast-warning { border-color: rgba(234,179,8,0.3); background: rgba(234,179,8,0.06); }
+        .dark-mode .toast-info { border-color: rgba(59,130,246,0.5); background: rgba(59,130,246,0.1); box-shadow: 0 0 20px rgba(59,130,246,0.08); }
+        .dark-mode .toast-warning { border-color: rgba(245,158,11,0.5); background: rgba(245,158,11,0.1); box-shadow: 0 0 20px rgba(245,158,11,0.08); }
+        .dark-mode .toast-success { border-color: rgba(16,185,129,0.5); background: rgba(16,185,129,0.1); box-shadow: 0 0 20px rgba(16,185,129,0.08); }
+        .dark-mode .toast-error { border-color: rgba(239,68,68,0.5); background: rgba(239,68,68,0.1); box-shadow: 0 0 20px rgba(239,68,68,0.08); }
         .toast-message { color: var(--text-primary); font-size: var(--text-xs); line-height: 1.4; }
         .toast-title { font-size: var(--text-sm); font-weight: var(--font-semibold); color: var(--text-primary); margin-bottom: 2px; }
         .toast-close { position: absolute; top: 8px; right: 8px; background: transparent; border: none; color: var(--text-dim); cursor: pointer; padding: 4px; border-radius: 6px; transition: all 0.2s; font-size: 16px; line-height: 1; z-index: 10; }
@@ -523,14 +527,28 @@
         .gmail-close-btn:hover { background: rgba(0,0,0,0.06); }
         
         .response-modal-window {
-            background: white; border-radius: 12px; width: 100%; max-width: 900px; height: 90vh;
+            background: var(--bg-card); border-radius: 12px; width: 100%; max-width: 900px; height: 90vh;
             display: flex; flex-direction: column; overflow: hidden;
-            box-shadow: 0 24px 64px rgba(0,0,0,0.2);
+            box-shadow: var(--shadow-xl); border: 1px solid var(--border-color);
         }
-        .response-modal-window .gmail-header { background: #404040; padding: 12px 16px; }
-        .response-modal-window .gmail-header span { color: white; font-size: 14px; font-weight: 500; }
-        .response-modal-window .gmail-close-btn { color: #9aa0a6; }
-        .response-modal-window .gmail-close-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+        .response-modal-window .gmail-header { background: var(--bg-secondary); padding: 12px 16px; border-bottom: 1px solid var(--border-color); }
+        .response-modal-window .gmail-header span { color: var(--text-primary); font-size: 14px; font-weight: 600; }
+        .response-modal-window .gmail-close-btn { color: var(--text-dim); }
+        .response-modal-window .gmail-close-btn:hover { background: var(--primary-50); color: var(--primary); }
+        /* Forzar tema claro en el modal de respuesta */
+        #response-modal, #response-modal * {
+            --bg-card: #ffffff;
+            --bg-secondary: #f8fafc;
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --text-dim: #94a3b8;
+            --border-color: rgba(0,0,0,0.06);
+            --primary-50: rgba(37, 99, 235, 0.08);
+            --primary-200: rgba(37, 99, 235, 0.25);
+            --error: #ef4444;
+            --error-light: rgba(239, 68, 68, 0.15);
+            --shadow-xl: 0 16px 48px rgba(0,0,0,0.12);
+        }
         .ins-toolbar {
             min-height: 56px; padding: 12px 20px; border-bottom: 1px solid var(--ins-border);
             display: flex; align-items: center; justify-content: space-between;
@@ -542,6 +560,25 @@
             color: var(--ins-text-secondary); transition: all 0.2s; cursor: pointer; font-size: 14px;
             border: none; background: transparent;
         }
+        .fmt-btn {
+            width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
+            border-radius: var(--radius-full); border: none; cursor: pointer; font-size: 14px;
+            color: var(--text-secondary); background: transparent; transition: all 0.15s ease; flex-shrink: 0;
+        }
+        .fmt-btn:hover { background: var(--primary-50); color: var(--primary); }
+        .fmt-icon-btn {
+            width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;
+            border-radius: var(--radius-full); border: none; cursor: pointer; font-size: 15px;
+            color: var(--text-dim); background: transparent; transition: all 0.15s ease; flex-shrink: 0;
+        }
+        .fmt-icon-btn:hover { background: var(--primary-50); color: var(--primary); }
+        .fmt-select {
+            appearance: none; background: transparent; border: 1px solid var(--border-color);
+            border-radius: var(--radius-full); padding: 4px 10px; font-size: 11px; font-weight: 600;
+            color: var(--text-secondary); cursor: pointer; outline: none; transition: all 0.15s ease;
+        }
+        .fmt-select:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-50); }
+        .fmt-select option { background: var(--bg-card); color: var(--text-primary); }
         .ins-tool-btn:hover { background: var(--ins-hover-bg); color: var(--ins-text-primary); }
         
         .ins-content-area { 
@@ -1087,42 +1124,42 @@
             </div>
             
             <!-- Campos de destino, asunto, CC y CCO -->
-            <div class="px-4 py-2 flex flex-col">
-                <div class="flex items-center text-sm border-b border-gray-200 py-1.5 focus-within:border-blue-500 group">
-                     <span class="text-gray-500 w-12 cursor-default">Para</span>
-                     <input id="response-to" type="text" class="flex-1 text-sm text-gray-800 outline-none bg-transparent">
-                     <div class="flex gap-2 text-[11px] text-gray-400 font-bold ml-2">
-                        <button onclick="toggleCCBCC('cc')" class="hover:text-blue-500 hover:underline">Cc</button>
-                        <button onclick="toggleCCBCC('bcc')" class="hover:text-blue-500 hover:underline">Cco</button>
+            <div class="px-4 py-2 flex flex-col" style="border-bottom: 1px solid var(--border-color);">
+                <div class="flex items-center text-sm py-1.5" style="border-bottom: 1px solid var(--border-color);">
+                     <span class="w-12 cursor-default" style="color: var(--text-secondary);">Para</span>
+                     <input id="response-to" type="text" class="flex-1 text-sm outline-none bg-transparent" style="color: var(--text-primary);">
+                     <div class="flex gap-2 text-[11px] font-bold ml-2" style="color: var(--text-dim);">
+                        <button onclick="toggleCCBCC('cc')" class="hover:text-primary hover:underline" style="color: var(--text-dim);">Cc</button>
+                        <button onclick="toggleCCBCC('bcc')" class="hover:text-primary hover:underline" style="color: var(--text-dim);">Cco</button>
                      </div>
                 </div>
                 <!-- Campo CC (Oculto por defecto) -->
-                <div id="cc-row" class="hidden flex items-center text-sm border-b border-gray-200 py-1.5 focus-within:border-blue-500">
-                     <span class="text-gray-500 w-12 cursor-default">Cc</span>
-                     <input id="response-cc" type="text" placeholder="Copia a..." class="flex-1 text-sm text-gray-800 outline-none bg-transparent">
+                <div id="cc-row" class="hidden flex items-center text-sm py-1.5" style="border-bottom: 1px solid var(--border-color);">
+                     <span class="w-12 cursor-default" style="color: var(--text-secondary);">Cc</span>
+                     <input id="response-cc" type="text" placeholder="Copia a..." class="flex-1 text-sm outline-none bg-transparent" style="color: var(--text-primary);">
                 </div>
                 <!-- Campo BCC (Oculto por defecto) -->
-                <div id="bcc-row" class="hidden flex items-center text-sm border-b border-gray-200 py-1.5 focus-within:border-blue-500">
-                     <span class="text-gray-500 w-12 cursor-default">Cco</span>
-                     <input id="response-bcc" type="text" placeholder="Copia oculta a..." class="flex-1 text-sm text-gray-800 outline-none bg-transparent">
+                <div id="bcc-row" class="hidden flex items-center text-sm py-1.5" style="border-bottom: 1px solid var(--border-color);">
+                     <span class="w-12 cursor-default" style="color: var(--text-secondary);">Cco</span>
+                     <input id="response-bcc" type="text" placeholder="Copia oculta a..." class="flex-1 text-sm outline-none bg-transparent" style="color: var(--text-primary);">
                 </div>
-                <div class="flex items-center text-sm border-b border-gray-200 py-1.5 focus-within:border-blue-500">
-                     <input id="response-subject" type="text" placeholder="Asunto" class="flex-1 text-sm text-gray-800 font-medium outline-none bg-transparent">
+                <div class="flex items-center text-sm py-1.5" style="border-bottom: 1px solid var(--border-color);">
+                     <input id="response-subject" type="text" placeholder="Asunto" class="flex-1 text-sm font-medium outline-none bg-transparent" style="color: var(--text-primary);">
                 </div>
             </div>
             
             <!-- Área de texto con editor -->
             <div class="flex flex-col flex-1 min-h-0">
-                <div id="editor-container" class="flex-1 relative">
-                    <div id="response-body" contenteditable="true" class="absolute inset-0 p-4 text-gray-800 text-sm outline-none overflow-y-auto" placeholder="Escribe tu respuesta..."></div>
+                <div id="editor-container" class="flex-1 relative" style="border-bottom: 1px solid var(--border-color);">
+                    <div id="response-body" contenteditable="true" class="absolute inset-0 p-4 text-sm outline-none overflow-y-auto" style="color: var(--text-primary);" placeholder="Escribe tu respuesta..."></div>
                 </div>
                 <!-- Lista de adjuntos visual -->
-                <div id="attachment-list" class="px-4 py-2 border-t border-gray-50 flex flex-wrap gap-2 bg-gray-50/50 empty:hidden"></div>
+                <div id="attachment-list" class="px-4 py-2 flex flex-wrap gap-2 empty:hidden" style="border-top: 1px solid var(--border-color); background: var(--bg-secondary);"></div>
             </div>
             
             <!-- Feedback -->
-            <div class="px-4 py-1.5 flex items-center gap-2">
-                 <span id="ai-loading" class="hidden text-gray-400 text-xs tracking-wide">Generando respuesta...</span>
+            <div class="px-4 py-1.5 flex items-center gap-2" style="border-top: 1px solid var(--border-color);">
+                 <span id="ai-loading" class="hidden text-xs tracking-wide" style="color: var(--text-dim);">Generando respuesta...</span>
                  <p id="response-feedback" class="text-xs ml-auto"></p>
             </div>
             
@@ -1131,58 +1168,79 @@
             
             <!-- Vista previa IA (antes de mostrar botones) -->
             <div id="ai-preview-modal" class="hidden fixed inset-0 z-[400] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-                <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col shadow-2xl">
-                    <div class="bg-violet-600 px-4 py-3 flex items-center justify-between">
+                <div class="rounded-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col shadow-2xl" style="background: var(--bg-card); border: 1px solid var(--border-color);">
+                    <div class="px-4 py-3 flex items-center justify-between" style="background: var(--primary);">
                         <h3 class="text-white font-bold">📋 Vista Previa - Respuesta IA</h3>
-                        <button onclick="closeAIPreview()" class="text-white hover:text-gray-200 text-2xl">&times;</button>
+                        <button onclick="closeAIPreview()" class="text-white hover:opacity-80 text-2xl">&times;</button>
                     </div>
-                    <div id="ai-preview-content" class="p-4 overflow-y-auto text-gray-700 text-sm whitespace-pre-wrap flex-1"></div>
-                    <div class="px-4 py-3 bg-gray-50 flex justify-end gap-2 border-t">
-                        <button onclick="discardAIResponse()" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-bold text-sm">❌ Descartar</button>
-                        <button onclick="confirmAIResponse()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-bold text-sm">✅ Insertar Respuesta</button>
+                    <div id="ai-preview-content" class="p-4 overflow-y-auto text-sm whitespace-pre-wrap flex-1" style="color: var(--text-primary);"></div>
+                    <div class="px-4 py-3 flex justify-end gap-2" style="border-top: 1px solid var(--border-color); background: var(--bg-secondary);">
+                        <button onclick="discardAIResponse()" class="px-4 py-2 rounded-full font-bold text-sm transition-all" style="background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border-color);">Descartar</button>
+                        <button onclick="confirmAIResponse()" class="px-4 py-2 rounded-full font-bold text-sm transition-all text-white" style="background: var(--primary);">Insertar Respuesta</button>
                     </div>
                 </div>
             </div>
 
-            <!-- Toolbar inferior y Enviar -->
-            <div class="px-4 py-3 flex items-center justify-between border-t border-gray-100 rounded-b-xl" style="background: rgba(255,255,255,0.9); backdrop-filter: blur(12px);">
-                <div class="flex items-center gap-4">
-                    <button onclick="sendResponse()" class="px-6 py-2.5 bg-[#0b57d0] hover:bg-[#0842a0] text-white rounded-full text-sm font-medium transition-colors shadow-sm">
+            <!-- Toolbar inferior - Fila 1: Acciones -->
+            <div class="px-4 py-2 flex items-center justify-between" style="background: var(--bg-secondary); border-top: 1px solid var(--border-color);">
+                <div class="flex items-center gap-2">
+                    <button onclick="sendResponse()" class="px-5 py-2 rounded-full text-sm font-semibold transition-all text-white" style="background: var(--primary); box-shadow: 0 2px 8px rgba(37,99,235,0.25);" onmouseenter="this.style.background='var(--primary-dark)'" onmouseleave="this.style.background='var(--primary)'">
                         Enviar
                     </button>
-                    <button onclick="scheduleSend()" id="btn-schedule-send" class="px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-full text-[12px] font-bold transition-colors shadow-sm" title="Programar envío para después">
+                    <button onclick="scheduleSend()" id="btn-schedule-send" class="px-4 py-2 rounded-full text-[12px] font-bold transition-all" style="background: var(--primary-50); color: var(--primary); border: 1px solid var(--primary-200);" onmouseenter="this.style.background='var(--primary)'; this.style.color='white';" onmouseleave="this.style.background='var(--primary-50)'; this.style.color='var(--primary)';">
                         ⏰ Programar
                     </button>
-                    <button onclick="saveDraft(true)" id="btn-save-draft" class="px-4 py-2 bg-gray-100 font-bold hover:bg-gray-200 text-gray-700 rounded-full text-[12px] transition-colors shadow-sm" title="Guardar como borrador">
+                    <button onclick="saveDraft(true)" id="btn-save-draft" class="px-4 py-2 rounded-full text-[12px] font-bold transition-all" style="background: var(--primary-50); color: var(--primary); border: 1px solid var(--primary-200);" onmouseenter="this.style.background='var(--primary)'; this.style.color='white';" onmouseleave="this.style.background='var(--primary-50)'; this.style.color='var(--primary)';">
                         Guardar
                     </button>
-                    <!-- Funciones Extra Integradas -->
-                    <div class="flex items-center gap-2 border-l border-gray-200 pl-4">
-                         <button onclick="generateAIResponse()" id="btn-generate-ai" class="text-[12px] font-bold text-violet-600 bg-violet-50 hover:bg-violet-100 px-4 py-2 rounded-full flex items-center gap-1.5 transition-colors mr-2">
-                            ✨ Autocompletar con IA
-                         </button>
-                         <button onclick="formatText('bold')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-full" title="Negrita"><span class="font-bold">B</span></button>
-                         <button onclick="formatText('italic')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-full" title="Cursiva"><span class="italic font-serif">I</span></button>
-                         <button onclick="formatText('underline')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-full" title="Subrayado"><span class="underline">U</span></button>
-                         
-                         <div class="relative flex items-center justify-center w-8 h-8 hover:bg-gray-100 rounded-full overflow-hidden" title="Color de texto">
-                             <span class="font-bold border-b-[3px] border-black leading-none text-gray-600 pointer-events-none mt-1">A</span>
-                             <input type="color" onchange="formatText('color', this.value)" class="absolute inset-x-0 bottom-0 top-0 opacity-0 w-full h-full cursor-pointer">
-                         </div>
-                         
-                         <div class="w-px h-5 bg-gray-300 mx-1"></div>
-                         
-                         <button onclick="formatText('attach')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-full" title="Adjuntar archivos">📎</button>
-                         <input type="file" id="attach-file-input" class="hidden" multiple onchange="handleFileSelection(this)">
-                         
-                         <button onclick="formatText('link')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-full" title="Insertar enlace">🔗</button>
-                         <button onclick="formatText('emoji')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-full text-lg" title="Insertar emoticono">😀</button>
-                         <button onclick="formatText('image')" class="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-full" title="Insertar imagen">🖼️</button>
-                    </div>
+                    <div class="w-px h-6 mx-1" style="background: var(--border-color);"></div>
+                    <button onclick="generateAIResponse()" id="btn-generate-ai" class="px-4 py-2 rounded-full text-[12px] font-bold transition-all flex items-center gap-1" style="background: #f3e8ff; color: #6b21a8; border: 1px solid rgba(107,33,168,0.2);" onmouseenter="this.style.background='#6b21a8'; this.style.color='white';" onmouseleave="this.style.background='#f3e8ff'; this.style.color='#6b21a8';">
+                        ✨ IA
+                    </button>
+                    <div class="w-px h-6 mx-1" style="background: var(--border-color);"></div>
+                    <button onclick="formatText('undo')" class="fmt-icon-btn" title="Deshacer">↩</button>
+                    <button onclick="formatText('redo')" class="fmt-icon-btn" title="Rehacer">↪</button>
                 </div>
-                <button onclick="closeResponseModal()" class="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded" title="Descartar borrador">
-                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" class="opacity-80"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="closeResponseModal()" class="fmt-icon-btn" title="Descartar borrador" style="color: var(--error);" onmouseenter="this.style.background='var(--error-light)'" onmouseleave="this.style.background='transparent'">🗑️</button>
+                </div>
+            </div>
+            <!-- Toolbar inferior - Fila 2: Formato -->
+            <div class="px-4 py-2 flex items-center gap-1 flex-wrap" style="background: var(--bg-card); border-top: 1px solid var(--border-color);">
+                <button onclick="formatText('bold')" class="fmt-btn" title="Negrita"><b>B</b></button>
+                <button onclick="formatText('italic')" class="fmt-btn" title="Cursiva"><i>I</i></button>
+                <button onclick="formatText('underline')" class="fmt-btn" title="Subrayado"><u>U</u></button>
+                <div class="relative flex items-center justify-center fmt-btn overflow-hidden" title="Color de texto">
+                    <span style="border-bottom: 2px solid var(--primary); line-height: 1;">A</span>
+                    <input type="color" onchange="formatText('color', this.value)" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer">
+                </div>
+                <div class="relative flex items-center justify-center fmt-btn overflow-hidden" title="Color de fondo">
+                    <span style="background: var(--warning); color: white; padding: 0 2px; border-radius: 2px; line-height: 1.2;">A</span>
+                    <input type="color" onchange="formatText('bgcolor', this.value)" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer">
+                </div>
+                <div class="w-px h-5 mx-1" style="background: var(--border-color);"></div>
+                <button onclick="formatText('list')" class="fmt-btn" title="Lista con viñetas">•</button>
+                <button onclick="formatText('numbered')" class="fmt-btn" title="Lista numerada">#</button>
+                <div class="w-px h-5 mx-1" style="background: var(--border-color);"></div>
+                <button onclick="formatText('left')" class="fmt-btn" title="Alinear izquierda">⬪</button>
+                <button onclick="formatText('center')" class="fmt-btn" title="Centrar">⬫</button>
+                <button onclick="formatText('right')" class="fmt-btn" title="Alinear derecha">⬬</button>
+                <div class="w-px h-5 mx-1" style="background: var(--border-color);"></div>
+                <select onchange="formatText('size', this.value)" class="fmt-select" title="Tamaño de fuente">
+                    <option value="3">Normal</option>
+                    <option value="1">Pequeño</option>
+                    <option value="2">Más pequeño</option>
+                    <option value="4">Grande</option>
+                    <option value="5">Más grande</option>
+                    <option value="6">Muy grande</option>
+                    <option value="7">Enorme</option>
+                </select>
+                <div class="w-px h-5 mx-1" style="background: var(--border-color);"></div>
+                <button onclick="formatText('attach')" class="fmt-btn" title="Adjuntar archivos">📎</button>
+                <input type="file" id="attach-file-input" class="hidden" multiple onchange="handleFileSelection(this)">
+                <button onclick="formatText('link')" class="fmt-btn" title="Insertar enlace">🔗</button>
+                <button onclick="formatText('emoji')" class="fmt-btn" title="Insertar emoticono">😀</button>
+                <button onclick="formatText('image')" class="fmt-btn" title="Insertar imagen">🖼️</button>
             </div>
             
             <!-- Campo Oculto de De: -->
@@ -2846,7 +2904,7 @@ function updateInspectorActions(folder) {
             if (!currentTid) return;
             const m = hilos.find(h => h.thread_id === currentTid);
             if (!m || !m.asignado_a) {
-                showToast('⚠️ Este correo debe estar asignado a un operador para responder.', true);
+                showToast('⚠️ Este correo debe estar asignado a un operador para responder.', 'warning');
                 return;
             }
             
@@ -2889,7 +2947,7 @@ function updateInspectorActions(folder) {
             if (!currentTid) return;
             const m = hilos.find(h => h.thread_id === currentTid);
             if (!m || !m.asignado_a) {
-                alert('⚠️ Este correo debe estar asignado a un operador para reenviar.');
+                showToast('⚠️ Este correo debe estar asignado a un operador para reenviar.', 'warning');
                 return;
             }
             
@@ -4437,6 +4495,10 @@ function updateInspectorActions(folder) {
         // TOAST NOTIFICATION SYSTEM
         // ============================================
         function showToast(message, type = 'info', duration = 4000) {
+            // Backward compatibility: old calls used showToast(msg, true/false)
+            if (typeof type !== 'string') {
+                type = type === true ? 'error' : (type === false ? 'success' : 'info');
+            }
             // Create toast container if it doesn't exist
             let container = document.getElementById('toast-container');
             if (!container) {
@@ -4462,7 +4524,7 @@ function updateInspectorActions(folder) {
                 <div class="toast-icon">${icons[type] || icons.info}</div>
                 <div class="toast-content">
                     <div class="toast-title">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
-                    <div class="toast-message" style="color: #ffffff !important;">${message}</div>
+                    <div class="toast-message">${message}</div>
                 </div>
                 <button class="toast-close" onclick="removeToast(this.parentElement)">×</button>
             `;
