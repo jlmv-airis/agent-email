@@ -1438,6 +1438,7 @@ def get_borradores():
         conn.close()
         return jsonify(borradores)
     except Exception as e:
+        logger.error(f"Error en get_borradores: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/borradores', methods=['POST'])
@@ -1469,6 +1470,7 @@ def create_borrador():
         conn.close()
         return jsonify({'id': borrador_id, 'status': 'saved'})
     except Exception as e:
+        logger.error(f"Error en create_borrador: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/borradores/<int:borrador_id>', methods=['PUT'])
@@ -1493,6 +1495,7 @@ def update_borrador(borrador_id):
         conn.close()
         return jsonify({'status': 'updated'})
     except Exception as e:
+        logger.error(f"Error en update_borrador: {e}")
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/borradores/<int:borrador_id>', methods=['DELETE'])
@@ -1507,6 +1510,7 @@ def delete_borrador(borrador_id):
         conn.close()
         return jsonify({'status': 'deleted'})
     except Exception as e:
+        logger.error(f"Error en delete_borrador: {e}")
         return jsonify({'error': str(e)}), 500
 
 # ==================== API ENVÍOS PROGRAMADOS ====================

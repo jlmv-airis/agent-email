@@ -192,12 +192,42 @@ def init_database():
         )
     ''')
 
-    # Migración: agregar columnas faltantes si la tabla ya existe sin ellas
+    # Migración: agregar columnas faltantes a envios_programados si la tabla ya existe sin ellas
     for col in ['cc', 'bcc', 'cuenta_empresa', 'email_user', 'updated_at']:
         try:
             cur.execute(f"ALTER TABLE envios_programados ADD COLUMN {col} TEXT")
         except sqlite3.OperationalError:
             pass  # columna ya existe
+
+    # Migración: crear tabla borradores si no existe (BD legacy)
+    cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='borradores'")
+    if not cur.fetchone():
+        cur.execute('''
+            CREATE TABLE borradores (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                hilo_id INTEGER,
+                destinatario TEXT,
+                cc TEXT DEFAULT '',
+                bcc TEXT DEFAULT '',
+                asunto TEXT,
+                cuerpo TEXT,
+                cuenta_empresa TEXT DEFAULT '',
+                email_user TEXT DEFAULT '',
+                created_by INTEGER,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(hilo_id) REFERENCES hilos(id),
+                FOREIGN KEY(created_by) REFERENCES usuarios(id)
+            )
+        ''')
+        logger.info("✅ Tabla borradores creada en migración")
+    else:
+        # Agregar columnas faltantes si la tabla ya existe
+        for col in ['cc', 'bcc', 'cuenta_empresa', 'email_user']:
+            try:
+                cur.execute(f"ALTER TABLE borradores ADD COLUMN {col} TEXT DEFAULT ''")
+            except sqlite3.OperationalError:
+                pass  # columna ya existe
     
     # Crear usuario admin por defecto
     cur.execute("SELECT id FROM usuarios WHERE username = 'admin' LIMIT 1")

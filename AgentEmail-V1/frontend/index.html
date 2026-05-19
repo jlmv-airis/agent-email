@@ -566,6 +566,14 @@
             color: var(--text-secondary); background: transparent; transition: all 0.15s ease; flex-shrink: 0;
         }
         .fmt-btn:hover { background: var(--primary-50); color: var(--primary); }
+        .fmt-btn-text {
+            height: 32px; padding: 0 10px; display: inline-flex; align-items: center; gap: 4px;
+            border-radius: var(--radius-full); border: none; cursor: pointer; font-size: 12px;
+            font-weight: 600; color: var(--text-secondary); background: transparent;
+            transition: all 0.15s ease; flex-shrink: 0;
+        }
+        .fmt-btn-text:hover { background: var(--primary-50); color: var(--primary); }
+        .fmt-btn-text svg { width: 15px; height: 15px; }
         .fmt-icon-btn {
             width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;
             border-radius: var(--radius-full); border: none; cursor: pointer; font-size: 15px;
@@ -579,6 +587,16 @@
         }
         .fmt-select:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-50); }
         .fmt-select option { background: var(--bg-card); color: var(--text-primary); }
+        .header-action-btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 0 24px; height: 48px; border-radius: var(--radius-full);
+            gap: 12px; font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.05em; transition: all 0.2s ease; cursor: pointer;
+            border: 1px solid var(--border-color); background: var(--bg-card);
+            color: var(--text-secondary); flex-shrink: 0;
+        }
+        .header-action-btn:hover { background: var(--bg-card-hover); color: var(--text-primary); border-color: var(--border-color-hover); }
+        .header-action-btn:active { transform: scale(0.95); }
         .ins-tool-btn:hover { background: var(--ins-hover-bg); color: var(--ins-text-primary); }
         
         .ins-content-area { 
@@ -938,15 +956,16 @@
 
                         <!-- FILA 2: Acciones -->
                         <div class="flex items-center justify-end gap-3 self-end">
-                            <button onclick="syncAll()" id="sync-btn" class="flex items-center justify-center px-8 h-12 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all border border-primary/20 gap-3 active:scale-95 shadow-lg shadow-primary/5" title="Sincronizar">
+                            <button onclick="syncAll()" id="sync-btn" class="header-action-btn" title="Sincronizar">
                                 <span id="sync-icon" class="text-sm">🔄</span>
-                                <span class="text-[10px] font-bold uppercase tracking-wider">Sincronizar Bandeja</span>
+                                <span>Sincronizar Bandeja</span>
                             </button>
                             
                             <div class="w-px h-8 spark-border" style="border-left-width:1px"></div>
 
-                            <button onclick="resetFilters()" class="px-8 h-12 rounded-full spark-bg spark-border text-[10px] font-bold text-muted uppercase tracking-widest hover:bg-red-500/10 hover:text-red-600 hover:border-red-500/40 transition-all active:scale-95">
-                                Limpiar Filtros
+                            <button onclick="resetFilters()" class="header-action-btn" title="Limpiar todos los filtros">
+                                <span class="text-sm">✕</span>
+                                <span>Limpiar Filtros</span>
                             </button>
                         </div>
                     </div>
@@ -1194,7 +1213,7 @@
                         Guardar
                     </button>
                     <div class="w-px h-6 mx-1" style="background: var(--border-color);"></div>
-                    <button onclick="generateAIResponse()" id="btn-generate-ai" class="px-4 py-2 rounded-full text-[12px] font-bold transition-all flex items-center gap-1" style="background: #f3e8ff; color: #6b21a8; border: 1px solid rgba(107,33,168,0.2);" onmouseenter="this.style.background='#6b21a8'; this.style.color='white';" onmouseleave="this.style.background='#f3e8ff'; this.style.color='#6b21a8';">
+                    <button onclick="generateAIResponse()" id="btn-generate-ai" class="px-4 py-2 rounded-full text-[12px] font-bold transition-all flex items-center gap-1" title="Generar respuesta con IA" style="background: #f3e8ff; color: #6b21a8; border: 1px solid rgba(107,33,168,0.2);" onmouseenter="this.style.background='#6b21a8'; this.style.color='white';" onmouseleave="this.style.background='#f3e8ff'; this.style.color='#6b21a8';">
                         ✨ IA
                     </button>
                     <div class="w-px h-6 mx-1" style="background: var(--border-color);"></div>
@@ -1219,22 +1238,49 @@
                     <input type="color" onchange="formatText('bgcolor', this.value)" class="absolute inset-0 opacity-0 w-full h-full cursor-pointer">
                 </div>
                 <div class="w-px h-5 mx-1" style="background: var(--border-color);"></div>
-                <button onclick="formatText('list')" class="fmt-btn" title="Lista con viñetas">•</button>
-                <button onclick="formatText('numbered')" class="fmt-btn" title="Lista numerada">#</button>
+                <button onclick="toggleBulletList()" class="fmt-btn-text" title="Lista con viñetas">
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="6" y1="4" x2="14" y2="4"/><line x1="6" y1="8" x2="14" y2="8"/><line x1="6" y1="12" x2="14" y2="12"/><circle cx="3" cy="4" r="1" fill="currentColor" stroke="none"/><circle cx="3" cy="8" r="1" fill="currentColor" stroke="none"/><circle cx="3" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
+                    Lista
+                </button>
+                <button onclick="toggleNumberedList()" class="fmt-btn-text" title="Lista numerada">
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="6" y1="4" x2="14" y2="4"/><line x1="6" y1="8" x2="14" y2="8"/><line x1="6" y1="12" x2="14" y2="12"/></svg>
+                    1.
+                </button>
                 <div class="w-px h-5 mx-1" style="background: var(--border-color);"></div>
-                <button onclick="formatText('left')" class="fmt-btn" title="Alinear izquierda">⬪</button>
-                <button onclick="formatText('center')" class="fmt-btn" title="Centrar">⬫</button>
-                <button onclick="formatText('right')" class="fmt-btn" title="Alinear derecha">⬬</button>
+                <!-- Dropdown Alinear Texto -->
+                <div class="relative" id="align-dropdown-container">
+                    <button onclick="toggleAlignDropdown(event)" class="fmt-btn-text" title="Alinear texto">
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="2" y1="4" x2="14" y2="4"/><line x1="2" y1="8" x2="10" y2="8"/><line x1="2" y1="12" x2="12" y2="12"/></svg>
+                        <span style="font-size:8px;margin-left:2px;">▼</span>
+                    </button>
+                    <div id="align-dropdown" class="hidden" style="position:absolute;bottom:100%;left:0;margin-bottom:4px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:12px;padding:4px;box-shadow:var(--shadow-lg);z-index:50;min-width:160px;display:none;flex-direction:column;gap:2px;">
+                        <button onclick="formatText('left');closeAlignDropdown()" class="fmt-dropdown-item" title="Alinear izquierda" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-secondary);background:transparent;transition:all 0.1s;width:100%;text-align:left;" onmouseenter="this.style.background='var(--primary-50)';this.style.color='var(--primary)'" onmouseleave="this.style.background='transparent';this.style.color='var(--text-secondary)'">
+                            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="width:15px;height:15px;flex-shrink:0;"><line x1="2" y1="4" x2="14" y2="4"/><line x1="2" y1="8" x2="10" y2="8"/><line x1="2" y1="12" x2="12" y2="12"/></svg>
+                            Izquierda
+                        </button>
+                        <button onclick="formatText('center');closeAlignDropdown()" class="fmt-dropdown-item" title="Centrar" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-secondary);background:transparent;transition:all 0.1s;width:100%;text-align:left;" onmouseenter="this.style.background='var(--primary-50)';this.style.color='var(--primary)'" onmouseleave="this.style.background='transparent';this.style.color='var(--text-secondary)'">
+                            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="width:15px;height:15px;flex-shrink:0;"><line x1="3" y1="4" x2="13" y2="4"/><line x1="5" y1="8" x2="11" y2="8"/><line x1="4" y1="12" x2="12" y2="12"/></svg>
+                            Centrado
+                        </button>
+                        <button onclick="formatText('right');closeAlignDropdown()" class="fmt-dropdown-item" title="Alinear derecha" style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text-secondary);background:transparent;transition:all 0.1s;width:100%;text-align:left;" onmouseenter="this.style.background='var(--primary-50)';this.style.color='var(--primary)'" onmouseleave="this.style.background='transparent';this.style.color='var(--text-secondary)'">
+                            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" style="width:15px;height:15px;flex-shrink:0;"><line x1="2" y1="4" x2="14" y2="4"/><line x1="6" y1="8" x2="14" y2="8"/><line x1="4" y1="12" x2="14" y2="12"/></svg>
+                            Derecha
+                        </button>
+                    </div>
+                </div>
                 <div class="w-px h-5 mx-1" style="background: var(--border-color);"></div>
-                <select onchange="formatText('size', this.value)" class="fmt-select" title="Tamaño de fuente">
-                    <option value="3">Normal</option>
-                    <option value="1">Pequeño</option>
-                    <option value="2">Más pequeño</option>
-                    <option value="4">Grande</option>
-                    <option value="5">Más grande</option>
-                    <option value="6">Muy grande</option>
-                    <option value="7">Enorme</option>
-                </select>
+                <div class="flex items-center gap-1" style="font-size: 11px; font-weight: 600; color: var(--text-dim);">
+                    <span style="color: var(--text-dim); white-space: nowrap;">Tamaño:</span>
+                    <select onchange="formatText('size', this.value)" class="fmt-select" title="Tamaño de fuente">
+                        <option value="3">Normal</option>
+                        <option value="1">Pequeño</option>
+                        <option value="2">Más pequeño</option>
+                        <option value="4">Grande</option>
+                        <option value="5">Más grande</option>
+                        <option value="6">Muy grande</option>
+                        <option value="7">Enorme</option>
+                    </select>
+                </div>
                 <div class="w-px h-5 mx-1" style="background: var(--border-color);"></div>
                 <button onclick="formatText('attach')" class="fmt-btn" title="Adjuntar archivos">📎</button>
                 <input type="file" id="attach-file-input" class="hidden" multiple onchange="handleFileSelection(this)">
@@ -2932,7 +2978,12 @@ function updateInspectorActions(folder) {
             if (window.getSelection && document.createRange) {
                  const range = document.createRange();
                  const sel = window.getSelection();
-                 range.setStart(editor, 0); 
+                 const firstChild = editor.firstChild;
+                 if (firstChild) {
+                     range.setStart(firstChild, 0);
+                 } else {
+                     range.setStart(editor, 0);
+                 }
                  range.collapse(true);
                  sel.removeAllRanges();
                  sel.addRange(range);
@@ -3102,6 +3153,138 @@ function updateInspectorActions(folder) {
             document.getElementById('response-body').focus();
         }
 
+        function toggleBulletList() { toggleList('ul'); }
+        function toggleNumberedList() { toggleList('ol'); }
+
+        function toggleList(tag) {
+            const ed = document.getElementById('response-body');
+            const sel = window.getSelection();
+
+            function makeList() {
+                const list = document.createElement(tag);
+                list.style.cssText = tag === 'ul' ? 'list-style:disc;padding-left:24px;margin:4px 0;' : 'list-style:decimal;padding-left:24px;margin:4px 0;';
+                const li = document.createElement('li');
+                li.style.cssText = 'margin:2px 0;';
+                li.innerHTML = '<br>';
+                list.appendChild(li);
+                return list;
+            }
+
+            if (sel.rangeCount) {
+                const range = sel.getRangeAt(0);
+                let node = range.commonAncestorContainer;
+                if (node.nodeType === 3) node = node.parentNode;
+
+                // Find existing list ancestor
+                let existingList = null;
+                let tmp = node;
+                while (tmp && tmp !== ed) {
+                    if (tmp.nodeType === 1 && (tmp.tagName === 'UL' || tmp.tagName === 'OL')) {
+                        existingList = tmp; break;
+                    }
+                    tmp = tmp.parentNode;
+                }
+
+                if (existingList) {
+                    if (existingList.tagName.toLowerCase() === tag) {
+                        // Toggle off: unwrap list items into paragraphs
+                        const parent = existingList.parentNode;
+                        const items = Array.from(existingList.children);
+                        let firstP = null;
+                        items.forEach(li => {
+                            const p = document.createElement('p');
+                            p.innerHTML = li.innerHTML;
+                            parent.insertBefore(p, existingList);
+                            if (!firstP) firstP = p;
+                        });
+                        parent.removeChild(existingList);
+                        if (firstP) {
+                            const r = document.createRange();
+                            r.setStart(firstP, 0);
+                            r.collapse(true);
+                            sel.removeAllRanges(); sel.addRange(r);
+                        }
+                    } else {
+                        // Switch list type
+                        const nl = document.createElement(tag);
+                        nl.style.cssText = tag === 'ul' ? 'list-style:disc;padding-left:24px;margin:4px 0;' : 'list-style:decimal;padding-left:24px;margin:4px 0;';
+                        nl.innerHTML = existingList.innerHTML;
+                        // Apply li styles to children
+                        Array.from(nl.children).forEach(li => li.style.cssText = 'margin:2px 0;');
+                        existingList.parentNode.replaceChild(nl, existingList);
+                        if (nl.firstChild) {
+                            const r = document.createRange();
+                            r.setStart(nl.firstChild, 0);
+                            r.collapse(true);
+                            sel.removeAllRanges(); sel.addRange(r);
+                        }
+                    }
+                } else if (!range.collapsed) {
+                    // Wrap selected text
+                    const list = makeList();
+                    list.innerHTML = '';
+                    const frag = range.extractContents();
+                    const div = document.createElement('div');
+                    div.appendChild(frag);
+                    Array.from(div.childNodes).forEach(child => {
+                        if (child.nodeType === 3 && child.textContent.trim()) {
+                            const li = document.createElement('li');
+                            li.style.cssText = 'margin:2px 0;';
+                            li.textContent = child.textContent;
+                            list.appendChild(li);
+                        } else if (child.nodeType === 1 && child.tagName !== 'BR') {
+                            const li = document.createElement('li');
+                            li.style.cssText = 'margin:2px 0;';
+                            li.innerHTML = child.innerHTML;
+                            list.appendChild(li);
+                        }
+                    });
+                    if (!list.children.length) list.appendChild(makeList().querySelector('li'));
+                    range.insertNode(list);
+                } else {
+                    // Insert new list at cursor
+                    const list = makeList();
+                    range.insertNode(list);
+                    const firstLI = list.querySelector('li');
+                    if (firstLI) {
+                        const r = document.createRange();
+                        r.setStart(firstLI, 0);
+                        r.collapse(true);
+                        sel.removeAllRanges(); sel.addRange(r);
+                    }
+                }
+            } else {
+                ed.insertAdjacentHTML('afterbegin', makeList().outerHTML);
+            }
+            ed.focus();
+        }
+
+        // Dropdown alineación
+        function toggleAlignDropdown(e) {
+            e.stopPropagation();
+            const dd = document.getElementById('align-dropdown');
+            const isOpen = dd.style.display === 'flex';
+            closeAllFormatDropdowns();
+            if (!isOpen) {
+                dd.style.display = 'flex';
+                dd.classList.remove('hidden');
+            }
+        }
+        function closeAlignDropdown() {
+            const dd = document.getElementById('align-dropdown');
+            dd.style.display = 'none';
+            dd.classList.add('hidden');
+        }
+        function closeAllFormatDropdowns() {
+            closeAlignDropdown();
+        }
+        document.addEventListener('click', function(e) {
+            const container = document.getElementById('align-dropdown-container');
+            if (container && !container.contains(e.target)) {
+                closeAlignDropdown();
+            }
+        });
+
         function formatText(command, value) {
             if (command === 'font' || command === 'size') {
                 document.execCommand(command, false, value);
@@ -3116,8 +3299,10 @@ function updateInspectorActions(folder) {
             } else if (command === 'right') {
                 document.execCommand('justifyRight', false, null);
             } else if (command === 'list') {
+                document.getElementById('response-body').focus();
                 document.execCommand('insertUnorderedList', false, null);
             } else if (command === 'numbered') {
+                document.getElementById('response-body').focus();
                 document.execCommand('insertOrderedList', false, null);
             } else if (command === 'undo') {
                 document.execCommand('undo', false, null);
@@ -3134,6 +3319,8 @@ function updateInspectorActions(folder) {
                 if (imgUrl) document.execCommand('insertImage', false, imgUrl);
             } else if (command === 'attach') {
                 document.getElementById('attach-file-input').click();
+            } else {
+                document.execCommand(command, false, null);
             }
             document.getElementById('response-body').focus();
         }
@@ -3322,6 +3509,9 @@ function updateInspectorActions(folder) {
                         feedback.className = 'text-[11px] text-emerald-500 font-bold tracking-wide ml-auto animate-pulse';
                         setTimeout(() => { if(feedback.innerText.includes('Borrador autoguardado')) feedback.innerText = ''; }, 3000);
                     }
+                } else {
+                    const errData = await res.json().catch(() => ({}));
+                    console.error('Error del servidor al guardar borrador:', errData);
                 }
             } catch (e) {
                 console.error('Error saving draft', e);
