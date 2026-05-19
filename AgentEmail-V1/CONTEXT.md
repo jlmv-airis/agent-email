@@ -215,12 +215,18 @@ powershell -ExecutionPolicy Bypass -File scripts/INICIAR-SISTEMA.ps1
 
 ---
 
-**Última actualización:** 18 de mayo de 2026  
-**Versión:** V1.1.22  
-**Rama activa:** v1.1.22  
-**Tema:** Solo oscuro (dark mode)
+**Última actualización:** 19 de mayo de 2026  
+**Versión:** V1.1.24  
+**Rama activa:** v1.1.24  
+**Tema:** Toggle claro/oscuro (dark/light mode)
 
 ### Registro de Versiones (Historial Reciente)
+- **v1.1.24**: Nueva rama baseline desde main post-merge. ✅
+  - Cambios: Baseline con todas las mejoras de v1.1.23.
+  - Estado: Estable.
+- **v1.1.23**: Agregadas 10 cuentas IMAP, menú contextual, orden alfabético, toggle tema claro/oscuro. ✅
+  - Cambios: 10 cuentas (RoldanMaquinaria, LipusMexico, SuministrosRiu, BerbelTextil, EdcomStore, Humber, MortonTool, SentruSystems, Limmanhur, RenovartE), right-click context menu (ctxMarkRead, ctxAssign, ctxDelete), orden alfabético en sidebar, toggle tema claro/oscuro, UI refinements (glass morphism, spark-bg/spark-border).
+  - Estado: Estable.
 - **v1.1.22**: Agregadas 8 nuevas cuentas IMAP y ocultado scrollbar del sidebar. ✅
   - Cambios: Nuevas cuentas (PushLine, Iron Inmobiliaria, Edificadora Peralta, Publicidad Rocha, Vintte, CIO Publicidad, Eventos FT, Inbox MD), scrollbar oculto en sidebar.
   - Estado: Estable.
