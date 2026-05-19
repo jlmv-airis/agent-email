@@ -596,6 +596,16 @@
             color: var(--text-secondary); flex-shrink: 0;
         }
         .header-action-btn:hover { background: var(--bg-card-hover); color: var(--text-primary); border-color: var(--border-color-hover); }
+        .emoji-cell {
+            width: 100%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+            border-radius: 8px; cursor: pointer; font-size: 22px; transition: all 0.12s ease;
+            border: none; background: transparent; padding: 0; user-select: none;
+        }
+        .emoji-cell:hover { background: var(--primary-50); transform: scale(1.15); }
+        .emoji-cell:active { transform: scale(0.9); }
+        #emoji-picker .emoji-tab.active { background: var(--primary-50) !important; color: var(--primary) !important; }
+        #emoji-picker .emoji-tab { color: var(--text-dim); }
+        #emoji-picker .emoji-tab:hover { color: var(--text-primary); }
         .header-action-btn:active { transform: scale(0.95); }
         .ins-tool-btn:hover { background: var(--ins-hover-bg); color: var(--ins-text-primary); }
         
@@ -1285,7 +1295,27 @@
                 <button onclick="formatText('attach')" class="fmt-btn" title="Adjuntar archivos">📎</button>
                 <input type="file" id="attach-file-input" class="hidden" multiple onchange="handleFileSelection(this)">
                 <button onclick="formatText('link')" class="fmt-btn" title="Insertar enlace">🔗</button>
-                <button onclick="formatText('emoji')" class="fmt-btn" title="Insertar emoticono">😀</button>
+                <div class="relative" id="emoji-picker-container">
+                    <button onclick="toggleEmojiPicker(event)" class="fmt-btn" title="Insertar emoticono">😀</button>
+                    <div id="emoji-picker" class="hidden" style="position:absolute;bottom:100%;right:0;margin-bottom:6px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:16px;padding:10px;box-shadow:0 8px 32px rgba(0,0,0,0.2);z-index:100;width:352px;max-height:340px;display:none;flex-direction:column;">
+                        <div style="display:flex;gap:4px;padding:0 0 8px 0;border-bottom:1px solid var(--border-color);margin-bottom:8px;flex-shrink:0;">
+                            <button onclick="switchEmojiTab(event,'emoji-grid-0')" data-tab="emoji-grid-0" class="emoji-tab active" style="flex:1;min-width:36px;padding:5px 8px;border:none;border-radius:8px;cursor:pointer;font-size:15px;background:var(--primary-50);transition:all 0.15s;line-height:1;" onmouseenter="this.style.background='var(--primary-100)'" onmouseleave="if(!this.classList.contains('active'))this.style.background='transparent'">😊</button>
+                            <button onclick="switchEmojiTab(event,'emoji-grid-1')" data-tab="emoji-grid-1" class="emoji-tab" style="flex:1;min-width:36px;padding:5px 8px;border:none;border-radius:8px;cursor:pointer;font-size:15px;background:transparent;transition:all 0.15s;line-height:1;" onmouseenter="this.style.background='var(--primary-50)'" onmouseleave="if(!this.classList.contains('active'))this.style.background='transparent'">🐶</button>
+                            <button onclick="switchEmojiTab(event,'emoji-grid-2')" data-tab="emoji-grid-2" class="emoji-tab" style="flex:1;min-width:36px;padding:5px 8px;border:none;border-radius:8px;cursor:pointer;font-size:15px;background:transparent;transition:all 0.15s;line-height:1;" onmouseenter="this.style.background='var(--primary-50)'" onmouseleave="if(!this.classList.contains('active'))this.style.background='transparent'">🍎</button>
+                            <button onclick="switchEmojiTab(event,'emoji-grid-3')" data-tab="emoji-grid-3" class="emoji-tab" style="flex:1;min-width:36px;padding:5px 8px;border:none;border-radius:8px;cursor:pointer;font-size:15px;background:transparent;transition:all 0.15s;line-height:1;" onmouseenter="this.style.background='var(--primary-50)'" onmouseleave="if(!this.classList.contains('active'))this.style.background='transparent'">⚽</button>
+                            <button onclick="switchEmojiTab(event,'emoji-grid-4')" data-tab="emoji-grid-4" class="emoji-tab" style="flex:1;min-width:36px;padding:5px 8px;border:none;border-radius:8px;cursor:pointer;font-size:15px;background:transparent;transition:all 0.15s;line-height:1;" onmouseenter="this.style.background='var(--primary-50)'" onmouseleave="if(!this.classList.contains('active'))this.style.background='transparent'">🚗</button>
+                            <button onclick="switchEmojiTab(event,'emoji-grid-5')" data-tab="emoji-grid-5" class="emoji-tab" style="flex:1;min-width:36px;padding:5px 8px;border:none;border-radius:8px;cursor:pointer;font-size:15px;background:transparent;transition:all 0.15s;line-height:1;" onmouseenter="this.style.background='var(--primary-50)'" onmouseleave="if(!this.classList.contains('active'))this.style.background='transparent'">💡</button>
+                            <button onclick="switchEmojiTab(event,'emoji-grid-6')" data-tab="emoji-grid-6" class="emoji-tab" style="flex:1;min-width:36px;padding:5px 8px;border:none;border-radius:8px;cursor:pointer;font-size:15px;background:transparent;transition:all 0.15s;line-height:1;" onmouseenter="this.style.background='var(--primary-50)'" onmouseleave="if(!this.classList.contains('active'))this.style.background='transparent'">❤️</button>
+                        </div>
+                        <div id="emoji-grid-0" class="emoji-grid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:2px;overflow-y:auto;max-height:260px;padding:2px;"></div>
+                        <div id="emoji-grid-1" class="emoji-grid" style="display:none;grid-template-columns:repeat(8,1fr);gap:2px;overflow-y:auto;max-height:260px;padding:2px;"></div>
+                        <div id="emoji-grid-2" class="emoji-grid" style="display:none;grid-template-columns:repeat(8,1fr);gap:2px;overflow-y:auto;max-height:260px;padding:2px;"></div>
+                        <div id="emoji-grid-3" class="emoji-grid" style="display:none;grid-template-columns:repeat(8,1fr);gap:2px;overflow-y:auto;max-height:260px;padding:2px;"></div>
+                        <div id="emoji-grid-4" class="emoji-grid" style="display:none;grid-template-columns:repeat(8,1fr);gap:2px;overflow-y:auto;max-height:260px;padding:2px;"></div>
+                        <div id="emoji-grid-5" class="emoji-grid" style="display:none;grid-template-columns:repeat(8,1fr);gap:2px;overflow-y:auto;max-height:260px;padding:2px;"></div>
+                        <div id="emoji-grid-6" class="emoji-grid" style="display:none;grid-template-columns:repeat(8,1fr);gap:2px;overflow-y:auto;max-height:260px;padding:2px;"></div>
+                    </div>
+                </div>
                 <button onclick="formatText('image')" class="fmt-btn" title="Insertar imagen">🖼️</button>
             </div>
             
@@ -3283,7 +3313,80 @@ function updateInspectorActions(folder) {
             if (container && !container.contains(e.target)) {
                 closeAlignDropdown();
             }
+            const ep = document.getElementById('emoji-picker');
+            const ec = document.getElementById('emoji-picker-container');
+            if (ep && ec && !ec.contains(e.target) && ep.style.display === 'flex') {
+                ep.style.display = 'none'; ep.classList.add('hidden');
+            }
         });
+
+        // Emoji data
+        const emojiSets = [
+            '😀😁😂🤣😃😄😅😆😉😊😋😎😍🥰😘😗😙😚🙂🤗🤩🤔🤨😐😑😶🙄😏😣😥😮🤐😯😪😫😴😌😛😜😝🤤😒😓😔😕🙃🤑😲☹️🙁😖😞😟😤😢😭😦😧😨😩🤯😬😰😱🥵🥶😳🤪😵😡🤬😠🤫🥱🤭🧐🤠😷🤒🤕🤢🤮🤧🥺😈👿👹👺💀👻👽🤖💩😺😸😹😻😼😽🙀😿😾',
+            '🐶🐱🐭🐹🐰🦊🐻🐼🐨🐯🦁🐮🐷🐸🐵🐔🐧🐦🐤🐣🐥🦆🦅🦉🦇🐺🐗🐴🦄🐝🐛🦋🐌🐞🐜🦟🦗🕷️🦂🐢🐍🦎🦖🦕🐙🦑🦐🦀🐡🐠🐟🐬🐳🐋🦈🐊🐅🐆🦓🦍🦧🐘🦛🦏🐪🐫🦒🦘🐃🐂🐄🐎🐖🐏🐑🦙🐐🦌🐕🐩🐈🐓🦃🦚🦜🦢🦩🕊️🐇🦝🦨🦡🦫🦦🦥🐁🐀🐿️🦔🐾🐉🐲🌵🎄🌲🌳🌴🌱🌿☘️🍀🎍🍃🍂🍁🍄🐚🌾💐🌷🌹🥀🌺🌸🌼🌻🌞🌝🌛🌜🌚🌕🌖🌗🌘🌑🌒🌓🌔🌙🌎🌍🌏💫⭐🌟✨⚡☄️💥🔥🌪️🌈☀️🌤️⛅🌥️☁️🌦️🌧️⛈️🌩️🌨️❄️☃️⛄🌬️💨💧💦☔☂️🌊🌫️',
+            '🍏🍎🍐🍊🍋🍌🍉🍇🍓🫐🍈🍒🍑🥭🍍🥥🥝🍅🍆🥑🥦🥬🥒🌶️🫑🌽🥕🧄🧅🥔🍠🫘🥐🍞🥖🥨🧀🥚🍳🧈🥞🧇🥓🥩🍗🍖🦴🌭🍔🍟🍕🫓🥪🥙🧆🌮🌯🫔🥗🥘🫕🥫🍝🍜🍲🍛🍣🍱🥟🦪🍤🍙🍚🍘🍥🥠🥮🍢🍡🍧🍨🍦🥧🧁🍰🎂🍮🍭🍬🍫🍿🍩🍪🌰🥜🍯🥛🍼🫖☕🍵🧃🥤🧊🍶🍺🍻🥂🍷🫗🥃🍸🍹🍾🧉🍴🥄🔪🫓',
+            '⚽🏀🏈⚾🎾🏐🏉🎱🥏🪀🏓🏸🏒🏑🥍🏏🪃🥅⛳🏌️🏹🎯🛝🛹🛼🪁🔫🎿⛷️🏂🪂🏋️🤸🤼🤽🤾🧗🤹🧘🛀🛌🏊🤿🏄🏇🚴🚵🎪🎭🎨🎬🎤🎧🎼🎹🥁🪘🎷🎺🪗🎸🪕🎻🎲♟️🎯🎳🎮🕹️🎰',
+            '🚗🚕🚙🚌🚎🏎️🚓🚑🚒🚐🛻🚚🚛🚜🦯🦽🦼🛴🚲🛵🏍️🛺🚨🚔🚍🚘🚖🚡🚠🚟🚃🚋🚞🚝🚄🚅🚈🚇🚊🚉✈️🛫🛬🛩️💺🛰️🚀🛸🚁🛶⛵🚤🛥️🛳️⛴️🛟⚓🪝⛽🚏🚦🚥🗺️🗿🏗️🏘️🏠🏡🏢🏣🏤🏥🏦🏨🏩🏪🏫🏬🏭🏯🏰💒🗼🗽⛪🕌🛕🕍⛩️🕋⛲🌋🌄🌅🌆🌇🌉🎠🎡🎢🚂',
+            '⌚📱💻⌨️🖥️🖨️🖱️🖲️🕹️🗜️💽💾💿📀📼📷📸📹🎥📽️🎞️📞☎️📟📠📺📻🎙️🎚️🎛️🧭⏱️⏲️⏰🕰️⌛⏳📡🔋🪫🔌💡🔦🕯️🪔🧯🛢️💸💵💴💶💷🪙💰💳💎⚖️🪜🧰🪛🔧🔨⚒️🛠️⛏️🪚🔩⚙️🪤🧱⛓️🧲🔫💣🧨🪓🔪🗡️⚔️🛡️🚬⚰️🪦⚱️🏺🔮📿💈⚗️🔭🔬🕳️🩻🩹🩺💊💉🩸🧬🦠🧫🧪🌡️🧹🪠🧺🧻🚽🚿🛁🪥🪒🧴🛎️🧷🔑🗝️🚪🪑🛋️🛏️🛌🧸🪆🖼️🪞🪟🛍️🛒🎁🎈🎏🎀🪄🎊🎉🎎🏮🎐🧧✉️📩📨📧💌📥📤📦🏷️📪📫📬📭📮📯📜📃📄📑🧾📊📈📉🗒️🗓️📆📅🗑️📇🗃️🗳️🗄️📋📁📂🗂️🗞️📰📓📔📒📕📗📘📙📚📖🔖🧷🔗📎🖇️📐📏🧮📌📍✂️🖊️🖋️✒️🖌️🖍️📝✏️🔍🔎🔏🔐🔒🔓',
+            '❤️🧡💛💚💙💜🖤🤍🤎💔❣️💕💞💓💗💖💘💝☮️✝️☪️🕉️☸️✡️🔯🕎☯️☦️🛐⛎♈♉♊♋♌♍♎♏♐♑♒♓🆔⚕️♿🚹🚺🚻🚼🚾🛂🛃🛄🛅⚠️🚸⛔🚫🚳🚭🚯🚱🚷📵🔞☢️☣️⬆️↗️➡️↘️⬇️↙️⬅️↖️↕️↩️↪️⤴️⤵️🔃🔄🔙🔚🔛🔜🔝🔅🔆📶📳📴♻️💹❇️✳️❎➰➿〽️✴️✅💠🌀💮♨️🈺🈯🉐㊗️㊙️🈹🈴🈶🈷️🈸🈚🈲🉑🆚☑️🔘🆖🆗🆙🆒🆕🆓🈁🈂️📛🅰️🅱️🆎🅾️🏧🚮🚰♿🚹🚺🚻🚼🚾🚸⚠️⛔🚫🚳🚭🚯🚱🚷📵🔞☢️☣️🔀🔁🔂▶️⏩⏭️⏯️◀️⏪⏮️🔼⏫🔽⏬⏸️⏹️⏺️⏏️🎦♀️♂️⚧️✖️➕➖➗♾️‼️⁉️❓❔❕❗〰️©️®️™️🔟🔢🔤🔡🔠🔣ℹ️🆖🆗🆘🆙🆚🈁🈂️🈷️🈶🈯🉐🈹🈚🈲🉑🈸🈴🈳㊗️㊙️🈺🈵🔴🟠🟡🟢🔵🟣🟤⚫⚪🟥🟧🟨🟩🟦🟪🟫⬛⬜◼️◻️◾◽▪️▫️🔶🔷🔸🔹🔺🔻💠🔲🔳⚪⚫🔴🔵'
+        ];
+
+        function buildEmojiGrids() {
+            emojiSets.forEach((set, i) => {
+                const grid = document.getElementById('emoji-grid-' + i);
+                if (!grid || grid.children.length) return;
+                for (const ch of set) {
+                    const span = document.createElement('span');
+                    span.className = 'emoji-cell';
+                    span.textContent = ch;
+                    span.onclick = function() { insertEmoji(ch); };
+                    span.title = ch;
+                    grid.appendChild(span);
+                }
+            });
+        }
+
+        function toggleEmojiPicker(e) {
+            e.stopPropagation();
+            const picker = document.getElementById('emoji-picker');
+            buildEmojiGrids();
+            const isOpen = picker.style.display === 'flex';
+            closeAllFormatDropdowns();
+            if (!isOpen) {
+                picker.style.display = 'flex';
+                picker.classList.remove('hidden');
+            } else {
+                picker.style.display = 'none';
+                picker.classList.add('hidden');
+            }
+        }
+
+        function switchEmojiTab(e, id) {
+            document.querySelectorAll('.emoji-grid').forEach(g => g.style.display = 'none');
+            document.querySelectorAll('.emoji-tab').forEach(t => { t.style.background = 'transparent'; t.classList.remove('active'); });
+            const grid = document.getElementById(id);
+            if (grid) grid.style.display = 'grid';
+            const btn = e.currentTarget;
+            btn.style.background = 'var(--primary-50)';
+            btn.classList.add('active');
+        }
+
+        function insertEmoji(ch) {
+            const ed = document.getElementById('response-body');
+            ed.focus();
+            const sel = window.getSelection();
+            if (sel.rangeCount) {
+                const range = sel.getRangeAt(0);
+                range.deleteContents();
+                const text = document.createTextNode(ch);
+                range.insertNode(text);
+                range.setStartAfter(text);
+                range.collapse(true);
+                sel.removeAllRanges(); sel.addRange(range);
+            }
+            document.getElementById('emoji-picker').style.display = 'none';
+            document.getElementById('emoji-picker').classList.add('hidden');
+        }
 
         function formatText(command, value) {
             if (command === 'font' || command === 'size') {
@@ -3311,9 +3414,6 @@ function updateInspectorActions(folder) {
             } else if (command === 'link') {
                 const url = prompt('Introduce el enlace completo (ej. https://google.com):');
                 if (url) document.execCommand('createLink', false, url);
-            } else if (command === 'emoji') {
-                const emoji = prompt('Inserta/Pega tu emoticono aquí o abre el selector de tu Sistema (Windows: [Win] + [.]):', '😀');
-                if (emoji) document.execCommand('insertText', false, emoji);
             } else if (command === 'image') {
                 const imgUrl = prompt('URL pública de la imagen a insertar:');
                 if (imgUrl) document.execCommand('insertImage', false, imgUrl);
